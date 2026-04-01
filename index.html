@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategic Report Agent — Informe Ejecutivo con IA</title>
+<style>
+  :root {
+    --navy: #003A70;
+    --dark-navy: #00264D;
+    --blue: #0078D4;
+    --accent: #00A3E0;
+    --gold: #B8860B;
+    --gold-light: #D4A843;
+    --bg: #0a0e17;
+    --card: #111827;
+    --card-hover: #1a2332;
+    --border: #1e293b;
+    --border-light: #2d3a4d;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --dim: #64748b;
+    --success: #10b981;
+    --error: #ef4444;
+    --error-bg: #1a0505;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* Header */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+  .header-logo {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--navy), var(--accent));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 17px; color: #fff;
+    flex-shrink: 0;
+  }
+  .header-title { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .header-sub { font-size: 11px; color: var(--dim); margin-top: 2px; }
+
+  /* Main container */
+  .container { max-width: 920px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  /* Config bar */
+  .config-bar {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 24px;
+    padding: 12px 16px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; flex-wrap: wrap;
+  }
+  .config-bar label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .config-bar input {
+    flex: 1; min-width: 200px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 12px; color: var(--text); font-size: 13px;
+    outline: none; font-family: monospace;
+  }
+  .config-bar input:focus { border-color: var(--accent); }
+  .config-bar .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-ok { background: var(--success); }
+  .dot-no { background: var(--error); }
+  .dot-idle { background: var(--dim); }
+
+  /* Input area */
+  .input-section { margin-bottom: 20px; }
+  .input-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .input-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  textarea {
+    width: 100%; min-height: 200px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; color: var(--text); font-size: 14px;
+    line-height: 1.7; resize: vertical; outline: none;
+    font-family: inherit; transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--dim); }
+
+  /* Buttons */
+  .actions { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+
+  .btn {
+    border: none; border-radius: 8px; font-weight: 600;
+    font-size: 14px; cursor: pointer; transition: all 0.15s;
+    padding: 12px 20px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary {
+    flex: 1 1 auto;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff;
+  }
+  .btn-primary:hover:not(:disabled) { filter: brightness(1.15); }
+  .btn-secondary { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  .btn-secondary:hover:not(:disabled) { background: var(--card-hover); }
+  .btn-gold { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
+  .btn-gold:hover:not(:disabled) { background: rgba(184, 134, 11, 0.1); }
+  .btn-sm { font-size: 12px; padding: 5px 12px; }
+  .btn-success { background: var(--success); color: #fff; }
+
+  /* Status */
+  .status { text-align: center; margin-bottom: 20px; font-size: 13px; color: var(--accent); }
+  .status.error { color: var(--error); }
+  .error-box {
+    background: var(--error-bg); border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 8px; padding: 14px; margin-bottom: 20px;
+    color: var(--error); font-size: 13px;
+  }
+
+  /* Preview card */
+  .preview { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .preview-header {
+    padding: 12px 20px; background: var(--dark-navy);
+    border-bottom: 2px solid var(--gold);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .preview-header span { font-size: 12px; font-weight: 600; color: #fff; text-transform: uppercase; letter-spacing: 0.06em; }
+  .preview-body { padding: 28px; }
+
+  .doc-title {
+    font-size: 24px; font-weight: 700; font-family: Georgia, serif;
+    line-height: 1.3; margin-bottom: 4px;
+    background: linear-gradient(135deg, var(--blue), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .doc-subtitle { font-size: 13px; color: var(--dim); font-style: italic; margin-bottom: 14px; }
+  .gold-line { height: 3px; background: linear-gradient(to right, var(--gold), transparent); border-radius: 2px; margin-bottom: 22px; }
+
+  .exec-summary {
+    background: #0d1b2a; border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: 8px;
+    padding: 18px; margin-bottom: 24px;
+  }
+  .exec-summary .label { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .exec-summary p { font-size: 13px; line-height: 1.8; font-family: Georgia, serif; }
+
+  .section { margin-bottom: 24px; }
+  .section h2 {
+    font-size: 14px; font-weight: 700; color: var(--blue);
+    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px;
+  }
+  .section-line { height: 1px; background: var(--border); margin-bottom: 10px; }
+
+  .governing {
+    display: flex; gap: 10px; margin-bottom: 12px;
+  }
+  .governing-bar { width: 3px; background: var(--navy); border-radius: 2px; flex-shrink: 0; }
+  .governing p { font-size: 13px; font-weight: 600; font-family: Georgia, serif; margin: 0; }
+
+  .section-content { font-size: 13px; line-height: 1.7; color: var(--muted); margin-bottom: 10px; }
+
+  .bullet { display: flex; gap: 8px; margin-bottom: 5px; padding-left: 6px; }
+  .bullet-icon { color: var(--gold); font-weight: 700; flex-shrink: 0; }
+  .bullet span { font-size: 13px; line-height: 1.5; }
+
+  .so-what {
+    margin-top: 10px; padding: 10px 14px;
+    border-left: 3px solid var(--gold);
+    background: #1a1a0d; border-radius: 0 6px 6px 0;
+  }
+  .so-what .label { font-size: 12px; font-weight: 700; color: var(--gold); }
+  .so-what .text { font-size: 12px; color: var(--muted); font-style: italic; }
+
+  .next-step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 6px; background: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .next-step span { font-size: 13px; line-height: 1.5; }
+
+  .appendix {
+    margin-top: 24px; padding: 14px; background: #0d0d0d;
+    border-radius: 8px; border: 1px solid var(--border);
+  }
+  .appendix .label { font-size: 10px; font-weight: 600; color: var(--dim); text-transform: uppercase; margin-bottom: 4px; }
+  .appendix p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 60px 20px; color: var(--dim); }
+  .empty-icon { font-size: 40px; margin-bottom: 14px; }
+  .empty-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .empty-desc { font-size: 13px; max-width: 500px; margin: 0 auto; line-height: 1.7; }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .container { padding: 20px 14px 40px; }
+    .actions { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+    .config-bar { flex-direction: column; align-items: stretch; }
+    .config-bar input { min-width: unset; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">S</div>
+  <div>
+    <div class="header-title">Strategic Report Agent</div>
+    <div class="header-sub">Transforma contenido en informes ejecutivos de estándar consultoría premium</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Config: Worker URL -->
+  <div class="config-bar">
+    <label>Worker URL</label>
+    <input type="url" id="workerUrl" placeholder="https://tu-worker.tu-cuenta.workers.dev" />
+    <div class="dot dot-idle" id="workerDot"></div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-section">
+    <div class="input-header">
+      <span class="input-label">Documento fuente</span>
+      <button class="btn btn-sm btn-secondary" onclick="loadSample()">Cargar ejemplo</button>
+    </div>
+    <textarea id="inputText" placeholder="Pega aquí notas, minutas, correos, transcripciones, hallazgos, análisis preliminar — cualquier texto que quieras convertir en informe ejecutivo..."></textarea>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button class="btn btn-primary" id="btnAnalyze" onclick="analyze()">
+      🧠 Generar Informe Ejecutivo
+    </button>
+    <button class="btn btn-secondary" id="btnMd" onclick="copyMarkdown()" style="display:none">📋 Markdown</button>
+    <button class="btn btn-secondary" id="btnJson" onclick="copyJSON()" style="display:none">{ } JSON</button>
+    <button class="btn btn-gold" id="btnDocx" onclick="copyDocxPrompt()" style="display:none">📄 Prompt .docx</button>
+  </div>
+
+  <!-- Status -->
+  <div class="status" id="statusMsg"></div>
+  <div class="error-box" id="errorBox" style="display:none"></div>
+
+  <!-- Preview -->
+  <div id="previewCard" style="display:none"></div>
+
+  <!-- Empty state -->
+  <div class="empty" id="emptyState">
+    <div class="empty-icon">📊</div>
+    <div class="empty-title">Pega tu contenido y presiona "Generar Informe"</div>
+    <div class="empty-desc">
+      El agente aplica estándar de consultoría premium: estructura piramidal MECE,
+      diferenciación hechos/inferencias/hipótesis, hallazgos con implicancia de negocio,
+      análisis de riesgos, y recomendaciones priorizadas por horizonte temporal.
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// SYSTEM PROMPT — Consultoría Estratégica Premium
+// ============================================================
+const SYSTEM_PROMPT = `Eres un consultor senior de estrategia corporativa y redactor ejecutivo de informes de alta dirección. Tu tarea es transformar el documento fuente en un informe de estándar consultoría premium.
+
+OBJETIVO: Convertir el texto en un informe estratégico, estructurado, analítico, accionable y persuasivo.
+
+INSTRUCCIONES:
+1. No repitas el texto original mecánicamente.
+2. Depura ruido, redundancias, informalidades.
+3. Identifica la tesis central.
+4. Ordena: problema → implicancia → recomendación.
+5. Distingue: hechos observados, inferencias razonables, hipótesis por validar.
+6. Tono institucional, estratégico y sobrio. Sin marketing vacío.
+7. Toda afirmación debe tener fundamento en el material fuente.
+8. Si detectas vacíos, identifícalos explícitamente.
+
+ESTÁNDAR MECE: sin solapamientos, cobertura suficiente. Diferencia síntomas, causas, impactos y recomendaciones. Traduce observaciones operativas en implicancias estratégicas.
+
+Responde SOLO con JSON válido (sin markdown, sin backticks):
+{
+  "title": "Título ejecutivo (assertion, no descriptivo)",
+  "subtitle": "Objeto del informe",
+  "executive_summary": "Resumen conclusivo, no descriptivo. 2-4 oraciones con la conclusión principal primero.",
+  "key_messages": ["Mensaje clave 1", "Mensaje clave 2", "Mensaje clave 3"],
+  "context": "Qué problema aborda y por qué importa",
+  "findings": [
+    {
+      "finding": "Hallazgo concreto",
+      "evidence": "Base textual o evidencia del material fuente",
+      "business_implication": "Implicancia de negocio"
+    }
+  ],
+  "analysis_blocks": [
+    {
+      "heading": "Título con mensaje, no solo tema",
+      "governing_thought": "Mensaje clave de este bloque",
+      "content": "Análisis desarrollado",
+      "bullets": ["Punto 1", "Punto 2"],
+      "so_what": "Implicación concreta"
+    }
+  ],
+  "risks": [
+    { "risk": "Descripción del riesgo", "implication": "Qué puede salir mal" }
+  ],
+  "opportunities": ["Oportunidad o palanca estratégica 1", "Oportunidad 2"],
+  "recommendations": {
+    "short_term": [{ "action": "Acción", "rationale": "Racional", "impact": "Impacto esperado" }],
+    "medium_term": [{ "action": "Acción", "rationale": "Racional", "impact": "Impacto esperado" }],
+    "long_term": [{ "action": "Acción", "rationale": "Racional", "impact": "Impacto esperado" }]
+  },
+  "information_gaps": ["Información faltante 1", "Información faltante 2"],
+  "conclusion": "Conclusión ejecutiva final"
+}`;
+
+let result = null;
+
+// ============================================================
+// API Call
+// ============================================================
+async function analyze() {
+  const input = document.getElementById('inputText').value.trim();
+  const workerUrl = document.getElementById('workerUrl').value.trim();
+
+  if (!input) return;
+  if (!workerUrl) { showError('Configura la URL de tu Cloudflare Worker arriba'); return; }
+
+  setLoading(true);
+  showStatus('Analizando estructura y generando informe ejecutivo...');
+  hideError();
+  hidePreview();
+  result = null;
+
+  try {
+    const res = await fetch(workerUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 6000,
+        system: SYSTEM_PROMPT,
+        messages: [{
+          role: 'user',
+          content: 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\\n\\n' + input,
+        }],
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error.message || data.error || 'Error en el Worker/API');
+
+    const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    result = JSON.parse(clean);
+
+    renderPreview(result);
+    showExportBtns();
+    showStatus('Informe ejecutivo generado');
+    setDot('ok');
+  } catch (err) {
+    showError(err.message);
+    setDot('no');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ============================================================
+// Render Preview
+// ============================================================
+function renderPreview(r) {
+  document.getElementById('emptyState').style.display = 'none';
+  const card = document.getElementById('previewCard');
+  card.style.display = 'block';
+
+  let html = `<div class="preview">
+    <div class="preview-header"><span>Vista previa del informe</span></div>
+    <div class="preview-body">`;
+
+  // Title
+  html += `<div class="doc-title">${esc(r.title)}</div>`;
+  if (r.subtitle) html += `<div class="doc-subtitle">${esc(r.subtitle)}</div>`;
+  html += `<div class="gold-line"></div>`;
+
+  // Exec summary
+  html += `<div class="exec-summary">
+    <div class="label">Resumen Ejecutivo</div>
+    <p>${esc(r.executive_summary)}</p>
+  </div>`;
+
+  // Key messages
+  if (r.key_messages?.length) {
+    html += `<div class="section"><h2>Mensajes Clave</h2><div class="section-line"></div>`;
+    r.key_messages.forEach(m => { html += `<div class="bullet"><span class="bullet-icon">▸</span><span>${esc(m)}</span></div>`; });
+    html += `</div>`;
+  }
+
+  // Context
+  if (r.context) {
+    html += `<div class="section"><h2>Contexto y Objetivo</h2><div class="section-line"></div>
+      <div class="section-content">${esc(r.context)}</div></div>`;
+  }
+
+  // Findings
+  if (r.findings?.length) {
+    html += `<div class="section"><h2>Hallazgos Clave</h2><div class="section-line"></div>`;
+    r.findings.forEach((f, i) => {
+      html += `<div style="margin-bottom:16px;padding:14px;background:#0d1b2a;border-radius:8px;border-left:3px solid var(--accent)">
+        <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">${i+1}. ${esc(f.finding)}</div>
+        <div style="font-size:12px;color:var(--dim);margin-bottom:4px"><strong>Evidencia:</strong> ${esc(f.evidence)}</div>
+        <div style="font-size:12px;color:var(--gold)"><strong>Implicancia:</strong> ${esc(f.business_implication)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Analysis blocks
+  if (r.analysis_blocks?.length) {
+    r.analysis_blocks.forEach((sec, i) => {
+      html += `<div class="section"><h2>${i+1}. ${esc(sec.heading)}</h2><div class="section-line"></div>`;
+      if (sec.governing_thought) {
+        html += `<div class="governing"><div class="governing-bar"></div><p>${esc(sec.governing_thought)}</p></div>`;
+      }
+      if (sec.content) html += `<div class="section-content">${esc(sec.content)}</div>`;
+      if (sec.bullets?.length) {
+        sec.bullets.forEach(b => { html += `<div class="bullet"><span class="bullet-icon">▸</span><span>${esc(b)}</span></div>`; });
+      }
+      if (sec.so_what) {
+        html += `<div class="so-what"><span class="label">So what? </span><span class="text">${esc(sec.so_what)}</span></div>`;
+      }
+      html += `</div>`;
+    });
+  }
+
+  // Risks
+  if (r.risks?.length) {
+    html += `<div class="section"><h2>Riesgos y Tensiones Críticas</h2><div class="section-line"></div>`;
+    r.risks.forEach(rk => {
+      html += `<div style="margin-bottom:10px;padding:10px 14px;border-left:3px solid var(--error);background:#1a0a0a;border-radius:0 6px 6px 0">
+        <div style="font-size:13px;font-weight:600;color:var(--error)">${esc(rk.risk)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">${esc(rk.implication)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Opportunities
+  if (r.opportunities?.length) {
+    html += `<div class="section"><h2>Oportunidades y Palancas Estratégicas</h2><div class="section-line"></div>`;
+    r.opportunities.forEach(o => { html += `<div class="bullet"><span class="bullet-icon" style="color:var(--success)">✦</span><span>${esc(o)}</span></div>`; });
+    html += `</div>`;
+  }
+
+  // Recommendations
+  if (r.recommendations) {
+    html += `<div class="section"><h2>Recomendaciones</h2><div class="section-line"></div>`;
+    const horizons = [
+      { key: 'short_term', label: 'Corto Plazo', color: 'var(--success)' },
+      { key: 'medium_term', label: 'Mediano Plazo', color: 'var(--gold)' },
+      { key: 'long_term', label: 'Largo Plazo', color: 'var(--blue)' },
+    ];
+    horizons.forEach(h => {
+      const items = r.recommendations[h.key];
+      if (!items?.length) return;
+      html += `<div style="font-size:11px;font-weight:700;color:${h.color};text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 8px">${h.label}</div>`;
+      items.forEach((rec, i) => {
+        html += `<div class="next-step"><div class="step-num">${i+1}</div>
+          <div><span style="font-weight:600">${esc(rec.action)}</span>
+          <div style="font-size:11px;color:var(--dim);margin-top:2px">${esc(rec.rationale)}</div>
+          <div style="font-size:11px;color:var(--gold);margin-top:2px">Impacto: ${esc(rec.impact)}</div></div>
+        </div>`;
+      });
+    });
+    html += `</div>`;
+  }
+
+  // Info gaps
+  if (r.information_gaps?.length) {
+    html += `<div class="appendix"><div class="label">Información faltante para robustecer el análisis</div>`;
+    r.information_gaps.forEach(g => { html += `<div class="bullet"><span class="bullet-icon" style="color:var(--dim)">○</span><span style="font-size:12px;color:var(--muted)">${esc(g)}</span></div>`; });
+    html += `</div>`;
+  }
+
+  // Conclusion
+  if (r.conclusion) {
+    html += `<div style="margin-top:24px;padding:18px;background:#0d1b2a;border:1px solid var(--border);border-radius:8px">
+      <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Conclusión Ejecutiva</div>
+      <p style="font-size:13px;line-height:1.8;font-family:Georgia,serif">${esc(r.conclusion)}</p>
+    </div>`;
+  }
+
+  html += `</div></div>`;
+  card.innerHTML = html;
+}
+
+// ============================================================
+// Export Functions
+// ============================================================
+function copyMarkdown() {
+  if (!result) return;
+  let md = `# ${result.title}\n*${result.subtitle || ''}*\n\n---\n\n`;
+  md += `## Resumen Ejecutivo\n\n> ${result.executive_summary}\n\n`;
+  if (result.key_messages?.length) {
+    md += `### Mensajes Clave\n\n`;
+    result.key_messages.forEach(m => { md += `- ${m}\n`; });
+    md += `\n`;
+  }
+  if (result.context) md += `## Contexto y Objetivo\n\n${result.context}\n\n`;
+  if (result.findings?.length) {
+    md += `## Hallazgos Clave\n\n`;
+    result.findings.forEach((f, i) => {
+      md += `### ${i+1}. ${f.finding}\n- **Evidencia:** ${f.evidence}\n- **Implicancia:** ${f.business_implication}\n\n`;
+    });
+  }
+  if (result.analysis_blocks?.length) {
+    result.analysis_blocks.forEach((s, i) => {
+      md += `## ${i+1}. ${s.heading}\n\n`;
+      if (s.governing_thought) md += `**${s.governing_thought}**\n\n`;
+      if (s.content) md += `${s.content}\n\n`;
+      s.bullets?.forEach(b => { md += `- ${b}\n`; });
+      if (s.so_what) md += `\n> **So what?** *${s.so_what}*\n`;
+      md += `\n`;
+    });
+  }
+  if (result.risks?.length) {
+    md += `## Riesgos y Tensiones Críticas\n\n`;
+    result.risks.forEach(r => { md += `- **${r.risk}**: ${r.implication}\n`; });
+    md += `\n`;
+  }
+  if (result.opportunities?.length) {
+    md += `## Oportunidades\n\n`;
+    result.opportunities.forEach(o => { md += `- ${o}\n`; });
+    md += `\n`;
+  }
+  if (result.recommendations) {
+    md += `## Recomendaciones\n\n`;
+    ['short_term', 'medium_term', 'long_term'].forEach(h => {
+      const label = { short_term: 'Corto Plazo', medium_term: 'Mediano Plazo', long_term: 'Largo Plazo' }[h];
+      const items = result.recommendations[h];
+      if (!items?.length) return;
+      md += `### ${label}\n\n`;
+      items.forEach((r, i) => { md += `${i+1}. **${r.action}** — ${r.rationale} *(Impacto: ${r.impact})*\n`; });
+      md += `\n`;
+    });
+  }
+  if (result.information_gaps?.length) {
+    md += `## Información Faltante\n\n`;
+    result.information_gaps.forEach(g => { md += `- ${g}\n`; });
+    md += `\n`;
+  }
+  if (result.conclusion) md += `---\n\n## Conclusión Ejecutiva\n\n${result.conclusion}\n`;
+
+  navigator.clipboard.writeText(md);
+  flash('✓ Markdown copiado al portapapeles');
+}
+
+function copyJSON() {
+  if (!result) return;
+  navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+  flash('✓ JSON copiado al portapapeles');
+}
+
+function copyDocxPrompt() {
+  if (!result) return;
+  const p = `Genera un documento Word (.docx) profesional estilo consultoría premium con el siguiente contenido ya estructurado. Usa tipografía Georgia para títulos y Arial para cuerpo. Paleta navy (#003A70) y gold (#B8860B). Incluye portada con título assertion y subtítulo, resumen ejecutivo en caja gris, mensajes clave, hallazgos con evidencia e implicancia, bloques de análisis con governing thoughts, riesgos en cajas rojas, oportunidades con íconos verdes, recomendaciones por horizonte temporal con numeración, información faltante, y conclusión ejecutiva. Header "CONFIDENCIAL | Grupo Alto", footer con página.\n\nContenido:\n\n${JSON.stringify(result, null, 2)}`;
+  navigator.clipboard.writeText(p);
+  flash('✓ Prompt copiado — pégalo en Claude para generar el .docx');
+}
+
+// ============================================================
+// Helpers
+// ============================================================
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function setLoading(on) {
+  const btn = document.getElementById('btnAnalyze');
+  btn.disabled = on;
+  btn.innerHTML = on ? '<span class="spinner"></span> Generando informe...' : '🧠 Generar Informe Ejecutivo';
+}
+
+function showStatus(msg) { document.getElementById('statusMsg').textContent = msg; document.getElementById('statusMsg').className = 'status'; }
+function showError(msg) { const b = document.getElementById('errorBox'); b.textContent = msg; b.style.display = 'block'; document.getElementById('statusMsg').textContent = ''; }
+function hideError() { document.getElementById('errorBox').style.display = 'none'; }
+function hidePreview() { document.getElementById('previewCard').style.display = 'none'; document.getElementById('emptyState').style.display = 'block'; }
+
+function showExportBtns() { ['btnMd','btnJson','btnDocx'].forEach(id => document.getElementById(id).style.display = ''); }
+
+function setDot(state) {
+  const d = document.getElementById('workerDot');
+  d.className = 'dot ' + ({ ok: 'dot-ok', no: 'dot-no' }[state] || 'dot-idle');
+}
+
+function flash(msg) {
+  showStatus(msg);
+  setTimeout(() => { if (result) showStatus('Informe ejecutivo generado'); }, 2500);
+}
+
+function loadSample() {
+  document.getElementById('inputText').value = `Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar. 
+
+Las tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.
+
+Los clientes preguntan seguido: ¿dónde estamos perdiendo más? ¿qué tiendas necesitan más atención? ¿la gestión legal está siendo efectiva?
+
+El área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.
+
+Necesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.
+
+Nota: la data de modus operandi tiene un 30% de registros sin clasificar, lo que puede sesgar el análisis. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;
+}
+
+// Restore worker URL from localStorage
+const saved = localStorage.getItem('worker_url');
+if (saved) document.getElementById('workerUrl').value = saved;
+document.getElementById('workerUrl').addEventListener('change', function() {
+  localStorage.setItem('worker_url', this.value);
+});
+</script>
+</body>
+</html>
