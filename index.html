@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Strategic Report Agent — Informe Ejecutivo con IA V1.2</title>
+<title>Strategic Report Agent — Informe Ejecutivo con IA Version 1.3</title>
 <style>
   :root {
     --navy: #003A70;
@@ -113,6 +113,8 @@
   .btn-secondary:hover:not(:disabled) { background: var(--card-hover); }
   .btn-gold { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
   .btn-gold:hover:not(:disabled) { background: rgba(184, 134, 11, 0.1); }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover:not(:disabled) { filter: brightness(1.15); }
   .btn-sm { font-size: 12px; padding: 5px 12px; }
   .btn-success { background: var(--success); color: #fff; }
 
@@ -256,7 +258,7 @@
     </button>
     <button class="btn btn-secondary" id="btnMd" onclick="copyMarkdown()" style="display:none">📋 Markdown</button>
     <button class="btn btn-secondary" id="btnJson" onclick="copyJSON()" style="display:none">{ } JSON</button>
-    <button class="btn btn-gold" id="btnDocx" onclick="copyDocxPrompt()" style="display:none">📄 Prompt .docx</button>
+    <button class="btn btn-success" id="btnDocx" onclick="downloadDocx()" style="display:none">⬇ Descargar .docx</button>
   </div>
 
   <!-- Status -->
@@ -546,12 +548,7 @@ function copyJSON() {
   flash('✓ JSON copiado al portapapeles');
 }
 
-function copyDocxPrompt() {
-  if (!result) return;
-  const p = `Genera un documento Word (.docx) profesional estilo consultoría premium con el siguiente contenido ya estructurado. Usa tipografía Georgia para títulos y Arial para cuerpo. Paleta navy (#003A70) y gold (#B8860B). Incluye portada con título assertion y subtítulo, resumen ejecutivo en caja gris, mensajes clave, hallazgos con evidencia e implicancia, bloques de análisis con governing thoughts, riesgos en cajas rojas, oportunidades con íconos verdes, recomendaciones por horizonte temporal con numeración, información faltante, y conclusión ejecutiva. Header "CONFIDENCIAL | Grupo Alto", footer con página.\n\nContenido:\n\n${JSON.stringify(result, null, 2)}`;
-  navigator.clipboard.writeText(p);
-  flash('✓ Prompt copiado — pégalo en Claude para generar el .docx');
-}
+// downloadDocx() is defined in the second script block below
 
 // ============================================================
 // Helpers
@@ -601,6 +598,320 @@ if (saved) document.getElementById('workerUrl').value = saved;
 document.getElementById('workerUrl').addEventListener('change', function() {
   localStorage.setItem('worker_url', this.value);
 });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/docx@9.5.0/build/index.umd.min.js"></script>
+<script>
+// ============================================================
+// DOCX Generation — uses the global `docx` object from UMD
+// ============================================================
+async function downloadDocx() {
+  if (!result) return;
+
+  showStatus('Generando documento Word...');
+
+  try {
+    const {
+      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+      AlignmentType, BorderStyle, WidthType, ShadingType,
+      Header, Footer, PageNumber, PageBreak
+    } = docx;
+
+    const NAVY = "003A70";
+    const GOLD = "B8860B";
+    const LGRAY = "F5F5F5";
+    const MGRAY = "E0E0E0";
+    const WHITE = "FFFFFF";
+
+    const noBdr = { style: BorderStyle.NONE, size: 0, color: WHITE };
+    const noBorders = { top: noBdr, bottom: noBdr, left: noBdr, right: noBdr };
+
+    const children = [];
+
+    // --- COVER ---
+    children.push(new Paragraph({ spacing: { before: 2400 }, children: [] }));
+    children.push(new Paragraph({
+      alignment: AlignmentType.LEFT, spacing: { after: 200 },
+      children: [new TextRun({ text: result.title, font: "Georgia", size: 56, bold: true, color: NAVY })],
+    }));
+    if (result.subtitle) {
+      children.push(new Paragraph({
+        spacing: { after: 100 },
+        children: [new TextRun({ text: result.subtitle, font: "Georgia", size: 28, italics: true, color: "666666" })],
+      }));
+    }
+    children.push(new Paragraph({
+      spacing: { before: 200, after: 200 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: GOLD, space: 1 } },
+      children: [],
+    }));
+    children.push(new Paragraph({
+      spacing: { after: 100 },
+      children: [new TextRun({ text: "CONFIDENCIAL", font: "Arial", size: 18, bold: true, color: NAVY })],
+    }));
+    children.push(new Paragraph({
+      spacing: { after: 600 },
+      children: [new TextRun({
+        text: new Date().toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric" }),
+        font: "Arial", size: 20, color: "666666",
+      })],
+    }));
+    children.push(new Paragraph({ children: [new PageBreak()] }));
+
+    // Helper: box with navy left bar
+    function govBox(text) {
+      return new Table({
+        width: { size: 9360, type: WidthType.DXA }, columnWidths: [200, 9160],
+        rows: [new TableRow({ children: [
+          new TableCell({ borders: noBorders, shading: { fill: NAVY, type: ShadingType.CLEAR }, width: { size: 200, type: WidthType.DXA }, children: [new Paragraph({ children: [] })] }),
+          new TableCell({ borders: noBorders, shading: { fill: LGRAY, type: ShadingType.CLEAR }, margins: { top: 120, bottom: 120, left: 160, right: 160 }, width: { size: 9160, type: WidthType.DXA },
+            children: [new Paragraph({ children: [new TextRun({ text: text, font: "Georgia", size: 21, bold: true, color: NAVY })] })],
+          }),
+        ] })],
+      });
+    }
+
+    // Helper: gray box
+    function grayBox(label, text) {
+      return new Table({
+        width: { size: 9360, type: WidthType.DXA }, columnWidths: [9360],
+        rows: [new TableRow({ children: [
+          new TableCell({ borders: noBorders, shading: { fill: LGRAY, type: ShadingType.CLEAR }, margins: { top: 160, bottom: 160, left: 200, right: 200 }, width: { size: 9360, type: WidthType.DXA },
+            children: [
+              new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: label, font: "Arial", size: 16, bold: true, color: NAVY })] }),
+              new Paragraph({ children: [new TextRun({ text: text, font: "Georgia", size: 22, italics: true, color: "333333" })] }),
+            ],
+          }),
+        ] })],
+      });
+    }
+
+    // Helper: section heading
+    function sectionHead(text) {
+      return [
+        new Paragraph({ spacing: { before: 360, after: 100 }, children: [new TextRun({ text: text.toUpperCase(), font: "Arial", size: 24, bold: true, color: NAVY })] }),
+        new Paragraph({ spacing: { after: 60 }, border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: MGRAY, space: 1 } }, children: [] }),
+      ];
+    }
+
+    // Helper: bullet
+    function bullet(text, color) {
+      color = color || GOLD;
+      return new Table({
+        width: { size: 9360, type: WidthType.DXA }, columnWidths: [360, 9000],
+        rows: [new TableRow({ children: [
+          new TableCell({ borders: noBorders, width: { size: 360, type: WidthType.DXA }, margins: { top: 40, bottom: 40, left: 80, right: 0 },
+            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "\u25B8", font: "Arial", size: 20, color: color })] })],
+          }),
+          new TableCell({ borders: noBorders, width: { size: 9000, type: WidthType.DXA }, margins: { top: 40, bottom: 40, left: 80, right: 80 },
+            children: [new Paragraph({ children: [new TextRun({ text: text, font: "Arial", size: 21, color: "333333" })] })],
+          }),
+        ] })],
+      });
+    }
+
+    // Helper: so-what box
+    function soWhatBox(text) {
+      return new Table({
+        width: { size: 9360, type: WidthType.DXA }, columnWidths: [9360],
+        rows: [new TableRow({ children: [
+          new TableCell({
+            borders: { top: { style: BorderStyle.SINGLE, size: 1, color: GOLD }, bottom: { style: BorderStyle.SINGLE, size: 1, color: GOLD }, left: { style: BorderStyle.SINGLE, size: 4, color: GOLD }, right: { style: BorderStyle.SINGLE, size: 1, color: GOLD } },
+            margins: { top: 100, bottom: 100, left: 160, right: 160 }, width: { size: 9360, type: WidthType.DXA },
+            children: [new Paragraph({ children: [
+              new TextRun({ text: "So what?  ", font: "Arial", size: 20, bold: true, color: GOLD }),
+              new TextRun({ text: text, font: "Arial", size: 20, italics: true, color: "555555" }),
+            ] })],
+          }),
+        ] })],
+      });
+    }
+
+    // Helper: numbered step
+    function numberedStep(num, text) {
+      return new Table({
+        width: { size: 9360, type: WidthType.DXA }, columnWidths: [600, 8760],
+        rows: [new TableRow({ children: [
+          new TableCell({ borders: noBorders, shading: { fill: NAVY, type: ShadingType.CLEAR }, width: { size: 600, type: WidthType.DXA }, margins: { top: 100, bottom: 100, left: 80, right: 80 },
+            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: String(num), font: "Arial", size: 22, bold: true, color: WHITE })] })],
+          }),
+          new TableCell({ borders: noBorders, shading: { fill: LGRAY, type: ShadingType.CLEAR }, width: { size: 8760, type: WidthType.DXA }, margins: { top: 100, bottom: 100, left: 160, right: 160 },
+            children: [new Paragraph({ children: [new TextRun({ text: text, font: "Arial", size: 21, color: "333333" })] })],
+          }),
+        ] })],
+      });
+    }
+
+    const sp = (n) => new Paragraph({ spacing: { after: n || 120 }, children: [] });
+
+    // --- EXECUTIVE SUMMARY ---
+    children.push(...sectionHead("Resumen Ejecutivo"));
+    children.push(grayBox("RESUMEN EJECUTIVO", result.executive_summary));
+    children.push(sp(200));
+
+    // --- KEY MESSAGES ---
+    if (result.key_messages && result.key_messages.length) {
+      children.push(...sectionHead("Mensajes Clave"));
+      result.key_messages.forEach(m => { children.push(bullet(m)); });
+      children.push(sp(200));
+    }
+
+    // --- CONTEXT ---
+    if (result.context) {
+      children.push(...sectionHead("Contexto y Objetivo"));
+      children.push(new Paragraph({ spacing: { after: 200 }, children: [new TextRun({ text: result.context, font: "Arial", size: 21, color: "333333" })] }));
+    }
+
+    // --- FINDINGS ---
+    if (result.findings && result.findings.length) {
+      children.push(...sectionHead("Hallazgos Clave"));
+      result.findings.forEach((f, i) => {
+        children.push(new Paragraph({ spacing: { before: 160, after: 60 }, children: [
+          new TextRun({ text: (i+1) + ". " + f.finding, font: "Arial", size: 22, bold: true, color: NAVY }),
+        ] }));
+        children.push(new Paragraph({ spacing: { after: 40 }, children: [
+          new TextRun({ text: "Evidencia: ", font: "Arial", size: 20, bold: true, color: "666666" }),
+          new TextRun({ text: f.evidence, font: "Arial", size: 20, color: "666666" }),
+        ] }));
+        children.push(new Paragraph({ spacing: { after: 120 }, children: [
+          new TextRun({ text: "Implicancia: ", font: "Arial", size: 20, bold: true, color: GOLD }),
+          new TextRun({ text: f.business_implication, font: "Arial", size: 20, color: "555555" }),
+        ] }));
+      });
+      children.push(sp(200));
+    }
+
+    // --- ANALYSIS BLOCKS ---
+    if (result.analysis_blocks && result.analysis_blocks.length) {
+      result.analysis_blocks.forEach((sec, i) => {
+        children.push(...sectionHead((i+1) + ". " + sec.heading));
+        if (sec.governing_thought) { children.push(govBox(sec.governing_thought)); children.push(sp(160)); }
+        if (sec.content) { children.push(new Paragraph({ spacing: { after: 160 }, children: [new TextRun({ text: sec.content, font: "Arial", size: 21, color: "333333" })] })); }
+        if (sec.bullets && sec.bullets.length) { sec.bullets.forEach(b => children.push(bullet(b))); children.push(sp(80)); }
+        if (sec.so_what) { children.push(soWhatBox(sec.so_what)); children.push(sp(200)); }
+      });
+    }
+
+    // --- RISKS ---
+    if (result.risks && result.risks.length) {
+      children.push(new Paragraph({ children: [new PageBreak()] }));
+      children.push(...sectionHead("Riesgos y Tensiones Cr\u00EDticas"));
+      result.risks.forEach(rk => {
+        children.push(new Table({
+          width: { size: 9360, type: WidthType.DXA }, columnWidths: [9360],
+          rows: [new TableRow({ children: [
+            new TableCell({
+              borders: { top: noBdr, bottom: noBdr, left: { style: BorderStyle.SINGLE, size: 4, color: "CC3333" }, right: noBdr },
+              margins: { top: 100, bottom: 100, left: 160, right: 160 }, width: { size: 9360, type: WidthType.DXA },
+              children: [
+                new Paragraph({ children: [new TextRun({ text: rk.risk, font: "Arial", size: 21, bold: true, color: "CC3333" })] }),
+                new Paragraph({ children: [new TextRun({ text: rk.implication, font: "Arial", size: 20, color: "666666" })] }),
+              ],
+            }),
+          ] })],
+        }));
+        children.push(sp(100));
+      });
+      children.push(sp(200));
+    }
+
+    // --- OPPORTUNITIES ---
+    if (result.opportunities && result.opportunities.length) {
+      children.push(...sectionHead("Oportunidades y Palancas Estrat\u00E9gicas"));
+      result.opportunities.forEach(o => children.push(bullet(o, "2E8B57")));
+      children.push(sp(200));
+    }
+
+    // --- RECOMMENDATIONS ---
+    if (result.recommendations) {
+      children.push(...sectionHead("Recomendaciones"));
+      const horizons = [
+        { key: "short_term", label: "CORTO PLAZO" },
+        { key: "medium_term", label: "MEDIANO PLAZO" },
+        { key: "long_term", label: "LARGO PLAZO" },
+      ];
+      horizons.forEach(h => {
+        const items = result.recommendations[h.key];
+        if (!items || !items.length) return;
+        children.push(new Paragraph({ spacing: { before: 200, after: 100 }, children: [new TextRun({ text: h.label, font: "Arial", size: 20, bold: true, color: NAVY })] }));
+        items.forEach((rec, i) => {
+          children.push(numberedStep(i + 1, rec.action));
+          children.push(new Paragraph({ spacing: { after: 40 }, indent: { left: 720 }, children: [
+            new TextRun({ text: rec.rationale, font: "Arial", size: 19, color: "666666", italics: true }),
+          ] }));
+          children.push(new Paragraph({ spacing: { after: 120 }, indent: { left: 720 }, children: [
+            new TextRun({ text: "Impacto: ", font: "Arial", size: 19, bold: true, color: GOLD }),
+            new TextRun({ text: rec.impact, font: "Arial", size: 19, color: "555555" }),
+          ] }));
+        });
+      });
+      children.push(sp(200));
+    }
+
+    // --- INFO GAPS ---
+    if (result.information_gaps && result.information_gaps.length) {
+      children.push(...sectionHead("Informaci\u00F3n Faltante para Robustecer el An\u00E1lisis"));
+      result.information_gaps.forEach(g => children.push(bullet(g, "999999")));
+      children.push(sp(200));
+    }
+
+    // --- CONCLUSION ---
+    if (result.conclusion) {
+      children.push(...sectionHead("Conclusi\u00F3n Ejecutiva"));
+      children.push(grayBox("CONCLUSI\u00D3N", result.conclusion));
+    }
+
+    // --- BUILD DOCUMENT ---
+    const doc = new Document({
+      styles: { default: { document: { run: { font: "Arial", size: 22 } } } },
+      sections: [{
+        properties: {
+          page: {
+            size: { width: 12240, height: 15840 },
+            margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 },
+          },
+        },
+        headers: {
+          default: new Header({
+            children: [new Paragraph({
+              alignment: AlignmentType.RIGHT,
+              border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: NAVY, space: 4 } },
+              children: [
+                new TextRun({ text: "CONFIDENCIAL  |  ", font: "Arial", size: 14, color: "999999" }),
+                new TextRun({ text: "Grupo Alto", font: "Arial", size: 14, bold: true, color: NAVY }),
+              ],
+            })],
+          }),
+        },
+        footers: {
+          default: new Footer({
+            children: [new Paragraph({
+              alignment: AlignmentType.CENTER,
+              border: { top: { style: BorderStyle.SINGLE, size: 1, color: MGRAY, space: 4 } },
+              children: [
+                new TextRun({ text: "P\u00E1gina ", font: "Arial", size: 16, color: "999999" }),
+                new TextRun({ children: [PageNumber.CURRENT], font: "Arial", size: 16, color: "999999" }),
+              ],
+            })],
+          }),
+        },
+        children,
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Informe_Ejecutivo_" + new Date().toISOString().slice(0, 10) + ".docx";
+    a.click();
+    URL.revokeObjectURL(url);
+
+    flash("\u2713 Documento Word descargado");
+  } catch (err) {
+    console.error(err);
+    showError("Error generando el documento: " + err.message);
+  }
+}
 </script>
 </body>
 </html>
