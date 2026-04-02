@@ -3,59 +3,45 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — Informe Ejecutivo con IA 2.1</title>
+<title>Strategic Report Agent — ALTO</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script>
-tailwind.config = {
-  darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        "surface":"#0f131c","surface-container":"#1c1f29","surface-container-low":"#181b25",
-        "surface-container-high":"#262a34","surface-container-highest":"#31353f",
-        "on-surface":"#dfe2ef","on-surface-variant":"#c0c7d4",
-        "primary":"#a3c9ff","primary-container":"#0078d4",
-        "outline":"#8a919e","outline-variant":"#404752",
-        "error":"#ffb4ab","navy":"#003A70","gold":"#B8860B","gold-light":"#D4A843",
-      },
-      fontFamily: { "headline":["Noto Serif","serif"], "body":["Inter","sans-serif"] },
-    },
-  },
-}
+tailwind.config={darkMode:"class",theme:{extend:{colors:{
+  "surface":"#0f131c","surface-container":"#1c1f29","surface-container-low":"#181b25",
+  "surface-container-high":"#262a34","surface-container-highest":"#31353f",
+  "on-surface":"#dfe2ef","on-surface-variant":"#c0c7d4",
+  "primary":"#a3c9ff","primary-container":"#4174B9",
+  "outline":"#8a919e","outline-variant":"#404752",
+  "alto-red":"#E84244","alto-blue":"#4174B9","alto-gray":"#B0B6B8","alto-navy":"#2B3A4E",
+},fontFamily:{"headline":["Noto Serif","serif"],"body":["Inter","sans-serif"]}}}}
 </script>
 <style>
-  body { background:#0f131c; color:#dfe2ef; font-family:'Inter',sans-serif; }
-  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; }
-  .serif-heading { font-family:'Noto Serif',serif; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  .spinner { display:inline-block; width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
-  .fade-in { animation:fadeIn 0.4s ease-out; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-  /* Editable fields */
-  .editable { cursor:text; transition:background 0.15s; border-radius:4px; padding:1px 3px; margin:-1px -3px; }
-  .editable:hover { background:rgba(163,201,255,0.08); }
-  .editable:focus { outline:2px solid #0078d4; background:rgba(163,201,255,0.12); }
-  /* Drop zone */
-  .drop-zone { border:2px dashed #404752; transition:all 0.2s; }
-  .drop-zone.drag-over { border-color:#0078d4; background:rgba(0,120,212,0.05); }
-  /* Progress bar */
-  .progress-track { height:3px; background:#1c1f29; overflow:hidden; border-radius:2px; }
-  .progress-fill { height:100%; background:linear-gradient(90deg,#0078d4,#a3c9ff); transition:width 0.5s ease; border-radius:2px; }
+  body{background:#0f131c;color:#dfe2ef;font-family:'Inter',sans-serif}
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24}
+  .serif-heading{font-family:'Noto Serif',serif}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+  .fade-in{animation:fadeIn .4s ease-out}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .editable{cursor:text;transition:background .15s;border-radius:4px;padding:1px 3px;margin:-1px -3px}
+  .editable:hover{background:rgba(163,201,255,0.08)}
+  .editable:focus{outline:2px solid #4174B9;background:rgba(163,201,255,0.12)}
+  .drop-zone{border:2px dashed #404752;transition:all .2s}
+  .drop-zone.drag-over{border-color:#4174B9;background:rgba(65,116,185,0.05)}
+  .progress-track{height:3px;background:#1c1f29;overflow:hidden;border-radius:2px}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#4174B9,#E84244);transition:width .5s ease;border-radius:2px}
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
 <!-- Nav -->
 <nav class="fixed top-0 w-full z-50 bg-[#0f131c]/80 backdrop-blur-xl shadow-2xl shadow-black/40">
-  <div class="flex items-center justify-between px-6 md:px-12 py-4">
-    <div class="flex items-center gap-6">
-      <span class="text-lg font-serif italic text-white tracking-tight">Strategic Report Agent</span>
-      <div class="hidden md:flex gap-6 items-center">
-        <span class="text-[10px] uppercase tracking-widest text-primary border-b border-primary-container pb-1">v2.0</span>
-        <a class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors" href="https://github.com/hcuevasg/strategic-report-agent" target="_blank">GitHub</a>
-      </div>
+  <div class="flex items-center justify-between px-6 md:px-12 py-3">
+    <div class="flex items-center gap-4">
+      <img id="navLogo" src="alto-logo.png" alt="ALTO" class="h-7" onerror="this.style.display='none'"/>
+      <span class="text-sm text-on-surface-variant">Strategic Report Agent</span>
     </div>
     <div class="flex items-center gap-2">
       <div class="w-2 h-2 rounded-full" id="statusDot" style="background:#64748b"></div>
@@ -64,126 +50,107 @@ tailwind.config = {
   </div>
 </nav>
 
-<main class="flex-grow pt-28 pb-20 px-4 md:px-6">
+<main class="flex-grow pt-24 pb-20 px-4 md:px-6">
 <div class="max-w-4xl mx-auto">
 
-  <!-- Header -->
   <header class="mb-12 text-center">
-    <div class="inline-block px-3 py-1 mb-4 bg-surface-container-low border border-outline-variant/15 text-primary text-[10px] uppercase tracking-widest font-medium">
-      Strategic Advisory Intelligence
-    </div>
+    <img src="alto-logo.png" alt="ALTO" class="h-12 mx-auto mb-6" onerror="this.style.display='none'"/>
     <h1 class="serif-heading text-4xl md:text-5xl font-bold text-on-surface mb-4 tracking-tight">
       Informes Ejecutivos<br/>de Alta Dirección
     </h1>
     <p class="text-on-surface-variant max-w-2xl mx-auto text-base font-light leading-relaxed">
-      Transforma notas, minutas y hallazgos en documentos de estándar consultoría premium.
+      Transforma notas, minutas y hallazgos en documentos de estándar consultoría premium con identidad ALTO.
     </p>
   </header>
 
   <!-- Main Card -->
-  <section class="bg-surface-container-low p-6 md:p-10 shadow-2xl shadow-black/60 relative overflow-hidden">
-    <div class="absolute top-0 right-0 w-64 h-64 bg-primary-container/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+  <section class="bg-surface-container-low p-6 md:p-10 shadow-2xl shadow-black/60 relative overflow-hidden border-t-2 border-alto-red">
     <div class="space-y-8 relative z-10">
-
-      <!-- Worker URL -->
       <div class="space-y-2">
-        <label class="block text-[10px] uppercase tracking-widest text-primary font-semibold">Worker URL</label>
-        <input id="workerUrl" class="w-full bg-surface-container-high border-none h-12 px-5 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-2 focus:ring-primary-container transition-all text-sm font-mono" placeholder="https://tu-worker.tu-cuenta.workers.dev" type="url"/>
+        <label class="block text-[10px] uppercase tracking-widest text-alto-blue font-semibold">Worker URL</label>
+        <input id="workerUrl" class="w-full bg-surface-container-high border-none h-12 px-5 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-2 focus:ring-alto-blue transition-all text-sm font-mono" placeholder="https://tu-worker.tu-cuenta.workers.dev" type="url"/>
       </div>
-
-      <!-- Document Input + File Upload -->
       <div class="space-y-2">
         <div class="flex justify-between items-end">
-          <label class="block text-[10px] uppercase tracking-widest text-primary font-semibold">Documento Fuente</label>
+          <label class="block text-[10px] uppercase tracking-widest text-alto-blue font-semibold">Documento Fuente</label>
           <div class="flex gap-3">
-            <button onclick="document.getElementById('fileInput').click()" class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all flex items-center gap-1 group">
+            <button onclick="document.getElementById('fileInput').click()" class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-alto-red transition-all flex items-center gap-1">
               <span class="material-symbols-outlined text-[14px]">upload_file</span> Subir archivo
             </button>
-            <button onclick="loadSample()" class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all flex items-center gap-1 group">
-              Ejemplo <span class="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+            <button onclick="loadSample()" class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-alto-blue transition-all flex items-center gap-1">
+              Ejemplo <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
             </button>
           </div>
         </div>
         <input type="file" id="fileInput" accept=".txt,.md,.csv,.pdf,.docx,.doc" class="hidden" onchange="handleFile(event)"/>
         <div id="dropZone" class="drop-zone rounded relative">
-          <textarea id="inputText" class="w-full bg-surface-container-high border-none p-5 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-2 focus:ring-primary-container transition-all resize-none text-sm leading-relaxed" placeholder="Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí..." rows="8"></textarea>
+          <textarea id="inputText" class="w-full bg-surface-container-high border-none p-5 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-2 focus:ring-alto-blue transition-all resize-none text-sm leading-relaxed" placeholder="Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí..." rows="8"></textarea>
         </div>
         <div id="fileInfo" class="hidden text-[10px] text-on-surface-variant flex items-center gap-2">
           <span class="material-symbols-outlined text-sm text-emerald-400">check_circle</span>
           <span id="fileName"></span>
-          <button onclick="clearFile()" class="text-red-400 hover:text-red-300 ml-2">✕ Quitar</button>
+          <button onclick="clearFile()" class="text-red-400 hover:text-red-300 ml-2">✕</button>
         </div>
       </div>
-
-      <!-- Progress Bar (mejora #2) -->
       <div id="progressSection" class="hidden space-y-2">
         <div class="progress-track"><div id="progressFill" class="progress-fill" style="width:0%"></div></div>
         <div class="flex justify-between">
-          <span id="progressStep" class="text-[10px] uppercase tracking-widest text-primary font-medium"></span>
+          <span id="progressStep" class="text-[10px] uppercase tracking-widest text-alto-blue font-medium"></span>
           <span id="progressPct" class="text-[10px] text-on-surface-variant font-mono"></span>
         </div>
       </div>
-
-      <!-- Action Buttons -->
-      <div class="flex flex-col sm:flex-row gap-3" id="actionButtons">
-        <button id="btnAnalyze" onclick="analyze()" class="flex-1 bg-primary-container hover:bg-primary-container/90 text-white font-bold h-14 flex items-center justify-center gap-3 transition-all shadow-lg shadow-primary-container/20 group disabled:opacity-40 disabled:cursor-not-allowed">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="btnAnalyze" onclick="analyze()" class="flex-1 bg-alto-blue hover:bg-alto-blue/90 text-white font-bold h-14 flex items-center justify-center gap-3 transition-all shadow-lg shadow-alto-blue/20 group disabled:opacity-40 disabled:cursor-not-allowed">
           <span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform" style="font-variation-settings:'FILL'1;">psychology</span>
           <span class="text-xs uppercase tracking-[0.15em]">Generar Informe Ejecutivo</span>
         </button>
-        <button id="btnMd" onclick="copyMarkdown()" class="hidden bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-semibold h-14 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+        <button id="btnMd" onclick="copyMarkdown()" class="hidden bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-semibold h-14 px-4 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
           <span class="material-symbols-outlined text-lg">content_copy</span> MD
         </button>
-        <button id="btnPdf" onclick="downloadPdf()" class="hidden bg-amber-700 hover:bg-amber-600 text-white font-bold h-14 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+        <button id="btnPdf" onclick="downloadPdf()" class="hidden bg-alto-red hover:bg-alto-red/90 text-white font-bold h-14 px-4 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
           <span class="material-symbols-outlined text-lg">picture_as_pdf</span> PDF
         </button>
-        <button id="btnPptx" onclick="downloadPptx()" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-14 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+        <button id="btnPptx" onclick="downloadPptx()" class="hidden bg-alto-navy hover:bg-alto-navy/90 text-white font-bold h-14 px-4 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
           <span class="material-symbols-outlined text-lg">slideshow</span> PPTX
         </button>
-        <button id="btnDocx" onclick="downloadDocx()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-14 px-5 items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-600/20 text-xs uppercase tracking-wider flex">
-          <span class="material-symbols-outlined text-lg">download</span> .docx
+        <button id="btnDocx" onclick="downloadDocx()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-14 px-4 items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-600/20 text-xs uppercase tracking-wider flex">
+          <span class="material-symbols-outlined text-lg">download</span> DOCX
         </button>
       </div>
     </div>
   </section>
 
-  <!-- Status -->
-  <div id="statusMsg" class="text-center mt-6 text-sm text-primary hidden"></div>
+  <div id="statusMsg" class="text-center mt-6 text-sm text-alto-blue hidden"></div>
   <div id="errorBox" class="mt-6 bg-red-950/50 border border-red-500/20 p-4 text-red-400 text-sm hidden"></div>
-
-  <!-- Editable Preview (mejora #6) -->
   <div id="previewCard" class="hidden fade-in mt-10"></div>
-
-  <!-- Edit mode banner -->
   <div id="editBanner" class="hidden mt-4 bg-surface-container border border-outline-variant/20 p-3 flex items-center justify-between rounded">
     <div class="flex items-center gap-2 text-xs text-on-surface-variant">
-      <span class="material-symbols-outlined text-sm text-primary">edit_note</span>
-      Haz click en cualquier texto del informe para editarlo antes de descargar
+      <span class="material-symbols-outlined text-sm text-alto-blue">edit_note</span>
+      Haz click en cualquier texto para editarlo antes de exportar
     </div>
-    <button onclick="resetEdits()" class="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300">Restaurar original</button>
+    <button onclick="resetEdits()" class="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300">Restaurar</button>
   </div>
 
-  <!-- Methodology Cards -->
   <section id="methodCards" class="mt-16 grid md:grid-cols-3 gap-6">
-    <div class="p-5 bg-surface-container-low/50 border-l-4 border-primary-container">
-      <div class="flex items-center gap-3 mb-3"><span class="material-symbols-outlined text-primary text-xl">analytics</span><h3 class="serif-heading text-base font-bold">MECE</h3></div>
-      <p class="text-xs text-on-surface-variant leading-relaxed">Mutuamente excluyente, colectivamente exhaustivo. Sin solapamientos y con cobertura completa.</p>
+    <div class="p-5 bg-surface-container-low/50 border-l-4 border-alto-blue">
+      <div class="flex items-center gap-3 mb-3"><span class="material-symbols-outlined text-alto-blue text-xl">analytics</span><h3 class="serif-heading text-base font-bold">MECE</h3></div>
+      <p class="text-xs text-on-surface-variant leading-relaxed">Mutuamente excluyente, colectivamente exhaustivo.</p>
     </div>
-    <div class="p-5 bg-surface-container-low/50 border-l-4 border-gold/40">
-      <div class="flex items-center gap-3 mb-3"><span class="material-symbols-outlined text-gold-light text-xl">account_tree</span><h3 class="serif-heading text-base font-bold">Principio Piramidal</h3></div>
-      <p class="text-xs text-on-surface-variant leading-relaxed">Conclusión primero, argumentos después. Comunicación top-down orientada a decisión.</p>
+    <div class="p-5 bg-surface-container-low/50 border-l-4 border-alto-red">
+      <div class="flex items-center gap-3 mb-3"><span class="material-symbols-outlined text-alto-red text-xl">account_tree</span><h3 class="serif-heading text-base font-bold">Principio Piramidal</h3></div>
+      <p class="text-xs text-on-surface-variant leading-relaxed">Conclusión primero, argumentos después.</p>
     </div>
     <div class="p-5 bg-surface-container-low/50 border-l-4 border-emerald-500/40">
       <div class="flex items-center gap-3 mb-3"><span class="material-symbols-outlined text-emerald-400 text-xl">verified</span><h3 class="serif-heading text-base font-bold">Basado en Hechos</h3></div>
-      <p class="text-xs text-on-surface-variant leading-relaxed">Diferencia hechos, inferencias e hipótesis. Sin afirmaciones sin fundamento.</p>
+      <p class="text-xs text-on-surface-variant leading-relaxed">Hechos, inferencias e hipótesis diferenciados.</p>
     </div>
   </section>
-
 </div>
 </main>
 
-<footer class="w-full py-8 border-t border-white/5 bg-[#0f131c]">
+<footer class="w-full py-6 border-t border-white/5 bg-[#0f131c]">
   <div class="flex flex-col md:flex-row justify-between items-center px-6 md:px-12 gap-4">
-    <span class="font-serif text-on-surface-variant/60 text-sm">Strategic Report Agent</span>
+    <img src="alto-logo.png" alt="ALTO" class="h-5 opacity-40" onerror="this.style.display='none'"/>
     <p class="text-[10px] uppercase tracking-widest text-on-surface-variant/40">Powered by Claude · Anthropic</p>
   </div>
 </footer>
@@ -192,902 +159,264 @@ tailwind.config = {
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-<script>
-if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-</script>
+<script>if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';</script>
 
 <script>
+// ============================================================
+// ALTO CORPORATE COLORS
+// ============================================================
+const ALTO = {
+  RED: 'E84244', BLUE: '4174B9', GRAY: 'B0B6B8', NAVY: '2B3A4E',
+  DNAVY: '1E2A3A', WHITE: 'FFFFFF', LGRAY: 'F5F5F5', MGRAY: 'E8E8E8',
+  BODY: '444444', SGRAY: '666666', DGRAY: '333333',
+};
+
+// Preload logo as base64 for PPTX/DOCX embedding
+let logoBase64 = null;
+let logoWhiteBase64 = null;
+(async function preloadLogos() {
+  try {
+    const r1 = await fetch('alto-logo.png');
+    if (r1.ok) { const b = await r1.blob(); logoBase64 = await blobToBase64(b); }
+    const r2 = await fetch('alto-logo-white.png');
+    if (r2.ok) { const b = await r2.blob(); logoWhiteBase64 = await blobToBase64(b); }
+  } catch(e) { console.log('Logo preload skipped'); }
+})();
+function blobToBase64(blob) {
+  return new Promise((res) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.readAsDataURL(blob);
+  });
+}
+
 // ============================================================
 // STATE
 // ============================================================
-let result = null;
-let originalResult = null; // for reset
-let progressTimer = null;
+let result = null, originalResult = null, progressTimer = null;
 
 // ============================================================
-// MEJORA #2: PROGRESS MESSAGES
+// PROGRESS
 // ============================================================
-const PROGRESS_STEPS = [
-  { pct: 5,  msg: 'Recibiendo documento fuente...' },
-  { pct: 12, msg: 'Identificando tesis central...' },
-  { pct: 20, msg: 'Depurando ruido y redundancias...' },
-  { pct: 30, msg: 'Reconstruyendo lógica argumental...' },
-  { pct: 40, msg: 'Clasificando hechos vs inferencias...' },
-  { pct: 50, msg: 'Estructurando hallazgos clave...' },
-  { pct: 60, msg: 'Evaluando riesgos y tensiones...' },
-  { pct: 70, msg: 'Identificando palancas estratégicas...' },
-  { pct: 80, msg: 'Priorizando recomendaciones por horizonte...' },
-  { pct: 88, msg: 'Redactando resumen ejecutivo...' },
-  { pct: 94, msg: 'Aplicando estándar consultoría premium...' },
-  { pct: 97, msg: 'Validando estructura MECE...' },
+const STEPS=[
+  {pct:5,msg:'Recibiendo documento fuente...'},{pct:12,msg:'Identificando tesis central...'},
+  {pct:20,msg:'Depurando ruido y redundancias...'},{pct:30,msg:'Reconstruyendo lógica argumental...'},
+  {pct:40,msg:'Clasificando hechos vs inferencias...'},{pct:50,msg:'Estructurando hallazgos clave...'},
+  {pct:60,msg:'Evaluando riesgos y tensiones...'},{pct:70,msg:'Identificando palancas estratégicas...'},
+  {pct:80,msg:'Priorizando recomendaciones...'},{pct:88,msg:'Redactando resumen ejecutivo...'},
+  {pct:94,msg:'Aplicando estándar consultoría...'},{pct:97,msg:'Validando estructura MECE...'},
 ];
-
-function startProgress() {
-  const section = document.getElementById('progressSection');
-  const fill = document.getElementById('progressFill');
-  const step = document.getElementById('progressStep');
-  const pct = document.getElementById('progressPct');
-  section.classList.remove('hidden');
-  let idx = 0;
-  fill.style.width = '0%';
-
-  progressTimer = setInterval(() => {
-    if (idx < PROGRESS_STEPS.length) {
-      const s = PROGRESS_STEPS[idx];
-      fill.style.width = s.pct + '%';
-      step.textContent = s.msg;
-      pct.textContent = s.pct + '%';
-      idx++;
-    }
-  }, 2200);
-}
-
-function stopProgress(success) {
-  clearInterval(progressTimer);
-  const fill = document.getElementById('progressFill');
-  const step = document.getElementById('progressStep');
-  const pct = document.getElementById('progressPct');
-  if (success) {
-    fill.style.width = '100%';
-    step.textContent = 'Informe completado';
-    pct.textContent = '100%';
-    setTimeout(() => document.getElementById('progressSection').classList.add('hidden'), 1500);
-  } else {
-    document.getElementById('progressSection').classList.add('hidden');
-  }
-}
+function startProgress(){const s=document.getElementById('progressSection'),f=document.getElementById('progressFill'),st=document.getElementById('progressStep'),p=document.getElementById('progressPct');s.classList.remove('hidden');let i=0;f.style.width='0%';progressTimer=setInterval(()=>{if(i<STEPS.length){f.style.width=STEPS[i].pct+'%';st.textContent=STEPS[i].msg;p.textContent=STEPS[i].pct+'%';i++;}},2200);}
+function stopProgress(ok){clearInterval(progressTimer);const f=document.getElementById('progressFill'),st=document.getElementById('progressStep'),p=document.getElementById('progressPct');if(ok){f.style.width='100%';st.textContent='Completado';p.textContent='100%';setTimeout(()=>document.getElementById('progressSection').classList.add('hidden'),1500);}else{document.getElementById('progressSection').classList.add('hidden');}}
 
 // ============================================================
-// MEJORA #5: FILE UPLOAD (drag & drop + button)
+// FILE UPLOAD
 // ============================================================
-const dropZone = document.getElementById('dropZone');
-
-['dragenter','dragover'].forEach(e => {
-  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); });
-});
-['dragleave','drop'].forEach(e => {
-  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag-over'); });
-});
-dropZone.addEventListener('drop', ev => {
-  const file = ev.dataTransfer.files[0];
-  if (file) processFile(file);
-});
-
-function handleFile(ev) {
-  const file = ev.target.files[0];
-  if (file) processFile(file);
-}
-
-async function processFile(file) {
-  const ext = file.name.split('.').pop().toLowerCase();
-  showStatus('Leyendo archivo: ' + file.name + '...');
-
-  try {
-    let text = '';
-
-    if (['txt','md','csv'].includes(ext)) {
-      text = await file.text();
-
-    } else if (ext === 'pdf') {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const pages = [];
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        pages.push(content.items.map(item => item.str).join(' '));
-      }
-      text = pages.join('\n\n');
-
-    } else if (['docx','doc'].includes(ext)) {
-      const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer });
-      text = result.value;
-
-    } else {
-      throw new Error('Formato no soportado. Usa .txt, .md, .csv, .pdf o .docx');
-    }
-
-    document.getElementById('inputText').value = text;
-    document.getElementById('fileInfo').classList.remove('hidden');
-    document.getElementById('fileName').textContent = file.name + ' (' + (text.length / 1000).toFixed(1) + 'K caracteres)';
-    showStatus('Archivo cargado: ' + file.name);
-  } catch (err) {
-    showError('Error leyendo archivo: ' + err.message);
-  }
-}
-
-function clearFile() {
-  document.getElementById('inputText').value = '';
-  document.getElementById('fileInfo').classList.add('hidden');
-  document.getElementById('fileInput').value = '';
-}
+const dz=document.getElementById('dropZone');
+['dragenter','dragover'].forEach(e=>{dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.add('drag-over');});});
+['dragleave','drop'].forEach(e=>{dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove('drag-over');});});
+dz.addEventListener('drop',ev=>{const f=ev.dataTransfer.files[0];if(f)processFile(f);});
+function handleFile(ev){const f=ev.target.files[0];if(f)processFile(f);}
+async function processFile(file){const ext=file.name.split('.').pop().toLowerCase();showStatus('Leyendo: '+file.name+'...');try{let t='';if(['txt','md','csv'].includes(ext)){t=await file.text();}else if(ext==='pdf'){const ab=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:ab}).promise;const pp=[];for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const c=await pg.getTextContent();pp.push(c.items.map(x=>x.str).join(' '));}t=pp.join('\n\n');}else if(['docx','doc'].includes(ext)){const ab=await file.arrayBuffer();const r=await mammoth.extractRawText({arrayBuffer:ab});t=r.value;}else{throw new Error('Formato no soportado');}document.getElementById('inputText').value=t;document.getElementById('fileInfo').classList.remove('hidden');document.getElementById('fileName').textContent=file.name+' ('+(t.length/1000).toFixed(1)+'K chars)';showStatus('Archivo cargado');}catch(e){showError('Error: '+e.message);}}
+function clearFile(){document.getElementById('inputText').value='';document.getElementById('fileInfo').classList.add('hidden');document.getElementById('fileInput').value='';}
 
 // ============================================================
 // API CALL
 // ============================================================
-async function analyze() {
-  const input = document.getElementById('inputText').value.trim();
-  const workerUrl = document.getElementById('workerUrl').value.trim();
-
-  if (!input) return;
-  if (!workerUrl) { showError('Configura la URL de tu Cloudflare Worker arriba.'); return; }
-
-  setLoading(true);
-  startProgress();
-  hideError();
-  hidePreview();
-  result = null;
-  originalResult = null;
-
-  try {
-    const res = await fetch(workerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userContent: input }),
-    });
-
-    const rawText = await res.text();
-
-    if (rawText.trim().startsWith('<')) {
-      throw new Error('El Worker devolvió HTML en vez de JSON. Status: ' + res.status + '. Verifica que la URL empiece con https://');
-    }
-
-    let data;
-    try { data = JSON.parse(rawText); } catch (e) { throw new Error('Respuesta no es JSON válido: ' + rawText.substring(0, 200)); }
-    if (data.error) throw new Error(data.error.message || data.error);
-    if (!data.content || !Array.isArray(data.content)) throw new Error('Respuesta inesperada de la API');
-
-    const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
-    const clean = text.replace(/```json|```/g, '').trim();
-
-    try { result = JSON.parse(clean); } catch (e) { throw new Error('La IA no devolvió JSON válido. Intenta de nuevo.'); }
-
-    originalResult = JSON.parse(JSON.stringify(result)); // deep clone
-    stopProgress(true);
-    renderPreview(result);
-    showExportBtns();
-    showStatus('Informe ejecutivo generado — edita cualquier campo antes de exportar');
-    setDot('ok');
-  } catch (err) {
-    stopProgress(false);
-    showError(err.message);
-    setDot('no');
-  } finally {
-    setLoading(false);
-  }
-}
+async function analyze(){const input=document.getElementById('inputText').value.trim();const wUrl=document.getElementById('workerUrl').value.trim();if(!input)return;if(!wUrl){showError('Configura la URL del Worker.');return;}setLoading(true);startProgress();hideError();hidePreview();result=null;originalResult=null;try{const res=await fetch(wUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userContent:input})});const raw=await res.text();if(raw.trim().startsWith('<'))throw new Error('Worker devolvió HTML. Status: '+res.status);let data;try{data=JSON.parse(raw);}catch(e){throw new Error('No es JSON: '+raw.substring(0,200));}if(data.error)throw new Error(data.error.message||data.error);if(!data.content||!Array.isArray(data.content))throw new Error('Respuesta inesperada');const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');const clean=txt.replace(/```json|```/g,'').trim();try{result=JSON.parse(clean);}catch(e){throw new Error('IA no devolvió JSON válido');}originalResult=JSON.parse(JSON.stringify(result));stopProgress(true);renderPreview(result);showExportBtns();showStatus('Informe generado — edita y exporta');setDot('ok');}catch(err){stopProgress(false);showError(err.message);setDot('no');}finally{setLoading(false);}}
 
 // ============================================================
-// MEJORA #6: EDITABLE PREVIEW
+// EDITABLE PREVIEW (ALTO branded)
 // ============================================================
-function ed(path, tag, cls) {
-  tag = tag || 'span';
-  cls = cls || '';
-  const val = getPath(result, path) || '';
-  return `<${tag} class="editable ${cls}" contenteditable="true" data-path="${path}" onblur="updateField(this)">${esc(val)}</${tag}>`;
-}
+function ed(path){const val=getPath(result,path)||'';return `<span class="editable" contenteditable="true" data-path="${path}" onblur="updateField(this)">${esc(val)}</span>`;}
+function getPath(o,p){return p.split('.').reduce((c,k)=>{if(c==null)return undefined;const m=k.match(/^(.+)\[(\d+)\]$/);return m?(c[m[1]]||[])[parseInt(m[2])]:c[k];},o);}
+function setPath(o,p,v){const parts=p.split('.');let c=o;for(let i=0;i<parts.length-1;i++){const m=parts[i].match(/^(.+)\[(\d+)\]$/);c=m?c[m[1]][parseInt(m[2])]:c[parts[i]];}const l=parts[parts.length-1];const lm=l.match(/^(.+)\[(\d+)\]$/);if(lm)c[lm[1]][parseInt(lm[2])]=v;else c[l]=v;}
+function updateField(el){setPath(result,el.dataset.path,el.textContent.trim());}
+function resetEdits(){if(originalResult){result=JSON.parse(JSON.stringify(originalResult));renderPreview(result);flash('Restaurado');}}
 
-function getPath(obj, path) {
-  return path.split('.').reduce((o, k) => {
-    if (o == null) return undefined;
-    const m = k.match(/^(.+)\[(\d+)\]$/);
-    if (m) return (o[m[1]] || [])[parseInt(m[2])];
-    return o[k];
-  }, obj);
-}
-
-function setPath(obj, path, value) {
-  const parts = path.split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const m = parts[i].match(/^(.+)\[(\d+)\]$/);
-    if (m) { cur = cur[m[1]][parseInt(m[2])]; }
-    else { cur = cur[parts[i]]; }
-  }
-  const last = parts[parts.length - 1];
-  const lm = last.match(/^(.+)\[(\d+)\]$/);
-  if (lm) { cur[lm[1]][parseInt(lm[2])] = value; }
-  else { cur[last] = value; }
-}
-
-function updateField(el) {
-  const path = el.dataset.path;
-  const val = el.textContent.trim();
-  setPath(result, path, val);
-}
-
-function resetEdits() {
-  if (originalResult) {
-    result = JSON.parse(JSON.stringify(originalResult));
-    renderPreview(result);
-    flash('Informe restaurado al original');
-  }
-}
-
-function renderPreview(r) {
+function renderPreview(r){
   document.getElementById('methodCards').classList.add('hidden');
   document.getElementById('editBanner').classList.remove('hidden');
-  const card = document.getElementById('previewCard');
-  card.classList.remove('hidden');
-
-  let h = `<div id="reportContent" class="bg-surface-container-low shadow-2xl shadow-black/60 overflow-hidden fade-in">`;
-  h += `<div class="px-6 py-3 bg-navy flex justify-between items-center border-b-2 border-gold">
-    <span class="text-[10px] uppercase tracking-widest text-white font-semibold">Vista Previa — Editable</span>
-    <span class="text-[10px] uppercase tracking-widest text-white/60">Confidencial</span>
+  const card=document.getElementById('previewCard');card.classList.remove('hidden');
+  let h=`<div id="reportContent" class="bg-white shadow-2xl shadow-black/60 overflow-hidden fade-in">`;
+  // ALTO header bar
+  h+=`<div class="px-6 py-3 bg-[#2B3A4E] flex justify-between items-center border-b-2 border-[#E84244]">
+    <span class="text-[10px] uppercase tracking-widest text-white font-semibold">Informe Ejecutivo</span>
+    <img src="alto-logo-white.png" alt="ALTO" class="h-5" onerror="this.outerHTML='<span class=\\'text-white text-sm font-bold\\'>ALTO</span>'"/>
   </div>`;
-  h += `<div class="p-6 md:p-8 space-y-6">`;
-
+  h+=`<div class="p-6 md:p-8 space-y-6 text-[#333]">`;
   // Title
-  h += `<div>
-    <h1 class="serif-heading text-2xl md:text-3xl font-bold text-primary mb-1 editable" contenteditable="true" data-path="title" onblur="updateField(this)">${esc(r.title)}</h1>
-    ${r.subtitle ? `<p class="text-sm text-on-surface-variant italic editable" contenteditable="true" data-path="subtitle" onblur="updateField(this)">${esc(r.subtitle)}</p>` : ''}
-    <div class="h-0.5 bg-gradient-to-r from-gold to-transparent mt-4"></div>
-  </div>`;
-
+  h+=`<div><h1 class="serif-heading text-2xl md:text-3xl font-bold text-[#2B3A4E] mb-1 editable" contenteditable="true" data-path="title" onblur="updateField(this)">${esc(r.title)}</h1>`;
+  if(r.subtitle)h+=`<p class="text-sm text-[#666] italic editable" contenteditable="true" data-path="subtitle" onblur="updateField(this)">${esc(r.subtitle)}</p>`;
+  h+=`<div class="h-0.5 bg-gradient-to-r from-[#E84244] to-transparent mt-4"></div></div>`;
   // Exec Summary
-  h += `<div class="bg-surface-container border-l-[3px] border-primary p-5">
-    <div class="text-[10px] uppercase tracking-widest text-primary font-bold mb-2">Resumen Ejecutivo</div>
-    <p class="text-sm leading-relaxed serif-heading editable" contenteditable="true" data-path="executive_summary" onblur="updateField(this)">${esc(r.executive_summary)}</p>
-  </div>`;
-
+  h+=`<div class="bg-[#F5F5F5] border-l-[3px] border-[#4174B9] p-5"><div class="text-[10px] uppercase tracking-widest text-[#4174B9] font-bold mb-2">Resumen Ejecutivo</div>
+    <p class="text-sm leading-relaxed serif-heading text-[#333] editable" contenteditable="true" data-path="executive_summary" onblur="updateField(this)">${esc(r.executive_summary)}</p></div>`;
   // Key Messages
-  if (r.key_messages?.length) {
-    h += `<div><h2 class="text-xs uppercase tracking-widest text-primary font-bold mb-3">Mensajes Clave</h2>`;
-    r.key_messages.forEach((m, i) => {
-      h += `<div class="flex gap-2 mb-1.5 pl-1"><span class="text-gold font-bold">▸</span>
-        <span class="text-sm editable" contenteditable="true" data-path="key_messages[${i}]" onblur="updateField(this)">${esc(m)}</span></div>`;
-    });
-    h += `</div>`;
-  }
-
+  if(r.key_messages?.length){h+=`<div><h2 class="text-xs uppercase tracking-widest text-[#4174B9] font-bold mb-3">Mensajes Clave</h2>`;r.key_messages.forEach((m,i)=>{h+=`<div class="flex gap-2 mb-1.5 pl-1"><span class="text-[#E84244] font-bold">▸</span><span class="text-sm text-[#333] editable" contenteditable="true" data-path="key_messages[${i}]" onblur="updateField(this)">${esc(m)}</span></div>`;});h+=`</div>`;}
   // Context
-  if (r.context) {
-    h += `<div><h2 class="text-xs uppercase tracking-widest text-primary font-bold mb-3">Contexto y Objetivo</h2>
-      <p class="text-sm text-on-surface-variant leading-relaxed editable" contenteditable="true" data-path="context" onblur="updateField(this)">${esc(r.context)}</p></div>`;
-  }
-
+  if(r.context){h+=`<div><h2 class="text-xs uppercase tracking-widest text-[#4174B9] font-bold mb-3">Contexto y Objetivo</h2><p class="text-sm text-[#666] leading-relaxed editable" contenteditable="true" data-path="context" onblur="updateField(this)">${esc(r.context)}</p></div>`;}
   // Findings
-  if (r.findings?.length) {
-    h += `<div><h2 class="text-xs uppercase tracking-widest text-primary font-bold mb-3">Hallazgos Clave</h2>`;
-    r.findings.forEach((f, i) => {
-      h += `<div class="bg-surface-container border-l-[3px] border-primary p-4 mb-3">
-        <div class="text-sm font-bold text-primary mb-1">${i+1}. ${ed(`findings[${i}].finding`)}</div>
-        <div class="text-xs text-on-surface-variant"><strong class="text-on-surface-variant/70">Evidencia:</strong> ${ed(`findings[${i}].evidence`)}</div>
-        <div class="text-xs text-gold mt-1"><strong>Implicancia:</strong> ${ed(`findings[${i}].business_implication`)}</div>
-      </div>`;
-    });
-    h += `</div>`;
-  }
-
-  // Analysis blocks
-  if (r.analysis_blocks?.length) {
-    r.analysis_blocks.forEach((sec, i) => {
-      h += `<div>
-        <h2 class="text-xs uppercase tracking-widest text-primary font-bold mb-1">${i+1}. ${ed(`analysis_blocks[${i}].heading`)}</h2>
-        <div class="h-px bg-outline-variant/20 mb-3"></div>`;
-      if (sec.governing_thought) {
-        h += `<div class="flex gap-2 mb-3"><div class="w-0.5 bg-navy flex-shrink-0"></div>
-          <p class="text-sm font-semibold serif-heading editable" contenteditable="true" data-path="analysis_blocks[${i}].governing_thought" onblur="updateField(this)">${esc(sec.governing_thought)}</p></div>`;
-      }
-      if (sec.content) h += `<p class="text-sm text-on-surface-variant leading-relaxed mb-3 editable" contenteditable="true" data-path="analysis_blocks[${i}].content" onblur="updateField(this)">${esc(sec.content)}</p>`;
-      if (sec.bullets?.length) {
-        sec.bullets.forEach((b, j) => {
-          h += `<div class="flex gap-2 mb-1 pl-1"><span class="text-gold font-bold">▸</span>
-            <span class="text-sm editable" contenteditable="true" data-path="analysis_blocks[${i}].bullets[${j}]" onblur="updateField(this)">${esc(b)}</span></div>`;
-        });
-      }
-      if (sec.so_what) {
-        h += `<div class="mt-3 pl-3 border-l-[3px] border-gold bg-gold/5 py-2 pr-3">
-          <span class="text-xs font-bold text-gold">So what? </span>
-          <span class="text-xs text-on-surface-variant italic editable" contenteditable="true" data-path="analysis_blocks[${i}].so_what" onblur="updateField(this)">${esc(sec.so_what)}</span></div>`;
-      }
-      h += `</div>`;
-    });
-  }
-
+  if(r.findings?.length){h+=`<div><h2 class="text-xs uppercase tracking-widest text-[#4174B9] font-bold mb-3">Hallazgos Clave</h2>`;r.findings.forEach((f,i)=>{h+=`<div class="bg-[#F5F5F5] border-l-[3px] border-[#4174B9] p-4 mb-3"><div class="text-sm font-bold text-[#2B3A4E] mb-1">${i+1}. ${ed(`findings[${i}].finding`)}</div><div class="text-xs text-[#666]"><strong>Evidencia:</strong> ${ed(`findings[${i}].evidence`)}</div><div class="text-xs text-[#E84244] mt-1"><strong>Implicancia:</strong> ${ed(`findings[${i}].business_implication`)}</div></div>`;});h+=`</div>`;}
+  // Analysis
+  if(r.analysis_blocks?.length){r.analysis_blocks.forEach((s,i)=>{h+=`<div><h2 class="text-xs uppercase tracking-widest text-[#4174B9] font-bold mb-1">${i+1}. ${ed(`analysis_blocks[${i}].heading`)}</h2><div class="h-px bg-[#E8E8E8] mb-3"></div>`;if(s.governing_thought){h+=`<div class="flex gap-2 mb-3"><div class="w-0.5 bg-[#2B3A4E] flex-shrink-0"></div><p class="text-sm font-semibold serif-heading text-[#2B3A4E] editable" contenteditable="true" data-path="analysis_blocks[${i}].governing_thought" onblur="updateField(this)">${esc(s.governing_thought)}</p></div>`;}if(s.content)h+=`<p class="text-sm text-[#666] leading-relaxed mb-3 editable" contenteditable="true" data-path="analysis_blocks[${i}].content" onblur="updateField(this)">${esc(s.content)}</p>`;if(s.bullets?.length){s.bullets.forEach((b,j)=>{h+=`<div class="flex gap-2 mb-1 pl-1"><span class="text-[#E84244] font-bold">▸</span><span class="text-sm text-[#333] editable" contenteditable="true" data-path="analysis_blocks[${i}].bullets[${j}]" onblur="updateField(this)">${esc(b)}</span></div>`;});}if(s.so_what){h+=`<div class="mt-3 pl-3 border-l-[3px] border-[#E84244] bg-[#FFF5F5] py-2 pr-3"><span class="text-xs font-bold text-[#E84244]">So what? </span><span class="text-xs text-[#666] italic editable" contenteditable="true" data-path="analysis_blocks[${i}].so_what" onblur="updateField(this)">${esc(s.so_what)}</span></div>`;}h+=`</div>`;});}
   // Risks
-  if (r.risks?.length) {
-    h += `<div><h2 class="text-xs uppercase tracking-widest text-red-400 font-bold mb-3">Riesgos y Tensiones Críticas</h2>`;
-    r.risks.forEach((rk, i) => {
-      h += `<div class="border-l-[3px] border-red-500 bg-red-950/30 p-4 mb-2">
-        <div class="text-sm font-semibold text-red-400 editable" contenteditable="true" data-path="risks[${i}].risk" onblur="updateField(this)">${esc(rk.risk)}</div>
-        <div class="text-xs text-on-surface-variant mt-1 editable" contenteditable="true" data-path="risks[${i}].implication" onblur="updateField(this)">${esc(rk.implication)}</div>
-      </div>`;
-    });
-    h += `</div>`;
-  }
-
+  if(r.risks?.length){h+=`<div><h2 class="text-xs uppercase tracking-widest text-[#E84244] font-bold mb-3">Riesgos</h2>`;r.risks.forEach((rk,i)=>{h+=`<div class="border-l-[3px] border-[#E84244] bg-[#FFF5F5] p-4 mb-2"><div class="text-sm font-semibold text-[#E84244] editable" contenteditable="true" data-path="risks[${i}].risk" onblur="updateField(this)">${esc(rk.risk)}</div><div class="text-xs text-[#666] mt-1 editable" contenteditable="true" data-path="risks[${i}].implication" onblur="updateField(this)">${esc(rk.implication)}</div></div>`;});h+=`</div>`;}
   // Opportunities
-  if (r.opportunities?.length) {
-    h += `<div><h2 class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-3">Oportunidades</h2>`;
-    r.opportunities.forEach((o, i) => {
-      h += `<div class="flex gap-2 mb-1.5 pl-1"><span class="text-emerald-400 font-bold">✦</span>
-        <span class="text-sm editable" contenteditable="true" data-path="opportunities[${i}]" onblur="updateField(this)">${esc(o)}</span></div>`;
-    });
-    h += `</div>`;
-  }
-
+  if(r.opportunities?.length){h+=`<div><h2 class="text-xs uppercase tracking-widest text-emerald-600 font-bold mb-3">Oportunidades</h2>`;r.opportunities.forEach((o,i)=>{h+=`<div class="flex gap-2 mb-1.5 pl-1"><span class="text-emerald-500 font-bold">✦</span><span class="text-sm text-[#333] editable" contenteditable="true" data-path="opportunities[${i}]" onblur="updateField(this)">${esc(o)}</span></div>`;});h+=`</div>`;}
   // Recommendations
-  if (r.recommendations) {
-    h += `<div><h2 class="text-xs uppercase tracking-widest text-primary font-bold mb-4">Recomendaciones</h2>`;
-    const hz = [
-      { key:'short_term', label:'Corto Plazo', color:'emerald-400' },
-      { key:'medium_term', label:'Mediano Plazo', color:'gold' },
-      { key:'long_term', label:'Largo Plazo', color:'primary' },
-    ];
-    hz.forEach(hz => {
-      const items = r.recommendations[hz.key];
-      if (!items?.length) return;
-      h += `<div class="text-[10px] uppercase tracking-widest text-${hz.color} font-bold mb-2 mt-4">${hz.label}</div>`;
-      items.forEach((rec, i) => {
-        h += `<div class="flex gap-3 mb-3 items-start">
-          <div class="w-6 h-6 rounded bg-navy flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5">${i+1}</div>
-          <div>
-            <div class="text-sm font-semibold editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].action" onblur="updateField(this)">${esc(rec.action)}</div>
-            <div class="text-xs text-on-surface-variant italic mt-0.5 editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].rationale" onblur="updateField(this)">${esc(rec.rationale)}</div>
-            <div class="text-xs text-gold mt-0.5">Impacto: ${ed(`recommendations.${hz.key}[${i}].impact`)}</div>
-          </div>
-        </div>`;
-      });
-    });
-    h += `</div>`;
-  }
-
+  if(r.recommendations){h+=`<div><h2 class="text-xs uppercase tracking-widest text-[#4174B9] font-bold mb-4">Recomendaciones</h2>`;[{key:'short_term',label:'Corto Plazo',color:'emerald-600'},{key:'medium_term',label:'Mediano Plazo',color:'[#E84244]'},{key:'long_term',label:'Largo Plazo',color:'[#4174B9]'}].forEach(hz=>{const items=r.recommendations[hz.key];if(!items?.length)return;h+=`<div class="text-[10px] uppercase tracking-widest text-${hz.color} font-bold mb-2 mt-4">${hz.label}</div>`;items.forEach((rec,i)=>{h+=`<div class="flex gap-3 mb-3 items-start"><div class="w-6 h-6 rounded bg-[#2B3A4E] flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5">${i+1}</div><div><div class="text-sm font-semibold text-[#333] editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].action" onblur="updateField(this)">${esc(rec.action)}</div><div class="text-xs text-[#666] italic mt-0.5 editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].rationale" onblur="updateField(this)">${esc(rec.rationale)}</div><div class="text-xs text-[#E84244] mt-0.5">Impacto: ${ed(`recommendations.${hz.key}[${i}].impact`)}</div></div></div>`;});});h+=`</div>`;}
   // Info gaps
-  if (r.information_gaps?.length) {
-    h += `<div class="bg-surface-container p-4"><div class="text-[10px] uppercase tracking-widest text-on-surface-variant/60 font-bold mb-2">Información Faltante</div>`;
-    r.information_gaps.forEach((g, i) => {
-      h += `<div class="flex gap-2 mb-1 pl-1"><span class="text-on-surface-variant/40">○</span>
-        <span class="text-xs text-on-surface-variant editable" contenteditable="true" data-path="information_gaps[${i}]" onblur="updateField(this)">${esc(g)}</span></div>`;
-    });
-    h += `</div>`;
-  }
-
+  if(r.information_gaps?.length){h+=`<div class="bg-[#F5F5F5] p-4"><div class="text-[10px] uppercase tracking-widest text-[#999] font-bold mb-2">Información Faltante</div>`;r.information_gaps.forEach((g,i)=>{h+=`<div class="flex gap-2 mb-1 pl-1"><span class="text-[#999]">○</span><span class="text-xs text-[#666] editable" contenteditable="true" data-path="information_gaps[${i}]" onblur="updateField(this)">${esc(g)}</span></div>`;});h+=`</div>`;}
   // Conclusion
-  if (r.conclusion) {
-    h += `<div class="bg-surface-container border-l-[3px] border-primary p-5 mt-2">
-      <div class="text-[10px] uppercase tracking-widest text-primary font-bold mb-2">Conclusión Ejecutiva</div>
-      <p class="text-sm leading-relaxed serif-heading editable" contenteditable="true" data-path="conclusion" onblur="updateField(this)">${esc(r.conclusion)}</p>
-    </div>`;
-  }
-
-  h += `</div></div>`;
-  card.innerHTML = h;
+  if(r.conclusion){h+=`<div class="bg-[#F5F5F5] border-l-[3px] border-[#4174B9] p-5"><div class="text-[10px] uppercase tracking-widest text-[#4174B9] font-bold mb-2">Conclusión Ejecutiva</div><p class="text-sm leading-relaxed serif-heading text-[#333] editable" contenteditable="true" data-path="conclusion" onblur="updateField(this)">${esc(r.conclusion)}</p></div>`;}
+  h+=`</div></div>`;card.innerHTML=h;
 }
 
 // ============================================================
 // EXPORT: MARKDOWN
 // ============================================================
-function copyMarkdown() {
-  if (!result) return;
-  let md = `# ${result.title}\n*${result.subtitle||''}*\n\n---\n\n## Resumen Ejecutivo\n\n> ${result.executive_summary}\n\n`;
-  if (result.key_messages?.length) { md += `### Mensajes Clave\n\n`; result.key_messages.forEach(m => { md += `- ${m}\n`; }); md += `\n`; }
-  if (result.context) md += `## Contexto\n\n${result.context}\n\n`;
-  if (result.findings?.length) { md += `## Hallazgos\n\n`; result.findings.forEach((f,i) => { md += `### ${i+1}. ${f.finding}\n- **Evidencia:** ${f.evidence}\n- **Implicancia:** ${f.business_implication}\n\n`; }); }
-  if (result.analysis_blocks?.length) { result.analysis_blocks.forEach((s,i) => { md += `## ${i+1}. ${s.heading}\n\n`; if(s.governing_thought) md += `**${s.governing_thought}**\n\n`; if(s.content) md += `${s.content}\n\n`; s.bullets?.forEach(b => { md += `- ${b}\n`; }); if(s.so_what) md += `\n> **So what?** *${s.so_what}*\n`; md += `\n`; }); }
-  if (result.risks?.length) { md += `## Riesgos\n\n`; result.risks.forEach(r => { md += `- **${r.risk}**: ${r.implication}\n`; }); md += `\n`; }
-  if (result.opportunities?.length) { md += `## Oportunidades\n\n`; result.opportunities.forEach(o => { md += `- ${o}\n`; }); md += `\n`; }
-  if (result.recommendations) { md += `## Recomendaciones\n\n`; ['short_term','medium_term','long_term'].forEach(h => { const l={short_term:'Corto Plazo',medium_term:'Mediano Plazo',long_term:'Largo Plazo'}[h]; const items=result.recommendations[h]; if(!items?.length) return; md += `### ${l}\n\n`; items.forEach((r,i) => { md += `${i+1}. **${r.action}** — ${r.rationale} *(Impacto: ${r.impact})*\n`; }); md += `\n`; }); }
-  if (result.information_gaps?.length) { md += `## Info Faltante\n\n`; result.information_gaps.forEach(g => { md += `- ${g}\n`; }); md += `\n`; }
-  if (result.conclusion) md += `---\n\n## Conclusión\n\n${result.conclusion}\n`;
-  navigator.clipboard.writeText(md);
-  flash('✓ Markdown copiado');
-}
+function copyMarkdown(){if(!result)return;let md=`# ${result.title}\n*${result.subtitle||''}*\n\n---\n\n## Resumen Ejecutivo\n\n> ${result.executive_summary}\n\n`;if(result.key_messages?.length){md+=`### Mensajes Clave\n\n`;result.key_messages.forEach(m=>{md+=`- ${m}\n`;});md+=`\n`;}if(result.context)md+=`## Contexto\n\n${result.context}\n\n`;if(result.findings?.length){md+=`## Hallazgos\n\n`;result.findings.forEach((f,i)=>{md+=`### ${i+1}. ${f.finding}\n- **Evidencia:** ${f.evidence}\n- **Implicancia:** ${f.business_implication}\n\n`;});}if(result.analysis_blocks?.length){result.analysis_blocks.forEach((s,i)=>{md+=`## ${i+1}. ${s.heading}\n\n`;if(s.governing_thought)md+=`**${s.governing_thought}**\n\n`;if(s.content)md+=`${s.content}\n\n`;s.bullets?.forEach(b=>{md+=`- ${b}\n`;});if(s.so_what)md+=`\n> **So what?** *${s.so_what}*\n`;md+=`\n`;});}if(result.risks?.length){md+=`## Riesgos\n\n`;result.risks.forEach(r=>{md+=`- **${r.risk}**: ${r.implication}\n`;});md+=`\n`;}if(result.opportunities?.length){md+=`## Oportunidades\n\n`;result.opportunities.forEach(o=>{md+=`- ${o}\n`;});md+=`\n`;}if(result.recommendations){md+=`## Recomendaciones\n\n`;['short_term','medium_term','long_term'].forEach(h=>{const l={short_term:'Corto',medium_term:'Mediano',long_term:'Largo'}[h];const items=result.recommendations[h];if(!items?.length)return;md+=`### ${l} Plazo\n\n`;items.forEach((r,i)=>{md+=`${i+1}. **${r.action}** — ${r.rationale} *(${r.impact})*\n`;});md+=`\n`;});}if(result.conclusion)md+=`---\n\n## Conclusión\n\n${result.conclusion}\n`;navigator.clipboard.writeText(md);flash('✓ Markdown copiado');}
 
 // ============================================================
-// MEJORA #7: PDF EXPORT
+// PDF EXPORT
 // ============================================================
-async function downloadPdf() {
-  if (!result) return;
-  showStatus('Generando PDF...');
-
-  try {
-    const el = document.getElementById('reportContent');
-    if (!el) throw new Error('No hay informe para exportar');
-
-    // Temporarily adjust styles for capture
-    el.style.background = '#0f131c';
-    el.style.width = '800px';
-
-    const canvas = await html2canvas(el, {
-      backgroundColor: '#0f131c',
-      scale: 2,
-      useCORS: true,
-      logging: false,
-    });
-
-    el.style.width = '';
-
-    const imgData = canvas.toDataURL('image/png');
-    const { jsPDF } = window.jspdf;
-
-    const pxW = canvas.width;
-    const pxH = canvas.height;
-    const pdfW = 210; // A4 mm
-    const pdfH = (pxH * pdfW) / pxW;
-    const pageH = 297; // A4 height mm
-
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    let position = 0;
-
-    // Multi-page if needed
-    while (position < pdfH) {
-      if (position > 0) pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, -position, pdfW, pdfH);
-      position += pageH;
-    }
-
-    pdf.save('Informe_Ejecutivo_' + new Date().toISOString().slice(0,10) + '.pdf');
-    flash('✓ PDF descargado');
-  } catch (err) {
-    console.error(err);
-    showError('Error generando PDF: ' + err.message);
-  }
-}
+async function downloadPdf(){if(!result)return;showStatus('Generando PDF...');try{const el=document.getElementById('reportContent');if(!el)throw new Error('Sin informe');el.style.width='800px';const canvas=await html2canvas(el,{backgroundColor:'#ffffff',scale:2,useCORS:true,logging:false});el.style.width='';const imgData=canvas.toDataURL('image/png');const{jsPDF}=window.jspdf;const pxW=canvas.width,pxH=canvas.height,pdfW=210,pdfH=(pxH*pdfW)/pxW,pageH=297;const pdf=new jsPDF('p','mm','a4');let pos=0;while(pos<pdfH){if(pos>0)pdf.addPage();pdf.addImage(imgData,'PNG',0,-pos,pdfW,pdfH);pos+=pageH;}pdf.save('Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pdf');flash('✓ PDF descargado');}catch(err){showError('Error PDF: '+err.message);}}
 
 // ============================================================
 // HELPERS
 // ============================================================
-function esc(s) { if(!s) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-
-function setLoading(on) {
-  const btn = document.getElementById('btnAnalyze');
-  btn.disabled = on;
-  btn.innerHTML = on
-    ? '<span class="spinner"></span><span class="text-xs uppercase tracking-[0.15em]">Procesando...</span>'
-    : '<span class="material-symbols-outlined text-xl" style="font-variation-settings:\'FILL\' 1;">psychology</span><span class="text-xs uppercase tracking-[0.15em]">Generar Informe Ejecutivo</span>';
-}
-
-function showStatus(msg) { const el=document.getElementById('statusMsg'); el.textContent=msg; el.classList.remove('hidden'); }
-function showError(msg) { const b=document.getElementById('errorBox'); b.textContent=msg; b.classList.remove('hidden'); document.getElementById('statusMsg').classList.add('hidden'); }
-function hideError() { document.getElementById('errorBox').classList.add('hidden'); }
-function hidePreview() { document.getElementById('previewCard').classList.add('hidden'); document.getElementById('editBanner').classList.add('hidden'); document.getElementById('methodCards').classList.remove('hidden'); }
-function showExportBtns() { ['btnMd','btnDocx','btnPdf','btnPptx'].forEach(id => document.getElementById(id).classList.remove('hidden')); }
-
-function setDot(state) {
-  const dot=document.getElementById('statusDot'); const label=document.getElementById('statusDotLabel');
-  if(state==='ok'){dot.style.background='#10b981';label.textContent='Conectado';}
-  else if(state==='no'){dot.style.background='#ef4444';label.textContent='Error';}
-  else{dot.style.background='#64748b';label.textContent='Sin conexión';}
-}
-function flash(msg) { showStatus(msg); setTimeout(() => { if(result) showStatus('Informe listo — edita y exporta'); }, 2500); }
-
-function loadSample() {
-  document.getElementById('inputText').value = `Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar.\n\nLas tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.\n\nLos clientes preguntan seguido: ¿dónde estamos perdiendo más? ¿qué tiendas necesitan más atención? ¿la gestión legal está siendo efectiva?\n\nEl área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.\n\nNecesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.\n\nNota: la data de modus operandi tiene un 30% de registros sin clasificar, lo que puede sesgar el análisis. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;
-}
-
-const saved = localStorage.getItem('worker_url');
-if (saved) document.getElementById('workerUrl').value = saved;
-document.getElementById('workerUrl').addEventListener('change', function() { localStorage.setItem('worker_url', this.value); });
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function setLoading(on){const b=document.getElementById('btnAnalyze');b.disabled=on;b.innerHTML=on?'<span class="spinner"></span><span class="text-xs uppercase tracking-[0.15em]">Procesando...</span>':'<span class="material-symbols-outlined text-xl" style="font-variation-settings:\'FILL\' 1;">psychology</span><span class="text-xs uppercase tracking-[0.15em]">Generar Informe Ejecutivo</span>';}
+function showStatus(m){const e=document.getElementById('statusMsg');e.textContent=m;e.classList.remove('hidden');}
+function showError(m){const b=document.getElementById('errorBox');b.textContent=m;b.classList.remove('hidden');document.getElementById('statusMsg').classList.add('hidden');}
+function hideError(){document.getElementById('errorBox').classList.add('hidden');}
+function hidePreview(){document.getElementById('previewCard').classList.add('hidden');document.getElementById('editBanner').classList.add('hidden');document.getElementById('methodCards').classList.remove('hidden');}
+function showExportBtns(){['btnMd','btnDocx','btnPdf','btnPptx'].forEach(id=>document.getElementById(id).classList.remove('hidden'));}
+function setDot(s){const d=document.getElementById('statusDot'),l=document.getElementById('statusDotLabel');if(s==='ok'){d.style.background='#10b981';l.textContent='Conectado';}else if(s==='no'){d.style.background='#ef4444';l.textContent='Error';}else{d.style.background='#64748b';l.textContent='Sin conexión';}}
+function flash(m){showStatus(m);setTimeout(()=>{if(result)showStatus('Informe listo — edita y exporta');},2500);}
+function loadSample(){document.getElementById('inputText').value=`Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar.\n\nLas tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.\n\nEl área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.\n\nNecesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.\n\nNota: la data de modus operandi tiene un 30% de registros sin clasificar. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;}
+const saved=localStorage.getItem('worker_url');if(saved)document.getElementById('workerUrl').value=saved;document.getElementById('workerUrl').addEventListener('change',function(){localStorage.setItem('worker_url',this.value);});
 </script>
 
 <!-- ============================================================ -->
-<!-- DOCX GENERATION (same as before) -->
+<!-- PPTX GENERATION — ALTO Corporate Style -->
 <!-- ============================================================ -->
 <script>
-async function downloadDocx() {
-  if (!result) return;
-  showStatus('Generando documento Word...');
-  try {
-    const { Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,AlignmentType,BorderStyle,WidthType,ShadingType,Header,Footer,PageNumber,PageBreak } = docx;
-    const NAVY="003A70",GOLD="B8860B",LGRAY="F5F5F5",MGRAY="E0E0E0",WHITE="FFFFFF";
-    const noBdr={style:BorderStyle.NONE,size:0,color:WHITE};
-    const noBorders={top:noBdr,bottom:noBdr,left:noBdr,right:noBdr};
-    const children=[];
-    const sp=(n)=>new Paragraph({spacing:{after:n||120},children:[]});
-    function govBox(t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[200,9160],rows:[new TableRow({children:[new TableCell({borders:noBorders,shading:{fill:NAVY,type:ShadingType.CLEAR},width:{size:200,type:WidthType.DXA},children:[new Paragraph({children:[]})]}),new TableCell({borders:noBorders,shading:{fill:LGRAY,type:ShadingType.CLEAR},margins:{top:120,bottom:120,left:160,right:160},width:{size:9160,type:WidthType.DXA},children:[new Paragraph({children:[new TextRun({text:t,font:"Georgia",size:21,bold:true,color:NAVY})]})]})]})]})}
-    function grayBox(l,t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({borders:noBorders,shading:{fill:LGRAY,type:ShadingType.CLEAR},margins:{top:160,bottom:160,left:200,right:200},width:{size:9360,type:WidthType.DXA},children:[new Paragraph({spacing:{after:60},children:[new TextRun({text:l,font:"Arial",size:16,bold:true,color:NAVY})]}),new Paragraph({children:[new TextRun({text:t,font:"Georgia",size:22,italics:true,color:"333333"})]})]})]})]})}
-    function secH(t){return [new Paragraph({spacing:{before:360,after:100},children:[new TextRun({text:t.toUpperCase(),font:"Arial",size:24,bold:true,color:NAVY})]}),new Paragraph({spacing:{after:60},border:{bottom:{style:BorderStyle.SINGLE,size:2,color:MGRAY,space:1}},children:[]})]}
-    function blt(t,c){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[360,9000],rows:[new TableRow({children:[new TableCell({borders:noBorders,width:{size:360,type:WidthType.DXA},margins:{top:40,bottom:40,left:80,right:0},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:"\u25B8",font:"Arial",size:20,color:c||GOLD})]})]}),new TableCell({borders:noBorders,width:{size:9000,type:WidthType.DXA},margins:{top:40,bottom:40,left:80,right:80},children:[new Paragraph({children:[new TextRun({text:t,font:"Arial",size:21,color:"333333"})]})]})]})]})}
-    function swBox(t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({borders:{top:{style:BorderStyle.SINGLE,size:1,color:GOLD},bottom:{style:BorderStyle.SINGLE,size:1,color:GOLD},left:{style:BorderStyle.SINGLE,size:4,color:GOLD},right:{style:BorderStyle.SINGLE,size:1,color:GOLD}},margins:{top:100,bottom:100,left:160,right:160},width:{size:9360,type:WidthType.DXA},children:[new Paragraph({children:[new TextRun({text:"So what?  ",font:"Arial",size:20,bold:true,color:GOLD}),new TextRun({text:t,font:"Arial",size:20,italics:true,color:"555555"})]})]})]})]})}
-    function numS(n,t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[600,8760],rows:[new TableRow({children:[new TableCell({borders:noBorders,shading:{fill:NAVY,type:ShadingType.CLEAR},width:{size:600,type:WidthType.DXA},margins:{top:100,bottom:100,left:80,right:80},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:String(n),font:"Arial",size:22,bold:true,color:WHITE})]})]}),new TableCell({borders:noBorders,shading:{fill:LGRAY,type:ShadingType.CLEAR},width:{size:8760,type:WidthType.DXA},margins:{top:100,bottom:100,left:160,right:160},children:[new Paragraph({children:[new TextRun({text:t,font:"Arial",size:21,color:"333333"})]})]})]})]})}
+async function downloadPptx(){if(!result)return;showStatus('Generando presentación ALTO...');try{
+  const pptx=new PptxGenJS();pptx.layout='LAYOUT_WIDE';pptx.author='ALTO';pptx.title=result.title;
+  const A=ALTO;
+  // Master
+  pptx.defineSlideMaster({title:'ALTO_MASTER',background:{color:A.WHITE},objects:[
+    {rect:{x:0,y:0,w:'100%',h:0.04,fill:{color:A.RED}}},
+    {rect:{x:0,y:7.2,w:'100%',h:0.3,fill:{color:A.LGRAY}}},
+    {text:{text:'CONFIDENCIAL',options:{x:0.5,y:7.22,w:3,h:0.25,fontSize:7,fontFace:'Arial',color:A.SGRAY,bold:true}}},
+  ],slideNumber:{x:12.3,y:7.22,w:0.8,h:0.25,fontSize:7,fontFace:'Arial',color:A.SGRAY,align:'right'}});
 
-    // Cover
-    children.push(new Paragraph({spacing:{before:2400},children:[]}));
-    children.push(new Paragraph({spacing:{after:200},children:[new TextRun({text:result.title,font:"Georgia",size:56,bold:true,color:NAVY})]}));
-    if(result.subtitle) children.push(new Paragraph({spacing:{after:100},children:[new TextRun({text:result.subtitle,font:"Georgia",size:28,italics:true,color:"666666"})]}));
-    children.push(new Paragraph({spacing:{before:200,after:200},border:{bottom:{style:BorderStyle.SINGLE,size:6,color:GOLD,space:1}},children:[]}));
-    children.push(new Paragraph({spacing:{after:100},children:[new TextRun({text:"CONFIDENCIAL",font:"Arial",size:18,bold:true,color:NAVY})]}));
-    children.push(new Paragraph({spacing:{after:600},children:[new TextRun({text:new Date().toLocaleDateString("es-CL",{year:"numeric",month:"long",day:"numeric"}),font:"Arial",size:20,color:"666666"})]}));
-    children.push(new Paragraph({children:[new PageBreak()]}));
+  function addLogo(slide){if(logoBase64){slide.addImage({data:'image/png;base64,'+logoBase64,x:11.2,y:0.15,w:1.8,h:0.45});}}
+  function addLogoW(slide){if(logoWhiteBase64){slide.addImage({data:'image/png;base64,'+logoWhiteBase64,x:11.2,y:0.15,w:1.8,h:0.45});}}
+  function sTitle(sl,t){sl.addText(t.toUpperCase(),{x:0.5,y:0.2,w:10,h:0.5,fontSize:14,fontFace:'Arial',color:A.NAVY,bold:true,letterSpacing:2});sl.addShape(pptx.ShapeType.rect,{x:0.5,y:0.72,w:1.5,h:0.03,fill:{color:A.RED}});addLogo(sl);}
+  function govT(sl,t,y){sl.addShape(pptx.ShapeType.rect,{x:0.5,y,w:0.06,h:0.5,fill:{color:A.NAVY}});sl.addShape(pptx.ShapeType.rect,{x:0.56,y,w:12.27,h:0.5,fill:{color:A.LGRAY}});sl.addText(t,{x:0.75,y:y+0.05,w:11.9,h:0.4,fontSize:11,fontFace:'Georgia',color:A.NAVY,bold:true,italic:true});return y+0.6;}
+  function addBlt(sl,items,y,c){c=c||A.RED;items.forEach(it=>{sl.addText([{text:'▸ ',options:{fontSize:11,fontFace:'Arial',color:c,bold:true}},{text:it,options:{fontSize:10,fontFace:'Arial',color:A.BODY}}],{x:0.7,y,w:11.8,h:0.35,valign:'top'});y+=0.35;});return y;}
 
-    children.push(...secH("Resumen Ejecutivo"));
-    children.push(grayBox("RESUMEN EJECUTIVO",result.executive_summary));
-    children.push(sp(200));
-    if(result.key_messages?.length){children.push(...secH("Mensajes Clave"));result.key_messages.forEach(m=>children.push(blt(m)));children.push(sp(200));}
-    if(result.context){children.push(...secH("Contexto y Objetivo"));children.push(new Paragraph({spacing:{after:200},children:[new TextRun({text:result.context,font:"Arial",size:21,color:"333333"})]}));}
-    if(result.findings?.length){children.push(...secH("Hallazgos Clave"));result.findings.forEach((f,i)=>{children.push(new Paragraph({spacing:{before:160,after:60},children:[new TextRun({text:`${i+1}. ${f.finding}`,font:"Arial",size:22,bold:true,color:NAVY})]}));children.push(new Paragraph({spacing:{after:40},children:[new TextRun({text:"Evidencia: ",font:"Arial",size:20,bold:true,color:"666666"}),new TextRun({text:f.evidence,font:"Arial",size:20,color:"666666"})]}));children.push(new Paragraph({spacing:{after:120},children:[new TextRun({text:"Implicancia: ",font:"Arial",size:20,bold:true,color:GOLD}),new TextRun({text:f.business_implication,font:"Arial",size:20,color:"555555"})]}));});children.push(sp(200));}
-    if(result.analysis_blocks?.length){result.analysis_blocks.forEach((s,i)=>{children.push(...secH(`${i+1}. ${s.heading}`));if(s.governing_thought){children.push(govBox(s.governing_thought));children.push(sp(160));}if(s.content)children.push(new Paragraph({spacing:{after:160},children:[new TextRun({text:s.content,font:"Arial",size:21,color:"333333"})]}));if(s.bullets?.length){s.bullets.forEach(b=>children.push(blt(b)));children.push(sp(80));}if(s.so_what){children.push(swBox(s.so_what));children.push(sp(200));}});}
-    if(result.risks?.length){children.push(new Paragraph({children:[new PageBreak()]}));children.push(...secH("Riesgos y Tensiones Cr\u00EDticas"));result.risks.forEach(rk=>{children.push(new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({borders:{top:noBdr,bottom:noBdr,left:{style:BorderStyle.SINGLE,size:4,color:"CC3333"},right:noBdr},margins:{top:100,bottom:100,left:160,right:160},width:{size:9360,type:WidthType.DXA},children:[new Paragraph({children:[new TextRun({text:rk.risk,font:"Arial",size:21,bold:true,color:"CC3333"})]}),new Paragraph({children:[new TextRun({text:rk.implication,font:"Arial",size:20,color:"666666"})]})]})]})]}));children.push(sp(100));});children.push(sp(200));}
-    if(result.opportunities?.length){children.push(...secH("Oportunidades"));result.opportunities.forEach(o=>children.push(blt(o,"2E8B57")));children.push(sp(200));}
-    if(result.recommendations){children.push(...secH("Recomendaciones"));[{key:"short_term",label:"CORTO PLAZO"},{key:"medium_term",label:"MEDIANO PLAZO"},{key:"long_term",label:"LARGO PLAZO"}].forEach(hz=>{const items=result.recommendations[hz.key];if(!items?.length)return;children.push(new Paragraph({spacing:{before:200,after:100},children:[new TextRun({text:hz.label,font:"Arial",size:20,bold:true,color:NAVY})]}));items.forEach((rec,i)=>{children.push(numS(i+1,rec.action));children.push(new Paragraph({spacing:{after:40},indent:{left:720},children:[new TextRun({text:rec.rationale,font:"Arial",size:19,color:"666666",italics:true})]}));children.push(new Paragraph({spacing:{after:120},indent:{left:720},children:[new TextRun({text:"Impacto: ",font:"Arial",size:19,bold:true,color:GOLD}),new TextRun({text:rec.impact,font:"Arial",size:19,color:"555555"})]}));});});children.push(sp(200));}
-    if(result.information_gaps?.length){children.push(...secH("Informaci\u00F3n Faltante"));result.information_gaps.forEach(g=>children.push(blt(g,"999999")));children.push(sp(200));}
-    if(result.conclusion){children.push(...secH("Conclusi\u00F3n Ejecutiva"));children.push(grayBox("CONCLUSI\u00D3N",result.conclusion));}
+  // COVER
+  const s1=pptx.addSlide();s1.background={color:A.DNAVY};
+  if(logoWhiteBase64)s1.addImage({data:'image/png;base64,'+logoWhiteBase64,x:0.5,y:0.5,w:2.5,h:0.65});
+  s1.addShape(pptx.ShapeType.rect,{x:0.5,y:2.8,w:2.5,h:0.04,fill:{color:A.RED}});
+  s1.addText(result.title,{x:0.5,y:3.0,w:12,h:1.5,fontSize:30,fontFace:'Georgia',color:A.WHITE,bold:true,lineSpacingMultiple:1.1});
+  if(result.subtitle)s1.addText(result.subtitle,{x:0.5,y:4.5,w:10,h:0.6,fontSize:14,fontFace:'Georgia',color:A.MGRAY,italic:true});
+  s1.addText('CONFIDENCIAL',{x:0.5,y:6.2,w:3,h:0.3,fontSize:9,fontFace:'Arial',color:A.RED,bold:true,letterSpacing:3});
+  s1.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'}),{x:0.5,y:6.5,w:4,h:0.3,fontSize:10,fontFace:'Arial',color:A.GRAY});
 
-    const doc = new Document({
-      styles:{default:{document:{run:{font:"Arial",size:22}}}},
-      sections:[{
-        properties:{page:{size:{width:12240,height:15840},margin:{top:1440,right:1440,bottom:1440,left:1440}}},
-        headers:{default:new Header({children:[new Paragraph({alignment:AlignmentType.RIGHT,border:{bottom:{style:BorderStyle.SINGLE,size:2,color:NAVY,space:4}},children:[new TextRun({text:"CONFIDENCIAL  |  ",font:"Arial",size:14,color:"999999"}),new TextRun({text:"Grupo Alto",font:"Arial",size:14,bold:true,color:NAVY})]})]})},
-        footers:{default:new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,border:{top:{style:BorderStyle.SINGLE,size:1,color:MGRAY,space:4}},children:[new TextRun({text:"P\u00E1gina ",font:"Arial",size:16,color:"999999"}),new TextRun({children:[PageNumber.CURRENT],font:"Arial",size:16,color:"999999"})]})]})},
-        children,
-      }],
-    });
+  // EXEC SUMMARY
+  const s2=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(s2,'Resumen Ejecutivo');
+  s2.addShape(pptx.ShapeType.rect,{x:0.5,y:1.0,w:12.33,h:1.5,fill:{color:A.LGRAY}});
+  s2.addShape(pptx.ShapeType.rect,{x:0.5,y:1.0,w:0.06,h:1.5,fill:{color:A.BLUE}});
+  s2.addText(result.executive_summary,{x:0.8,y:1.1,w:11.8,h:1.3,fontSize:12,fontFace:'Georgia',color:A.DGRAY,italic:true,lineSpacingMultiple:1.4,valign:'top'});
+  if(result.key_messages?.length){s2.addText('MENSAJES CLAVE',{x:0.5,y:2.8,w:5,h:0.3,fontSize:9,fontFace:'Arial',color:A.BLUE,bold:true,letterSpacing:2});addBlt(s2,result.key_messages,3.2);}
 
-    const blob = await Packer.toBlob(doc);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "Informe_Ejecutivo_" + new Date().toISOString().slice(0,10) + ".docx";
-    a.click();
-    URL.revokeObjectURL(url);
-    flash("\u2713 Documento Word descargado");
-  } catch(err) {
-    console.error(err);
-    showError("Error generando documento: " + err.message);
-  }
-}
+  // CONTEXT
+  if(result.context){const s3=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(s3,'Contexto y Objetivo');s3.addText(result.context,{x:0.5,y:1.0,w:12.33,h:5.5,fontSize:11,fontFace:'Arial',color:A.BODY,lineSpacingMultiple:1.5,valign:'top'});}
+
+  // FINDINGS
+  if(result.findings?.length){const sf=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sf,'Hallazgos Clave');let fy=1.0;result.findings.forEach((f,i)=>{if(fy>6)return;sf.addText((i+1)+'. '+f.finding,{x:0.5,y:fy,w:12.33,h:0.35,fontSize:11,fontFace:'Arial',color:A.NAVY,bold:true});fy+=0.35;sf.addText([{text:'Evidencia: ',options:{bold:true,color:A.SGRAY}},{text:f.evidence,options:{color:A.SGRAY}}],{x:0.7,y:fy,w:12,h:0.3,fontSize:9,fontFace:'Arial',valign:'top'});fy+=0.3;sf.addText([{text:'Implicancia: ',options:{bold:true,color:A.RED}},{text:f.business_implication,options:{color:A.BODY}}],{x:0.7,y:fy,w:12,h:0.3,fontSize:9,fontFace:'Arial',valign:'top'});fy+=0.45;});}
+
+  // ANALYSIS BLOCKS
+  if(result.analysis_blocks?.length){result.analysis_blocks.forEach((sec,i)=>{const sa=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sa,(i+1)+'. '+sec.heading);let ay=1.0;if(sec.governing_thought){ay=govT(sa,sec.governing_thought,ay);ay+=0.1;}if(sec.content){sa.addText(sec.content,{x:0.5,y:ay,w:12.33,h:1.5,fontSize:10,fontFace:'Arial',color:A.BODY,lineSpacingMultiple:1.4,valign:'top'});ay+=1.6;}if(sec.bullets?.length){ay=addBlt(sa,sec.bullets,ay);ay+=0.15;}if(sec.so_what){sa.addShape(pptx.ShapeType.rect,{x:0.5,y:ay,w:0.06,h:0.5,fill:{color:A.RED}});sa.addShape(pptx.ShapeType.rect,{x:0.56,y:ay,w:12.27,h:0.5,fill:{color:'FFF5F5'}});sa.addText([{text:'So what?  ',options:{bold:true,color:A.RED,fontSize:10}},{text:sec.so_what,options:{italic:true,color:A.SGRAY,fontSize:10}}],{x:0.75,y:ay+0.05,w:11.9,h:0.4,fontFace:'Arial',valign:'top'});}});}
+
+  // RISKS
+  if(result.risks?.length){const sr=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sr,'Riesgos y Tensiones');let ry=1.0;result.risks.forEach(rk=>{sr.addShape(pptx.ShapeType.rect,{x:0.5,y:ry,w:0.06,h:0.7,fill:{color:A.RED}});sr.addShape(pptx.ShapeType.rect,{x:0.56,y:ry,w:12.27,h:0.7,fill:{color:'FFF5F5'}});sr.addText(rk.risk,{x:0.75,y:ry+0.05,w:11.9,h:0.3,fontSize:10,fontFace:'Arial',color:A.RED,bold:true});sr.addText(rk.implication,{x:0.75,y:ry+0.35,w:11.9,h:0.3,fontSize:9,fontFace:'Arial',color:A.SGRAY});ry+=0.85;});}
+
+  // OPPORTUNITIES
+  if(result.opportunities?.length){const so=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(so,'Oportunidades');addBlt(so,result.opportunities,1.0,'2E8B57');}
+
+  // RECOMMENDATIONS
+  if(result.recommendations){const allH=[{key:'short_term',label:'Corto Plazo'},{key:'medium_term',label:'Mediano Plazo'},{key:'long_term',label:'Largo Plazo'}].filter(h=>result.recommendations[h.key]?.length);if(allH.length){const sr=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sr,'Recomendaciones');let ry=1.0;allH.forEach(hz=>{const items=result.recommendations[hz.key];sr.addText(hz.label.toUpperCase(),{x:0.5,y:ry,w:4,h:0.3,fontSize:9,fontFace:'Arial',color:A.BLUE,bold:true,letterSpacing:2});ry+=0.35;items.forEach((rec,i)=>{sr.addShape(pptx.ShapeType.rect,{x:0.5,y:ry,w:0.35,h:0.35,fill:{color:A.NAVY},rectRadius:0.05});sr.addText(String(i+1),{x:0.5,y:ry,w:0.35,h:0.35,fontSize:10,fontFace:'Arial',color:A.WHITE,bold:true,align:'center',valign:'middle'});sr.addText(rec.action,{x:1.0,y:ry,w:7,h:0.3,fontSize:10,fontFace:'Arial',color:A.DGRAY,bold:true,valign:'top'});sr.addText(rec.rationale+'  |  Impacto: '+rec.impact,{x:1.0,y:ry+0.28,w:11.5,h:0.25,fontSize:8,fontFace:'Arial',color:A.SGRAY,italic:true,valign:'top'});ry+=0.6;});ry+=0.15;});}}
+
+  // INFO GAPS
+  if(result.information_gaps?.length){const sg=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sg,'Información Faltante');addBlt(sg,result.information_gaps,1.0,'999999');}
+
+  // CONCLUSION
+  if(result.conclusion){const sc=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sc,'Conclusión Ejecutiva');sc.addShape(pptx.ShapeType.rect,{x:0.5,y:1.0,w:12.33,h:2.0,fill:{color:A.LGRAY}});sc.addShape(pptx.ShapeType.rect,{x:0.5,y:1.0,w:0.06,h:2.0,fill:{color:A.BLUE}});sc.addText(result.conclusion,{x:0.8,y:1.1,w:11.8,h:1.8,fontSize:13,fontFace:'Georgia',color:A.DGRAY,lineSpacingMultiple:1.5,valign:'top'});}
+
+  // CLOSING
+  const sE=pptx.addSlide();sE.background={color:A.DNAVY};
+  if(logoWhiteBase64)sE.addImage({data:'image/png;base64,'+logoWhiteBase64,x:5.2,y:2.5,w:3,h:0.78});
+  sE.addShape(pptx.ShapeType.rect,{x:5.5,y:3.5,w:2.33,h:0.04,fill:{color:A.RED}});
+  sE.addText('Gracias',{x:0,y:3.8,w:'100%',h:1,fontSize:36,fontFace:'Georgia',color:A.WHITE,align:'center',bold:true});
+
+  await pptx.writeFile({fileName:'Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pptx'});
+  flash('\u2713 Presentación ALTO descargada');
+}catch(err){console.error(err);showError('Error PPTX: '+err.message);}}
 </script>
 
 <!-- ============================================================ -->
-<!-- PPTX GENERATION — McKinsey style, no API call needed -->
+<!-- DOCX GENERATION — ALTO Corporate Style -->
 <!-- ============================================================ -->
 <script>
-async function downloadPptx() {
-  if (!result) return;
-  showStatus('Generando presentación PowerPoint...');
+async function downloadDocx(){if(!result)return;showStatus('Generando documento Word ALTO...');try{
+  const{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,AlignmentType,BorderStyle,WidthType,ShadingType,Header,Footer,PageNumber,PageBreak,ImageRun}=docx;
+  const A=ALTO;const noBdr={style:BorderStyle.NONE,size:0,color:A.WHITE};const noBorders={top:noBdr,bottom:noBdr,left:noBdr,right:noBdr};
+  const children=[];const sp=(n)=>new Paragraph({spacing:{after:n||120},children:[]});
+  function govBox(t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[200,9160],rows:[new TableRow({children:[new TableCell({borders:noBorders,shading:{fill:A.NAVY,type:ShadingType.CLEAR},width:{size:200,type:WidthType.DXA},children:[new Paragraph({children:[]})]}),new TableCell({borders:noBorders,shading:{fill:A.LGRAY,type:ShadingType.CLEAR},margins:{top:120,bottom:120,left:160,right:160},width:{size:9160,type:WidthType.DXA},children:[new Paragraph({children:[new TextRun({text:t,font:"Georgia",size:21,bold:true,color:A.NAVY})]})]})]})]})}
+  function grayBox(l,t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({borders:noBorders,shading:{fill:A.LGRAY,type:ShadingType.CLEAR},margins:{top:160,bottom:160,left:200,right:200},width:{size:9360,type:WidthType.DXA},children:[new Paragraph({spacing:{after:60},children:[new TextRun({text:l,font:"Arial",size:16,bold:true,color:A.BLUE})]}),new Paragraph({children:[new TextRun({text:t,font:"Georgia",size:22,italics:true,color:A.DGRAY})]})]})]})]})}
+  function secH(t){return[new Paragraph({spacing:{before:360,after:100},children:[new TextRun({text:t.toUpperCase(),font:"Arial",size:24,bold:true,color:A.NAVY})]}),new Paragraph({spacing:{after:60},border:{bottom:{style:BorderStyle.SINGLE,size:2,color:A.MGRAY,space:1}},children:[]})]}
+  function blt(t,c){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[360,9000],rows:[new TableRow({children:[new TableCell({borders:noBorders,width:{size:360,type:WidthType.DXA},margins:{top:40,bottom:40,left:80,right:0},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:"\u25B8",font:"Arial",size:20,color:c||A.RED})]})]}),new TableCell({borders:noBorders,width:{size:9000,type:WidthType.DXA},margins:{top:40,bottom:40,left:80,right:80},children:[new Paragraph({children:[new TextRun({text:t,font:"Arial",size:21,color:A.DGRAY})]})]})]})]})}
+  function swBox(t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({borders:{top:{style:BorderStyle.SINGLE,size:1,color:A.RED},bottom:{style:BorderStyle.SINGLE,size:1,color:A.RED},left:{style:BorderStyle.SINGLE,size:4,color:A.RED},right:{style:BorderStyle.SINGLE,size:1,color:A.RED}},margins:{top:100,bottom:100,left:160,right:160},width:{size:9360,type:WidthType.DXA},children:[new Paragraph({children:[new TextRun({text:"So what?  ",font:"Arial",size:20,bold:true,color:A.RED}),new TextRun({text:t,font:"Arial",size:20,italics:true,color:A.SGRAY})]})]})]})]})}
+  function numS(n,t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[600,8760],rows:[new TableRow({children:[new TableCell({borders:noBorders,shading:{fill:A.NAVY,type:ShadingType.CLEAR},width:{size:600,type:WidthType.DXA},margins:{top:100,bottom:100,left:80,right:80},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:String(n),font:"Arial",size:22,bold:true,color:A.WHITE})]})]}),new TableCell({borders:noBorders,shading:{fill:A.LGRAY,type:ShadingType.CLEAR},width:{size:8760,type:WidthType.DXA},margins:{top:100,bottom:100,left:160,right:160},children:[new Paragraph({children:[new TextRun({text:t,font:"Arial",size:21,color:A.DGRAY})]})]})]})]})}
 
-  try {
-    const pptx = new PptxGenJS();
-    pptx.layout = 'LAYOUT_WIDE'; // 13.33 x 7.5 inches
-    pptx.author = 'Strategic Report Agent';
-    pptx.title = result.title;
+  // Cover
+  children.push(sp(1200));
+  // Logo in docx
+  if(logoBase64){try{const logoBytes=Uint8Array.from(atob(logoBase64),c=>c.charCodeAt(0));children.push(new Paragraph({children:[new ImageRun({data:logoBytes,transformation:{width:200,height:52},type:'png'})]}));}catch(e){children.push(new Paragraph({children:[new TextRun({text:"ALTO",font:"Arial",size:40,bold:true,color:A.RED})]}));}}
+  children.push(sp(400));
+  children.push(new Paragraph({spacing:{after:200},children:[new TextRun({text:result.title,font:"Georgia",size:56,bold:true,color:A.NAVY})]}));
+  if(result.subtitle)children.push(new Paragraph({spacing:{after:100},children:[new TextRun({text:result.subtitle,font:"Georgia",size:28,italics:true,color:A.SGRAY})]}));
+  children.push(new Paragraph({spacing:{before:200,after:200},border:{bottom:{style:BorderStyle.SINGLE,size:6,color:A.RED,space:1}},children:[]}));
+  children.push(new Paragraph({spacing:{after:100},children:[new TextRun({text:"CONFIDENCIAL",font:"Arial",size:18,bold:true,color:A.NAVY})]}));
+  children.push(new Paragraph({spacing:{after:600},children:[new TextRun({text:new Date().toLocaleDateString("es-CL",{year:"numeric",month:"long",day:"numeric"}),font:"Arial",size:20,color:A.SGRAY})]}));
+  children.push(new Paragraph({children:[new PageBreak()]}));
 
-    // === COLORS ===
-    const NAVY   = '003A70';
-    const DNAVY  = '001F3F';
-    const GOLD   = 'B8860B';
-    const WHITE  = 'FFFFFF';
-    const LGRAY  = 'F5F5F5';
-    const MGRAY  = 'E8E8E8';
-    const DGRAY  = '333333';
-    const SGRAY  = '666666';
-    const BODY   = '444444';
+  children.push(...secH("Resumen Ejecutivo"));children.push(grayBox("RESUMEN EJECUTIVO",result.executive_summary));children.push(sp(200));
+  if(result.key_messages?.length){children.push(...secH("Mensajes Clave"));result.key_messages.forEach(m=>children.push(blt(m)));children.push(sp(200));}
+  if(result.context){children.push(...secH("Contexto y Objetivo"));children.push(new Paragraph({spacing:{after:200},children:[new TextRun({text:result.context,font:"Arial",size:21,color:A.DGRAY})]}));}
+  if(result.findings?.length){children.push(...secH("Hallazgos Clave"));result.findings.forEach((f,i)=>{children.push(new Paragraph({spacing:{before:160,after:60},children:[new TextRun({text:`${i+1}. ${f.finding}`,font:"Arial",size:22,bold:true,color:A.NAVY})]}));children.push(new Paragraph({spacing:{after:40},children:[new TextRun({text:"Evidencia: ",font:"Arial",size:20,bold:true,color:A.SGRAY}),new TextRun({text:f.evidence,font:"Arial",size:20,color:A.SGRAY})]}));children.push(new Paragraph({spacing:{after:120},children:[new TextRun({text:"Implicancia: ",font:"Arial",size:20,bold:true,color:A.RED}),new TextRun({text:f.business_implication,font:"Arial",size:20,color:A.BODY})]}));});children.push(sp(200));}
+  if(result.analysis_blocks?.length){result.analysis_blocks.forEach((s,i)=>{children.push(...secH(`${i+1}. ${s.heading}`));if(s.governing_thought){children.push(govBox(s.governing_thought));children.push(sp(160));}if(s.content)children.push(new Paragraph({spacing:{after:160},children:[new TextRun({text:s.content,font:"Arial",size:21,color:A.DGRAY})]}));if(s.bullets?.length){s.bullets.forEach(b=>children.push(blt(b)));children.push(sp(80));}if(s.so_what){children.push(swBox(s.so_what));children.push(sp(200));}});}
+  if(result.risks?.length){children.push(new Paragraph({children:[new PageBreak()]}));children.push(...secH("Riesgos"));result.risks.forEach(rk=>{children.push(new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({borders:{top:noBdr,bottom:noBdr,left:{style:BorderStyle.SINGLE,size:4,color:A.RED},right:noBdr},margins:{top:100,bottom:100,left:160,right:160},width:{size:9360,type:WidthType.DXA},children:[new Paragraph({children:[new TextRun({text:rk.risk,font:"Arial",size:21,bold:true,color:A.RED})]}),new Paragraph({children:[new TextRun({text:rk.implication,font:"Arial",size:20,color:A.SGRAY})]})]})]})]}));children.push(sp(100));});children.push(sp(200));}
+  if(result.opportunities?.length){children.push(...secH("Oportunidades"));result.opportunities.forEach(o=>children.push(blt(o,"2E8B57")));children.push(sp(200));}
+  if(result.recommendations){children.push(...secH("Recomendaciones"));[{key:"short_term",label:"CORTO PLAZO"},{key:"medium_term",label:"MEDIANO PLAZO"},{key:"long_term",label:"LARGO PLAZO"}].forEach(hz=>{const items=result.recommendations[hz.key];if(!items?.length)return;children.push(new Paragraph({spacing:{before:200,after:100},children:[new TextRun({text:hz.label,font:"Arial",size:20,bold:true,color:A.BLUE})]}));items.forEach((rec,i)=>{children.push(numS(i+1,rec.action));children.push(new Paragraph({spacing:{after:40},indent:{left:720},children:[new TextRun({text:rec.rationale,font:"Arial",size:19,color:A.SGRAY,italics:true})]}));children.push(new Paragraph({spacing:{after:120},indent:{left:720},children:[new TextRun({text:"Impacto: ",font:"Arial",size:19,bold:true,color:A.RED}),new TextRun({text:rec.impact,font:"Arial",size:19,color:A.BODY})]}));});});children.push(sp(200));}
+  if(result.information_gaps?.length){children.push(...secH("Informaci\u00F3n Faltante"));result.information_gaps.forEach(g=>children.push(blt(g,"999999")));children.push(sp(200));}
+  if(result.conclusion){children.push(...secH("Conclusi\u00F3n Ejecutiva"));children.push(grayBox("CONCLUSI\u00D3N",result.conclusion));}
 
-    // === MASTER SLIDE ===
-    pptx.defineSlideMaster({
-      title: 'MCKINSEY',
-      background: { color: WHITE },
-      objects: [
-        // Top navy bar
-        { rect: { x: 0, y: 0, w: '100%', h: 0.06, fill: { color: NAVY } } },
-        // Bottom bar
-        { rect: { x: 0, y: 7.2, w: '100%', h: 0.3, fill: { color: LGRAY } } },
-        // Footer text left
-        { text: { text: 'CONFIDENCIAL', options: { x: 0.5, y: 7.22, w: 3, h: 0.25, fontSize: 7, fontFace: 'Arial', color: SGRAY, bold: true } } },
-        // Footer text right
-        { text: { text: 'Grupo Alto', options: { x: 10, y: 7.22, w: 3, h: 0.25, fontSize: 7, fontFace: 'Arial', color: NAVY, bold: true, align: 'right' } } },
-        // Gold accent line
-        { rect: { x: 0.5, y: 7.18, w: 12.33, h: 0.02, fill: { color: GOLD } } },
-      ],
-      slideNumber: { x: 6.3, y: 7.22, w: 0.8, h: 0.25, fontSize: 7, fontFace: 'Arial', color: SGRAY, align: 'center' },
-    });
-
-    // Helper: add title to slide
-    function slideTitle(slide, text) {
-      slide.addText(text.toUpperCase(), {
-        x: 0.5, y: 0.3, w: 12.33, h: 0.5,
-        fontSize: 14, fontFace: 'Arial', color: NAVY, bold: true,
-        letterSpacing: 2,
-      });
-      // Gold underline
-      slide.addShape(pptx.ShapeType.rect, {
-        x: 0.5, y: 0.82, w: 2, h: 0.03, fill: { color: GOLD },
-      });
-    }
-
-    // Helper: governing thought box
-    function govThought(slide, text, y) {
-      // Navy left bar
-      slide.addShape(pptx.ShapeType.rect, {
-        x: 0.5, y: y, w: 0.06, h: 0.5, fill: { color: NAVY },
-      });
-      // Gray background
-      slide.addShape(pptx.ShapeType.rect, {
-        x: 0.56, y: y, w: 12.27, h: 0.5, fill: { color: LGRAY },
-      });
-      slide.addText(text, {
-        x: 0.75, y: y + 0.05, w: 11.9, h: 0.4,
-        fontSize: 11, fontFace: 'Georgia', color: NAVY, bold: true, italic: true,
-      });
-      return y + 0.6;
-    }
-
-    // Helper: bullet list
-    function addBullets(slide, items, startY, color) {
-      color = color || GOLD;
-      let y = startY;
-      items.forEach(item => {
-        slide.addText([
-          { text: '▸ ', options: { fontSize: 11, fontFace: 'Arial', color: color, bold: true } },
-          { text: item, options: { fontSize: 10, fontFace: 'Arial', color: BODY } },
-        ], { x: 0.7, y: y, w: 11.8, h: 0.35, valign: 'top' });
-        y += 0.35;
-      });
-      return y;
-    }
-
-    // === SLIDE 1: COVER ===
-    const s1 = pptx.addSlide();
-    s1.background = { color: DNAVY };
-    // Gold accent line
-    s1.addShape(pptx.ShapeType.rect, { x: 0.5, y: 2.8, w: 3, h: 0.04, fill: { color: GOLD } });
-    // Title
-    s1.addText(result.title, {
-      x: 0.5, y: 3.0, w: 12, h: 1.5,
-      fontSize: 30, fontFace: 'Georgia', color: WHITE, bold: true,
-      lineSpacingMultiple: 1.1,
-    });
-    // Subtitle
-    if (result.subtitle) {
-      s1.addText(result.subtitle, {
-        x: 0.5, y: 4.5, w: 10, h: 0.6,
-        fontSize: 14, fontFace: 'Georgia', color: MGRAY, italic: true,
-      });
-    }
-    // Date + Confidential
-    s1.addText('CONFIDENCIAL', {
-      x: 0.5, y: 6.2, w: 3, h: 0.3,
-      fontSize: 9, fontFace: 'Arial', color: GOLD, bold: true, letterSpacing: 3,
-    });
-    s1.addText(new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' }), {
-      x: 0.5, y: 6.5, w: 4, h: 0.3,
-      fontSize: 10, fontFace: 'Arial', color: SGRAY,
-    });
-
-    // === SLIDE 2: EXECUTIVE SUMMARY ===
-    const s2 = pptx.addSlide({ masterName: 'MCKINSEY' });
-    slideTitle(s2, 'Resumen Ejecutivo');
-    // Summary box
-    s2.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.1, w: 12.33, h: 1.5, fill: { color: LGRAY } });
-    s2.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.1, w: 0.06, h: 1.5, fill: { color: NAVY } });
-    s2.addText(result.executive_summary, {
-      x: 0.8, y: 1.2, w: 11.8, h: 1.3,
-      fontSize: 12, fontFace: 'Georgia', color: DGRAY, italic: true,
-      lineSpacingMultiple: 1.4, valign: 'top',
-    });
-    // Key messages
-    if (result.key_messages?.length) {
-      s2.addText('MENSAJES CLAVE', {
-        x: 0.5, y: 2.9, w: 5, h: 0.3,
-        fontSize: 9, fontFace: 'Arial', color: NAVY, bold: true, letterSpacing: 2,
-      });
-      addBullets(s2, result.key_messages, 3.3);
-    }
-
-    // === SLIDE 3: CONTEXT ===
-    if (result.context) {
-      const s3 = pptx.addSlide({ masterName: 'MCKINSEY' });
-      slideTitle(s3, 'Contexto y Objetivo');
-      s3.addText(result.context, {
-        x: 0.5, y: 1.1, w: 12.33, h: 5.5,
-        fontSize: 11, fontFace: 'Arial', color: BODY,
-        lineSpacingMultiple: 1.5, valign: 'top',
-      });
-    }
-
-    // === SLIDES: FINDINGS ===
-    if (result.findings?.length) {
-      const sf = pptx.addSlide({ masterName: 'MCKINSEY' });
-      slideTitle(sf, 'Hallazgos Clave');
-      let fy = 1.1;
-      result.findings.forEach((f, i) => {
-        if (fy > 6.0) { return; } // safety limit
-        // Finding number + title
-        sf.addText((i + 1) + '. ' + f.finding, {
-          x: 0.5, y: fy, w: 12.33, h: 0.35,
-          fontSize: 11, fontFace: 'Arial', color: NAVY, bold: true,
-        });
-        fy += 0.35;
-        // Evidence
-        sf.addText([
-          { text: 'Evidencia: ', options: { bold: true, color: SGRAY } },
-          { text: f.evidence, options: { color: SGRAY } },
-        ], { x: 0.7, y: fy, w: 12, h: 0.3, fontSize: 9, fontFace: 'Arial', valign: 'top' });
-        fy += 0.3;
-        // Implication
-        sf.addText([
-          { text: 'Implicancia: ', options: { bold: true, color: GOLD } },
-          { text: f.business_implication, options: { color: BODY } },
-        ], { x: 0.7, y: fy, w: 12, h: 0.3, fontSize: 9, fontFace: 'Arial', valign: 'top' });
-        fy += 0.45;
-      });
-    }
-
-    // === SLIDES: ANALYSIS BLOCKS (one per slide) ===
-    if (result.analysis_blocks?.length) {
-      result.analysis_blocks.forEach((sec, i) => {
-        const sa = pptx.addSlide({ masterName: 'MCKINSEY' });
-        slideTitle(sa, (i + 1) + '. ' + sec.heading);
-
-        let ay = 1.1;
-
-        if (sec.governing_thought) {
-          ay = govThought(sa, sec.governing_thought, ay);
-          ay += 0.1;
-        }
-
-        if (sec.content) {
-          sa.addText(sec.content, {
-            x: 0.5, y: ay, w: 12.33, h: 1.5,
-            fontSize: 10, fontFace: 'Arial', color: BODY,
-            lineSpacingMultiple: 1.4, valign: 'top',
-          });
-          ay += 1.6;
-        }
-
-        if (sec.bullets?.length) {
-          ay = addBullets(sa, sec.bullets, ay);
-          ay += 0.15;
-        }
-
-        if (sec.so_what) {
-          // Gold left border box
-          sa.addShape(pptx.ShapeType.rect, { x: 0.5, y: ay, w: 0.06, h: 0.5, fill: { color: GOLD } });
-          sa.addShape(pptx.ShapeType.rect, { x: 0.56, y: ay, w: 12.27, h: 0.5, fill: { color: 'FFF8E7' } });
-          sa.addText([
-            { text: 'So what?  ', options: { bold: true, color: GOLD, fontSize: 10 } },
-            { text: sec.so_what, options: { italic: true, color: SGRAY, fontSize: 10 } },
-          ], { x: 0.75, y: ay + 0.05, w: 11.9, h: 0.4, fontFace: 'Arial', valign: 'top' });
-        }
-      });
-    }
-
-    // === SLIDE: RISKS ===
-    if (result.risks?.length) {
-      const sr = pptx.addSlide({ masterName: 'MCKINSEY' });
-      slideTitle(sr, 'Riesgos y Tensiones Críticas');
-      let ry = 1.1;
-      result.risks.forEach(rk => {
-        sr.addShape(pptx.ShapeType.rect, { x: 0.5, y: ry, w: 0.06, h: 0.7, fill: { color: 'CC3333' } });
-        sr.addShape(pptx.ShapeType.rect, { x: 0.56, y: ry, w: 12.27, h: 0.7, fill: { color: 'FFF0F0' } });
-        sr.addText(rk.risk, {
-          x: 0.75, y: ry + 0.05, w: 11.9, h: 0.3,
-          fontSize: 10, fontFace: 'Arial', color: 'CC3333', bold: true,
-        });
-        sr.addText(rk.implication, {
-          x: 0.75, y: ry + 0.35, w: 11.9, h: 0.3,
-          fontSize: 9, fontFace: 'Arial', color: SGRAY,
-        });
-        ry += 0.85;
-      });
-    }
-
-    // === SLIDE: OPPORTUNITIES ===
-    if (result.opportunities?.length) {
-      const so = pptx.addSlide({ masterName: 'MCKINSEY' });
-      slideTitle(so, 'Oportunidades y Palancas Estratégicas');
-      addBullets(so, result.opportunities, 1.1, '2E8B57');
-    }
-
-    // === SLIDES: RECOMMENDATIONS ===
-    if (result.recommendations) {
-      const horizons = [
-        { key: 'short_term', label: 'Corto Plazo', accent: '2E8B57' },
-        { key: 'medium_term', label: 'Mediano Plazo', accent: GOLD },
-        { key: 'long_term', label: 'Largo Plazo', accent: NAVY },
-      ];
-
-      const allRecs = horizons.filter(h => result.recommendations[h.key]?.length);
-
-      if (allRecs.length) {
-        const srec = pptx.addSlide({ masterName: 'MCKINSEY' });
-        slideTitle(srec, 'Recomendaciones');
-        let ry = 1.1;
-
-        allRecs.forEach(hz => {
-          const items = result.recommendations[hz.key];
-          // Horizon label
-          srec.addText(hz.label.toUpperCase(), {
-            x: 0.5, y: ry, w: 4, h: 0.3,
-            fontSize: 9, fontFace: 'Arial', color: hz.accent, bold: true, letterSpacing: 2,
-          });
-          ry += 0.35;
-
-          items.forEach((rec, i) => {
-            // Number circle
-            srec.addShape(pptx.ShapeType.rect, {
-              x: 0.5, y: ry, w: 0.35, h: 0.35,
-              fill: { color: NAVY }, rectRadius: 0.05,
-            });
-            srec.addText(String(i + 1), {
-              x: 0.5, y: ry, w: 0.35, h: 0.35,
-              fontSize: 10, fontFace: 'Arial', color: WHITE, bold: true, align: 'center', valign: 'middle',
-            });
-            // Action
-            srec.addText(rec.action, {
-              x: 1.0, y: ry, w: 7, h: 0.3,
-              fontSize: 10, fontFace: 'Arial', color: DGRAY, bold: true, valign: 'top',
-            });
-            // Rationale + Impact
-            srec.addText(rec.rationale + '  |  Impacto: ' + rec.impact, {
-              x: 1.0, y: ry + 0.28, w: 11.5, h: 0.25,
-              fontSize: 8, fontFace: 'Arial', color: SGRAY, italic: true, valign: 'top',
-            });
-            ry += 0.6;
-          });
-          ry += 0.15;
-        });
-      }
-    }
-
-    // === SLIDE: INFO GAPS (if present) ===
-    if (result.information_gaps?.length) {
-      const sg = pptx.addSlide({ masterName: 'MCKINSEY' });
-      slideTitle(sg, 'Información Faltante');
-      addBullets(sg, result.information_gaps, 1.1, '999999');
-    }
-
-    // === SLIDE: CONCLUSION ===
-    if (result.conclusion) {
-      const sc = pptx.addSlide({ masterName: 'MCKINSEY' });
-      slideTitle(sc, 'Conclusión Ejecutiva');
-      sc.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.1, w: 12.33, h: 2.0, fill: { color: LGRAY } });
-      sc.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.1, w: 0.06, h: 2.0, fill: { color: NAVY } });
-      sc.addText(result.conclusion, {
-        x: 0.8, y: 1.2, w: 11.8, h: 1.8,
-        fontSize: 13, fontFace: 'Georgia', color: DGRAY,
-        lineSpacingMultiple: 1.5, valign: 'top',
-      });
-    }
-
-    // === CLOSING SLIDE ===
-    const sEnd = pptx.addSlide();
-    sEnd.background = { color: DNAVY };
-    sEnd.addShape(pptx.ShapeType.rect, { x: 5.5, y: 3.2, w: 2.33, h: 0.04, fill: { color: GOLD } });
-    sEnd.addText('Gracias', {
-      x: 0, y: 3.5, w: '100%', h: 1,
-      fontSize: 36, fontFace: 'Georgia', color: WHITE, align: 'center', bold: true,
-    });
-    sEnd.addText('Strategic Report Agent — Powered by Claude', {
-      x: 0, y: 4.5, w: '100%', h: 0.5,
-      fontSize: 10, fontFace: 'Arial', color: SGRAY, align: 'center',
-    });
-
-    // === SAVE ===
-    await pptx.writeFile({ fileName: 'Informe_Ejecutivo_' + new Date().toISOString().slice(0, 10) + '.pptx' });
-    flash('\u2713 Presentación PowerPoint descargada');
-
-  } catch (err) {
-    console.error(err);
-    showError('Error generando presentación: ' + err.message);
-  }
-}
+  const doc=new Document({styles:{default:{document:{run:{font:"Arial",size:22}}}},sections:[{properties:{page:{size:{width:12240,height:15840},margin:{top:1440,right:1440,bottom:1440,left:1440}}},
+    headers:{default:new Header({children:[new Paragraph({alignment:AlignmentType.RIGHT,border:{bottom:{style:BorderStyle.SINGLE,size:2,color:A.RED,space:4}},children:[new TextRun({text:"CONFIDENCIAL  |  ",font:"Arial",size:14,color:"999999"}),new TextRun({text:"ALTO",font:"Arial",size:14,bold:true,color:A.RED})]})]})},
+    footers:{default:new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,border:{top:{style:BorderStyle.SINGLE,size:1,color:A.MGRAY,space:4}},children:[new TextRun({text:"P\u00E1gina ",font:"Arial",size:16,color:"999999"}),new TextRun({children:[PageNumber.CURRENT],font:"Arial",size:16,color:"999999"})]})]})},
+    children}]});
+  const blob=await Packer.toBlob(doc);const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="Informe_ALTO_"+new Date().toISOString().slice(0,10)+".docx";a.click();URL.revokeObjectURL(url);flash("\u2713 Documento ALTO descargado");
+}catch(err){console.error(err);showError("Error DOCX: "+err.message);}}
 </script>
 </body>
 </html>
