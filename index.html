@@ -1,351 +1,376 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="dark" lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Strategic Report Agent — Informe Ejecutivo con IA 1.4</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Strategic Report Agent — Informe Ejecutivo con IA 2.0</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface":"#0f131c","surface-container":"#1c1f29","surface-container-low":"#181b25",
+        "surface-container-high":"#262a34","surface-container-highest":"#31353f",
+        "on-surface":"#dfe2ef","on-surface-variant":"#c0c7d4",
+        "primary":"#a3c9ff","primary-container":"#0078d4",
+        "outline":"#8a919e","outline-variant":"#404752",
+        "error":"#ffb4ab","navy":"#003A70","gold":"#B8860B","gold-light":"#D4A843",
+      },
+      fontFamily: { "headline":["Noto Serif","serif"], "body":["Inter","sans-serif"] },
+    },
+  },
+}
+</script>
 <style>
-  :root {
-    --navy: #003A70;
-    --dark-navy: #00264D;
-    --blue: #0078D4;
-    --accent: #00A3E0;
-    --gold: #B8860B;
-    --gold-light: #D4A843;
-    --bg: #0a0e17;
-    --card: #111827;
-    --card-hover: #1a2332;
-    --border: #1e293b;
-    --border-light: #2d3a4d;
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --dim: #64748b;
-    --success: #10b981;
-    --error: #ef4444;
-    --error-bg: #1a0505;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.5;
-  }
-
-  /* Header */
-  .header {
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 100;
-  }
-  .header-logo {
-    width: 38px; height: 38px;
-    background: linear-gradient(135deg, var(--navy), var(--accent));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 17px; color: #fff;
-    flex-shrink: 0;
-  }
-  .header-title { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
-  .header-sub { font-size: 11px; color: var(--dim); margin-top: 2px; }
-
-  /* Main container */
-  .container { max-width: 920px; margin: 0 auto; padding: 32px 20px 60px; }
-
-  /* Config bar */
-  .config-bar {
-    display: flex; gap: 8px; align-items: center; margin-bottom: 24px;
-    padding: 12px 16px; background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; flex-wrap: wrap;
-  }
-  .config-bar label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-  .config-bar input {
-    flex: 1; min-width: 200px; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 6px; padding: 8px 12px; color: var(--text); font-size: 13px;
-    outline: none; font-family: monospace;
-  }
-  .config-bar input:focus { border-color: var(--accent); }
-  .config-bar .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .dot-ok { background: var(--success); }
-  .dot-no { background: var(--error); }
-  .dot-idle { background: var(--dim); }
-
-  /* Input area */
-  .input-section { margin-bottom: 20px; }
-  .input-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .input-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-
-  textarea {
-    width: 100%; min-height: 200px; background: var(--card);
-    border: 1px solid var(--border); border-radius: 10px;
-    padding: 16px; color: var(--text); font-size: 14px;
-    line-height: 1.7; resize: vertical; outline: none;
-    font-family: inherit; transition: border-color 0.2s;
-  }
-  textarea:focus { border-color: var(--accent); }
-  textarea::placeholder { color: var(--dim); }
-
-  /* Buttons */
-  .actions { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
-
-  .btn {
-    border: none; border-radius: 8px; font-weight: 600;
-    font-size: 14px; cursor: pointer; transition: all 0.15s;
-    padding: 12px 20px; display: inline-flex; align-items: center; gap: 6px;
-  }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-  .btn-primary {
-    flex: 1 1 auto;
-    background: linear-gradient(135deg, var(--navy), var(--blue));
-    color: #fff;
-  }
-  .btn-primary:hover:not(:disabled) { filter: brightness(1.15); }
-  .btn-secondary { background: var(--card); border: 1px solid var(--border); color: var(--text); }
-  .btn-secondary:hover:not(:disabled) { background: var(--card-hover); }
-  .btn-gold { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
-  .btn-gold:hover:not(:disabled) { background: rgba(184, 134, 11, 0.1); }
-  .btn-success { background: var(--success); color: #fff; }
-  .btn-success:hover:not(:disabled) { filter: brightness(1.15); }
-  .btn-sm { font-size: 12px; padding: 5px 12px; }
-  .btn-success { background: var(--success); color: #fff; }
-
-  /* Status */
-  .status { text-align: center; margin-bottom: 20px; font-size: 13px; color: var(--accent); }
-  .status.error { color: var(--error); }
-  .error-box {
-    background: var(--error-bg); border: 1px solid rgba(239,68,68,0.2);
-    border-radius: 8px; padding: 14px; margin-bottom: 20px;
-    color: var(--error); font-size: 13px;
-  }
-
-  /* Preview card */
-  .preview { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  .preview-header {
-    padding: 12px 20px; background: var(--dark-navy);
-    border-bottom: 2px solid var(--gold);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .preview-header span { font-size: 12px; font-weight: 600; color: #fff; text-transform: uppercase; letter-spacing: 0.06em; }
-  .preview-body { padding: 28px; }
-
-  .doc-title {
-    font-size: 24px; font-weight: 700; font-family: Georgia, serif;
-    line-height: 1.3; margin-bottom: 4px;
-    background: linear-gradient(135deg, var(--blue), var(--accent));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .doc-subtitle { font-size: 13px; color: var(--dim); font-style: italic; margin-bottom: 14px; }
-  .gold-line { height: 3px; background: linear-gradient(to right, var(--gold), transparent); border-radius: 2px; margin-bottom: 22px; }
-
-  .exec-summary {
-    background: #0d1b2a; border: 1px solid var(--border);
-    border-left: 3px solid var(--accent); border-radius: 8px;
-    padding: 18px; margin-bottom: 24px;
-  }
-  .exec-summary .label { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
-  .exec-summary p { font-size: 13px; line-height: 1.8; font-family: Georgia, serif; }
-
-  .section { margin-bottom: 24px; }
-  .section h2 {
-    font-size: 14px; font-weight: 700; color: var(--blue);
-    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px;
-  }
-  .section-line { height: 1px; background: var(--border); margin-bottom: 10px; }
-
-  .governing {
-    display: flex; gap: 10px; margin-bottom: 12px;
-  }
-  .governing-bar { width: 3px; background: var(--navy); border-radius: 2px; flex-shrink: 0; }
-  .governing p { font-size: 13px; font-weight: 600; font-family: Georgia, serif; margin: 0; }
-
-  .section-content { font-size: 13px; line-height: 1.7; color: var(--muted); margin-bottom: 10px; }
-
-  .bullet { display: flex; gap: 8px; margin-bottom: 5px; padding-left: 6px; }
-  .bullet-icon { color: var(--gold); font-weight: 700; flex-shrink: 0; }
-  .bullet span { font-size: 13px; line-height: 1.5; }
-
-  .so-what {
-    margin-top: 10px; padding: 10px 14px;
-    border-left: 3px solid var(--gold);
-    background: #1a1a0d; border-radius: 0 6px 6px 0;
-  }
-  .so-what .label { font-size: 12px; font-weight: 700; color: var(--gold); }
-  .so-what .text { font-size: 12px; color: var(--muted); font-style: italic; }
-
-  .next-step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
-  .step-num {
-    width: 24px; height: 24px; border-radius: 6px; background: var(--navy);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
-  }
-  .next-step span { font-size: 13px; line-height: 1.5; }
-
-  .appendix {
-    margin-top: 24px; padding: 14px; background: #0d0d0d;
-    border-radius: 8px; border: 1px solid var(--border);
-  }
-  .appendix .label { font-size: 10px; font-weight: 600; color: var(--dim); text-transform: uppercase; margin-bottom: 4px; }
-  .appendix p { font-size: 12px; color: var(--muted); line-height: 1.6; }
-
-  /* Empty state */
-  .empty { text-align: center; padding: 60px 20px; color: var(--dim); }
-  .empty-icon { font-size: 40px; margin-bottom: 14px; }
-  .empty-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
-  .empty-desc { font-size: 13px; max-width: 500px; margin: 0 auto; line-height: 1.7; }
-
-  /* Loading spinner */
-  .spinner {
-    display: inline-block; width: 16px; height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff; border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Responsive */
-  @media (max-width: 640px) {
-    .container { padding: 20px 14px 40px; }
-    .actions { flex-direction: column; }
-    .btn { width: 100%; justify-content: center; }
-    .config-bar { flex-direction: column; align-items: stretch; }
-    .config-bar input { min-width: unset; }
-  }
+  body { background:#0f131c; color:#dfe2ef; font-family:'Inter',sans-serif; }
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; }
+  .serif-heading { font-family:'Noto Serif',serif; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .spinner { display:inline-block; width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
+  .fade-in { animation:fadeIn 0.4s ease-out; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  /* Editable fields */
+  .editable { cursor:text; transition:background 0.15s; border-radius:4px; padding:1px 3px; margin:-1px -3px; }
+  .editable:hover { background:rgba(163,201,255,0.08); }
+  .editable:focus { outline:2px solid #0078d4; background:rgba(163,201,255,0.12); }
+  /* Drop zone */
+  .drop-zone { border:2px dashed #404752; transition:all 0.2s; }
+  .drop-zone.drag-over { border-color:#0078d4; background:rgba(0,120,212,0.05); }
+  /* Progress bar */
+  .progress-track { height:3px; background:#1c1f29; overflow:hidden; border-radius:2px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,#0078d4,#a3c9ff); transition:width 0.5s ease; border-radius:2px; }
 </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col">
 
-<!-- Header -->
-<div class="header">
-  <div class="header-logo">S</div>
-  <div>
-    <div class="header-title">Strategic Report Agent</div>
-    <div class="header-sub">Transforma contenido en informes ejecutivos de estándar consultoría premium</div>
-  </div>
-</div>
-
-<div class="container">
-
-  <!-- Config: Worker URL -->
-  <div class="config-bar">
-    <label>Worker URL</label>
-    <input type="url" id="workerUrl" placeholder="https://tu-worker.tu-cuenta.workers.dev" />
-    <div class="dot dot-idle" id="workerDot"></div>
-  </div>
-
-  <!-- Input -->
-  <div class="input-section">
-    <div class="input-header">
-      <span class="input-label">Documento fuente</span>
-      <button class="btn btn-sm btn-secondary" onclick="loadSample()">Cargar ejemplo</button>
+<!-- Nav -->
+<nav class="fixed top-0 w-full z-50 bg-[#0f131c]/80 backdrop-blur-xl shadow-2xl shadow-black/40">
+  <div class="flex items-center justify-between px-6 md:px-12 py-4">
+    <div class="flex items-center gap-6">
+      <span class="text-lg font-serif italic text-white tracking-tight">Strategic Report Agent</span>
+      <div class="hidden md:flex gap-6 items-center">
+        <span class="text-[10px] uppercase tracking-widest text-primary border-b border-primary-container pb-1">v2.0</span>
+        <a class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors" href="https://github.com/hcuevasg/strategic-report-agent" target="_blank">GitHub</a>
+      </div>
     </div>
-    <textarea id="inputText" placeholder="Pega aquí notas, minutas, correos, transcripciones, hallazgos, análisis preliminar — cualquier texto que quieras convertir en informe ejecutivo..."></textarea>
+    <div class="flex items-center gap-2">
+      <div class="w-2 h-2 rounded-full" id="statusDot" style="background:#64748b"></div>
+      <span class="text-[10px] uppercase tracking-widest text-on-surface-variant" id="statusDotLabel">Sin conexión</span>
+    </div>
   </div>
+</nav>
 
-  <!-- Actions -->
-  <div class="actions">
-    <button class="btn btn-primary" id="btnAnalyze" onclick="analyze()">
-      🧠 Generar Informe Ejecutivo
-    </button>
-    <button class="btn btn-secondary" id="btnMd" onclick="copyMarkdown()" style="display:none">📋 Markdown</button>
-    <button class="btn btn-secondary" id="btnJson" onclick="copyJSON()" style="display:none">{ } JSON</button>
-    <button class="btn btn-success" id="btnDocx" onclick="downloadDocx()" style="display:none">⬇ Descargar .docx</button>
-  </div>
+<main class="flex-grow pt-28 pb-20 px-4 md:px-6">
+<div class="max-w-4xl mx-auto">
+
+  <!-- Header -->
+  <header class="mb-12 text-center">
+    <div class="inline-block px-3 py-1 mb-4 bg-surface-container-low border border-outline-variant/15 text-primary text-[10px] uppercase tracking-widest font-medium">
+      Strategic Advisory Intelligence
+    </div>
+    <h1 class="serif-heading text-4xl md:text-5xl font-bold text-on-surface mb-4 tracking-tight">
+      Informes Ejecutivos<br/>de Alta Dirección
+    </h1>
+    <p class="text-on-surface-variant max-w-2xl mx-auto text-base font-light leading-relaxed">
+      Transforma notas, minutas y hallazgos en documentos de estándar consultoría premium.
+    </p>
+  </header>
+
+  <!-- Main Card -->
+  <section class="bg-surface-container-low p-6 md:p-10 shadow-2xl shadow-black/60 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-primary-container/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+    <div class="space-y-8 relative z-10">
+
+      <!-- Worker URL -->
+      <div class="space-y-2">
+        <label class="block text-[10px] uppercase tracking-widest text-primary font-semibold">Worker URL</label>
+        <input id="workerUrl" class="w-full bg-surface-container-high border-none h-12 px-5 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-2 focus:ring-primary-container transition-all text-sm font-mono" placeholder="https://tu-worker.tu-cuenta.workers.dev" type="url"/>
+      </div>
+
+      <!-- Document Input + File Upload -->
+      <div class="space-y-2">
+        <div class="flex justify-between items-end">
+          <label class="block text-[10px] uppercase tracking-widest text-primary font-semibold">Documento Fuente</label>
+          <div class="flex gap-3">
+            <button onclick="document.getElementById('fileInput').click()" class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all flex items-center gap-1 group">
+              <span class="material-symbols-outlined text-[14px]">upload_file</span> Subir archivo
+            </button>
+            <button onclick="loadSample()" class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all flex items-center gap-1 group">
+              Ejemplo <span class="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept=".txt,.md,.csv,.pdf,.docx,.doc" class="hidden" onchange="handleFile(event)"/>
+        <div id="dropZone" class="drop-zone rounded relative">
+          <textarea id="inputText" class="w-full bg-surface-container-high border-none p-5 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-2 focus:ring-primary-container transition-all resize-none text-sm leading-relaxed" placeholder="Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí..." rows="8"></textarea>
+        </div>
+        <div id="fileInfo" class="hidden text-[10px] text-on-surface-variant flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm text-emerald-400">check_circle</span>
+          <span id="fileName"></span>
+          <button onclick="clearFile()" class="text-red-400 hover:text-red-300 ml-2">✕ Quitar</button>
+        </div>
+      </div>
+
+      <!-- Progress Bar (mejora #2) -->
+      <div id="progressSection" class="hidden space-y-2">
+        <div class="progress-track"><div id="progressFill" class="progress-fill" style="width:0%"></div></div>
+        <div class="flex justify-between">
+          <span id="progressStep" class="text-[10px] uppercase tracking-widest text-primary font-medium"></span>
+          <span id="progressPct" class="text-[10px] text-on-surface-variant font-mono"></span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-3" id="actionButtons">
+        <button id="btnAnalyze" onclick="analyze()" class="flex-1 bg-primary-container hover:bg-primary-container/90 text-white font-bold h-14 flex items-center justify-center gap-3 transition-all shadow-lg shadow-primary-container/20 group disabled:opacity-40 disabled:cursor-not-allowed">
+          <span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform" style="font-variation-settings:'FILL'1;">psychology</span>
+          <span class="text-xs uppercase tracking-[0.15em]">Generar Informe Ejecutivo</span>
+        </button>
+        <button id="btnMd" onclick="copyMarkdown()" class="hidden bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-semibold h-14 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+          <span class="material-symbols-outlined text-lg">content_copy</span> MD
+        </button>
+        <button id="btnPdf" onclick="downloadPdf()" class="hidden bg-amber-700 hover:bg-amber-600 text-white font-bold h-14 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+          <span class="material-symbols-outlined text-lg">picture_as_pdf</span> PDF
+        </button>
+        <button id="btnDocx" onclick="downloadDocx()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-14 px-5 items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-600/20 text-xs uppercase tracking-wider flex">
+          <span class="material-symbols-outlined text-lg">download</span> .docx
+        </button>
+      </div>
+    </div>
+  </section>
 
   <!-- Status -->
-  <div class="status" id="statusMsg"></div>
-  <div class="error-box" id="errorBox" style="display:none"></div>
+  <div id="statusMsg" class="text-center mt-6 text-sm text-primary hidden"></div>
+  <div id="errorBox" class="mt-6 bg-red-950/50 border border-red-500/20 p-4 text-red-400 text-sm hidden"></div>
 
-  <!-- Preview -->
-  <div id="previewCard" style="display:none"></div>
+  <!-- Editable Preview (mejora #6) -->
+  <div id="previewCard" class="hidden fade-in mt-10"></div>
 
-  <!-- Empty state -->
-  <div class="empty" id="emptyState">
-    <div class="empty-icon">📊</div>
-    <div class="empty-title">Pega tu contenido y presiona "Generar Informe"</div>
-    <div class="empty-desc">
-      El agente aplica estándar de consultoría premium: estructura piramidal MECE,
-      diferenciación hechos/inferencias/hipótesis, hallazgos con implicancia de negocio,
-      análisis de riesgos, y recomendaciones priorizadas por horizonte temporal.
+  <!-- Edit mode banner -->
+  <div id="editBanner" class="hidden mt-4 bg-surface-container border border-outline-variant/20 p-3 flex items-center justify-between rounded">
+    <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+      <span class="material-symbols-outlined text-sm text-primary">edit_note</span>
+      Haz click en cualquier texto del informe para editarlo antes de descargar
     </div>
+    <button onclick="resetEdits()" class="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300">Restaurar original</button>
   </div>
+
+  <!-- Methodology Cards -->
+  <section id="methodCards" class="mt-16 grid md:grid-cols-3 gap-6">
+    <div class="p-5 bg-surface-container-low/50 border-l-4 border-primary-container">
+      <div class="flex items-center gap-3 mb-3"><span class="material-symbols-outlined text-primary text-xl">analytics</span><h3 class="serif-heading text-base font-bold">MECE</h3></div>
+      <p class="text-xs text-on-surface-variant leading-relaxed">Mutuamente excluyente, colectivamente exhaustivo. Sin solapamientos y con cobertura completa.</p>
+    </div>
+    <div class="p-5 bg-surface-container-low/50 border-l-4 border-gold/40">
+      <div class="flex items-center gap-3 mb-3"><span class="material-symbols-outlined text-gold-light text-xl">account_tree</span><h3 class="serif-heading text-base font-bold">Principio Piramidal</h3></div>
+      <p class="text-xs text-on-surface-variant leading-relaxed">Conclusión primero, argumentos después. Comunicación top-down orientada a decisión.</p>
+    </div>
+    <div class="p-5 bg-surface-container-low/50 border-l-4 border-emerald-500/40">
+      <div class="flex items-center gap-3 mb-3"><span class="material-symbols-outlined text-emerald-400 text-xl">verified</span><h3 class="serif-heading text-base font-bold">Basado en Hechos</h3></div>
+      <p class="text-xs text-on-surface-variant leading-relaxed">Diferencia hechos, inferencias e hipótesis. Sin afirmaciones sin fundamento.</p>
+    </div>
+  </section>
+
 </div>
+</main>
+
+<footer class="w-full py-8 border-t border-white/5 bg-[#0f131c]">
+  <div class="flex flex-col md:flex-row justify-between items-center px-6 md:px-12 gap-4">
+    <span class="font-serif text-on-surface-variant/60 text-sm">Strategic Report Agent</span>
+    <p class="text-[10px] uppercase tracking-widest text-on-surface-variant/40">Powered by Claude · Anthropic</p>
+  </div>
+</footer>
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+</script>
 
 <script>
 // ============================================================
-// SYSTEM PROMPT — Consultoría Estratégica Premium
+// STATE
 // ============================================================
-// System prompt lives in the Cloudflare Worker (server-side)
 let result = null;
+let originalResult = null; // for reset
+let progressTimer = null;
 
 // ============================================================
-// API Call
+// MEJORA #2: PROGRESS MESSAGES
+// ============================================================
+const PROGRESS_STEPS = [
+  { pct: 5,  msg: 'Recibiendo documento fuente...' },
+  { pct: 12, msg: 'Identificando tesis central...' },
+  { pct: 20, msg: 'Depurando ruido y redundancias...' },
+  { pct: 30, msg: 'Reconstruyendo lógica argumental...' },
+  { pct: 40, msg: 'Clasificando hechos vs inferencias...' },
+  { pct: 50, msg: 'Estructurando hallazgos clave...' },
+  { pct: 60, msg: 'Evaluando riesgos y tensiones...' },
+  { pct: 70, msg: 'Identificando palancas estratégicas...' },
+  { pct: 80, msg: 'Priorizando recomendaciones por horizonte...' },
+  { pct: 88, msg: 'Redactando resumen ejecutivo...' },
+  { pct: 94, msg: 'Aplicando estándar consultoría premium...' },
+  { pct: 97, msg: 'Validando estructura MECE...' },
+];
+
+function startProgress() {
+  const section = document.getElementById('progressSection');
+  const fill = document.getElementById('progressFill');
+  const step = document.getElementById('progressStep');
+  const pct = document.getElementById('progressPct');
+  section.classList.remove('hidden');
+  let idx = 0;
+  fill.style.width = '0%';
+
+  progressTimer = setInterval(() => {
+    if (idx < PROGRESS_STEPS.length) {
+      const s = PROGRESS_STEPS[idx];
+      fill.style.width = s.pct + '%';
+      step.textContent = s.msg;
+      pct.textContent = s.pct + '%';
+      idx++;
+    }
+  }, 2200);
+}
+
+function stopProgress(success) {
+  clearInterval(progressTimer);
+  const fill = document.getElementById('progressFill');
+  const step = document.getElementById('progressStep');
+  const pct = document.getElementById('progressPct');
+  if (success) {
+    fill.style.width = '100%';
+    step.textContent = 'Informe completado';
+    pct.textContent = '100%';
+    setTimeout(() => document.getElementById('progressSection').classList.add('hidden'), 1500);
+  } else {
+    document.getElementById('progressSection').classList.add('hidden');
+  }
+}
+
+// ============================================================
+// MEJORA #5: FILE UPLOAD (drag & drop + button)
+// ============================================================
+const dropZone = document.getElementById('dropZone');
+
+['dragenter','dragover'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); });
+});
+['dragleave','drop'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag-over'); });
+});
+dropZone.addEventListener('drop', ev => {
+  const file = ev.dataTransfer.files[0];
+  if (file) processFile(file);
+});
+
+function handleFile(ev) {
+  const file = ev.target.files[0];
+  if (file) processFile(file);
+}
+
+async function processFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  showStatus('Leyendo archivo: ' + file.name + '...');
+
+  try {
+    let text = '';
+
+    if (['txt','md','csv'].includes(ext)) {
+      text = await file.text();
+
+    } else if (ext === 'pdf') {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        pages.push(content.items.map(item => item.str).join(' '));
+      }
+      text = pages.join('\n\n');
+
+    } else if (['docx','doc'].includes(ext)) {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      text = result.value;
+
+    } else {
+      throw new Error('Formato no soportado. Usa .txt, .md, .csv, .pdf o .docx');
+    }
+
+    document.getElementById('inputText').value = text;
+    document.getElementById('fileInfo').classList.remove('hidden');
+    document.getElementById('fileName').textContent = file.name + ' (' + (text.length / 1000).toFixed(1) + 'K caracteres)';
+    showStatus('Archivo cargado: ' + file.name);
+  } catch (err) {
+    showError('Error leyendo archivo: ' + err.message);
+  }
+}
+
+function clearFile() {
+  document.getElementById('inputText').value = '';
+  document.getElementById('fileInfo').classList.add('hidden');
+  document.getElementById('fileInput').value = '';
+}
+
+// ============================================================
+// API CALL
 // ============================================================
 async function analyze() {
   const input = document.getElementById('inputText').value.trim();
   const workerUrl = document.getElementById('workerUrl').value.trim();
 
   if (!input) return;
-  if (!workerUrl) { showError('Configura la URL de tu Cloudflare Worker arriba'); return; }
+  if (!workerUrl) { showError('Configura la URL de tu Cloudflare Worker arriba.'); return; }
 
   setLoading(true);
-  showStatus('Analizando estructura y generando informe ejecutivo...');
+  startProgress();
   hideError();
   hidePreview();
   result = null;
+  originalResult = null;
 
   try {
-    // Solo enviamos el texto del usuario — el system prompt vive en el Worker
     const res = await fetch(workerUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userContent: input }),
     });
 
-    // Read as text first to handle HTML error pages
     const rawText = await res.text();
 
-    // Check if we got HTML instead of JSON
     if (rawText.trim().startsWith('<')) {
-      throw new Error('El Worker devolvió HTML en vez de JSON. Verifica la configuración del Worker en Cloudflare. Status: ' + res.status);
+      throw new Error('El Worker devolvió HTML en vez de JSON. Status: ' + res.status + '. Verifica que la URL empiece con https://');
     }
 
     let data;
-    try {
-      data = JSON.parse(rawText);
-    } catch (parseErr) {
-      throw new Error('Respuesta no es JSON válido: ' + rawText.substring(0, 200));
-    }
-
-    if (data.error) throw new Error(data.error.message || data.error || 'Error en el Worker/API');
-
-    if (!data.content || !Array.isArray(data.content)) {
-      throw new Error('Respuesta inesperada de la API: ' + JSON.stringify(data).substring(0, 300));
-    }
+    try { data = JSON.parse(rawText); } catch (e) { throw new Error('Respuesta no es JSON válido: ' + rawText.substring(0, 200)); }
+    if (data.error) throw new Error(data.error.message || data.error);
+    if (!data.content || !Array.isArray(data.content)) throw new Error('Respuesta inesperada de la API');
 
     const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
     const clean = text.replace(/```json|```/g, '').trim();
 
-    try {
-      result = JSON.parse(clean);
-    } catch (jsonErr) {
-      throw new Error('La IA no devolvió JSON válido. Intenta de nuevo. Respuesta: ' + clean.substring(0, 200));
-    }
+    try { result = JSON.parse(clean); } catch (e) { throw new Error('La IA no devolvió JSON válido. Intenta de nuevo.'); }
 
+    originalResult = JSON.parse(JSON.stringify(result)); // deep clone
+    stopProgress(true);
     renderPreview(result);
     showExportBtns();
-    showStatus('Informe ejecutivo generado');
+    showStatus('Informe ejecutivo generado — edita cualquier campo antes de exportar');
     setDot('ok');
   } catch (err) {
+    stopProgress(false);
     showError(err.message);
     setDot('no');
   } finally {
@@ -354,546 +379,358 @@ async function analyze() {
 }
 
 // ============================================================
-// Render Preview
+// MEJORA #6: EDITABLE PREVIEW
 // ============================================================
-function renderPreview(r) {
-  document.getElementById('emptyState').style.display = 'none';
-  const card = document.getElementById('previewCard');
-  card.style.display = 'block';
+function ed(path, tag, cls) {
+  tag = tag || 'span';
+  cls = cls || '';
+  const val = getPath(result, path) || '';
+  return `<${tag} class="editable ${cls}" contenteditable="true" data-path="${path}" onblur="updateField(this)">${esc(val)}</${tag}>`;
+}
 
-  let html = `<div class="preview">
-    <div class="preview-header"><span>Vista previa del informe</span></div>
-    <div class="preview-body">`;
+function getPath(obj, path) {
+  return path.split('.').reduce((o, k) => {
+    if (o == null) return undefined;
+    const m = k.match(/^(.+)\[(\d+)\]$/);
+    if (m) return (o[m[1]] || [])[parseInt(m[2])];
+    return o[k];
+  }, obj);
+}
+
+function setPath(obj, path, value) {
+  const parts = path.split('.');
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const m = parts[i].match(/^(.+)\[(\d+)\]$/);
+    if (m) { cur = cur[m[1]][parseInt(m[2])]; }
+    else { cur = cur[parts[i]]; }
+  }
+  const last = parts[parts.length - 1];
+  const lm = last.match(/^(.+)\[(\d+)\]$/);
+  if (lm) { cur[lm[1]][parseInt(lm[2])] = value; }
+  else { cur[last] = value; }
+}
+
+function updateField(el) {
+  const path = el.dataset.path;
+  const val = el.textContent.trim();
+  setPath(result, path, val);
+}
+
+function resetEdits() {
+  if (originalResult) {
+    result = JSON.parse(JSON.stringify(originalResult));
+    renderPreview(result);
+    flash('Informe restaurado al original');
+  }
+}
+
+function renderPreview(r) {
+  document.getElementById('methodCards').classList.add('hidden');
+  document.getElementById('editBanner').classList.remove('hidden');
+  const card = document.getElementById('previewCard');
+  card.classList.remove('hidden');
+
+  let h = `<div id="reportContent" class="bg-surface-container-low shadow-2xl shadow-black/60 overflow-hidden fade-in">`;
+  h += `<div class="px-6 py-3 bg-navy flex justify-between items-center border-b-2 border-gold">
+    <span class="text-[10px] uppercase tracking-widest text-white font-semibold">Vista Previa — Editable</span>
+    <span class="text-[10px] uppercase tracking-widest text-white/60">Confidencial</span>
+  </div>`;
+  h += `<div class="p-6 md:p-8 space-y-6">`;
 
   // Title
-  html += `<div class="doc-title">${esc(r.title)}</div>`;
-  if (r.subtitle) html += `<div class="doc-subtitle">${esc(r.subtitle)}</div>`;
-  html += `<div class="gold-line"></div>`;
-
-  // Exec summary
-  html += `<div class="exec-summary">
-    <div class="label">Resumen Ejecutivo</div>
-    <p>${esc(r.executive_summary)}</p>
+  h += `<div>
+    <h1 class="serif-heading text-2xl md:text-3xl font-bold text-primary mb-1 editable" contenteditable="true" data-path="title" onblur="updateField(this)">${esc(r.title)}</h1>
+    ${r.subtitle ? `<p class="text-sm text-on-surface-variant italic editable" contenteditable="true" data-path="subtitle" onblur="updateField(this)">${esc(r.subtitle)}</p>` : ''}
+    <div class="h-0.5 bg-gradient-to-r from-gold to-transparent mt-4"></div>
   </div>`;
 
-  // Key messages
+  // Exec Summary
+  h += `<div class="bg-surface-container border-l-[3px] border-primary p-5">
+    <div class="text-[10px] uppercase tracking-widest text-primary font-bold mb-2">Resumen Ejecutivo</div>
+    <p class="text-sm leading-relaxed serif-heading editable" contenteditable="true" data-path="executive_summary" onblur="updateField(this)">${esc(r.executive_summary)}</p>
+  </div>`;
+
+  // Key Messages
   if (r.key_messages?.length) {
-    html += `<div class="section"><h2>Mensajes Clave</h2><div class="section-line"></div>`;
-    r.key_messages.forEach(m => { html += `<div class="bullet"><span class="bullet-icon">▸</span><span>${esc(m)}</span></div>`; });
-    html += `</div>`;
+    h += `<div><h2 class="text-xs uppercase tracking-widest text-primary font-bold mb-3">Mensajes Clave</h2>`;
+    r.key_messages.forEach((m, i) => {
+      h += `<div class="flex gap-2 mb-1.5 pl-1"><span class="text-gold font-bold">▸</span>
+        <span class="text-sm editable" contenteditable="true" data-path="key_messages[${i}]" onblur="updateField(this)">${esc(m)}</span></div>`;
+    });
+    h += `</div>`;
   }
 
   // Context
   if (r.context) {
-    html += `<div class="section"><h2>Contexto y Objetivo</h2><div class="section-line"></div>
-      <div class="section-content">${esc(r.context)}</div></div>`;
+    h += `<div><h2 class="text-xs uppercase tracking-widest text-primary font-bold mb-3">Contexto y Objetivo</h2>
+      <p class="text-sm text-on-surface-variant leading-relaxed editable" contenteditable="true" data-path="context" onblur="updateField(this)">${esc(r.context)}</p></div>`;
   }
 
   // Findings
   if (r.findings?.length) {
-    html += `<div class="section"><h2>Hallazgos Clave</h2><div class="section-line"></div>`;
+    h += `<div><h2 class="text-xs uppercase tracking-widest text-primary font-bold mb-3">Hallazgos Clave</h2>`;
     r.findings.forEach((f, i) => {
-      html += `<div style="margin-bottom:16px;padding:14px;background:#0d1b2a;border-radius:8px;border-left:3px solid var(--accent)">
-        <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">${i+1}. ${esc(f.finding)}</div>
-        <div style="font-size:12px;color:var(--dim);margin-bottom:4px"><strong>Evidencia:</strong> ${esc(f.evidence)}</div>
-        <div style="font-size:12px;color:var(--gold)"><strong>Implicancia:</strong> ${esc(f.business_implication)}</div>
+      h += `<div class="bg-surface-container border-l-[3px] border-primary p-4 mb-3">
+        <div class="text-sm font-bold text-primary mb-1">${i+1}. ${ed(`findings[${i}].finding`)}</div>
+        <div class="text-xs text-on-surface-variant"><strong class="text-on-surface-variant/70">Evidencia:</strong> ${ed(`findings[${i}].evidence`)}</div>
+        <div class="text-xs text-gold mt-1"><strong>Implicancia:</strong> ${ed(`findings[${i}].business_implication`)}</div>
       </div>`;
     });
-    html += `</div>`;
+    h += `</div>`;
   }
 
   // Analysis blocks
   if (r.analysis_blocks?.length) {
     r.analysis_blocks.forEach((sec, i) => {
-      html += `<div class="section"><h2>${i+1}. ${esc(sec.heading)}</h2><div class="section-line"></div>`;
+      h += `<div>
+        <h2 class="text-xs uppercase tracking-widest text-primary font-bold mb-1">${i+1}. ${ed(`analysis_blocks[${i}].heading`)}</h2>
+        <div class="h-px bg-outline-variant/20 mb-3"></div>`;
       if (sec.governing_thought) {
-        html += `<div class="governing"><div class="governing-bar"></div><p>${esc(sec.governing_thought)}</p></div>`;
+        h += `<div class="flex gap-2 mb-3"><div class="w-0.5 bg-navy flex-shrink-0"></div>
+          <p class="text-sm font-semibold serif-heading editable" contenteditable="true" data-path="analysis_blocks[${i}].governing_thought" onblur="updateField(this)">${esc(sec.governing_thought)}</p></div>`;
       }
-      if (sec.content) html += `<div class="section-content">${esc(sec.content)}</div>`;
+      if (sec.content) h += `<p class="text-sm text-on-surface-variant leading-relaxed mb-3 editable" contenteditable="true" data-path="analysis_blocks[${i}].content" onblur="updateField(this)">${esc(sec.content)}</p>`;
       if (sec.bullets?.length) {
-        sec.bullets.forEach(b => { html += `<div class="bullet"><span class="bullet-icon">▸</span><span>${esc(b)}</span></div>`; });
+        sec.bullets.forEach((b, j) => {
+          h += `<div class="flex gap-2 mb-1 pl-1"><span class="text-gold font-bold">▸</span>
+            <span class="text-sm editable" contenteditable="true" data-path="analysis_blocks[${i}].bullets[${j}]" onblur="updateField(this)">${esc(b)}</span></div>`;
+        });
       }
       if (sec.so_what) {
-        html += `<div class="so-what"><span class="label">So what? </span><span class="text">${esc(sec.so_what)}</span></div>`;
+        h += `<div class="mt-3 pl-3 border-l-[3px] border-gold bg-gold/5 py-2 pr-3">
+          <span class="text-xs font-bold text-gold">So what? </span>
+          <span class="text-xs text-on-surface-variant italic editable" contenteditable="true" data-path="analysis_blocks[${i}].so_what" onblur="updateField(this)">${esc(sec.so_what)}</span></div>`;
       }
-      html += `</div>`;
+      h += `</div>`;
     });
   }
 
   // Risks
   if (r.risks?.length) {
-    html += `<div class="section"><h2>Riesgos y Tensiones Críticas</h2><div class="section-line"></div>`;
-    r.risks.forEach(rk => {
-      html += `<div style="margin-bottom:10px;padding:10px 14px;border-left:3px solid var(--error);background:#1a0a0a;border-radius:0 6px 6px 0">
-        <div style="font-size:13px;font-weight:600;color:var(--error)">${esc(rk.risk)}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">${esc(rk.implication)}</div>
+    h += `<div><h2 class="text-xs uppercase tracking-widest text-red-400 font-bold mb-3">Riesgos y Tensiones Críticas</h2>`;
+    r.risks.forEach((rk, i) => {
+      h += `<div class="border-l-[3px] border-red-500 bg-red-950/30 p-4 mb-2">
+        <div class="text-sm font-semibold text-red-400 editable" contenteditable="true" data-path="risks[${i}].risk" onblur="updateField(this)">${esc(rk.risk)}</div>
+        <div class="text-xs text-on-surface-variant mt-1 editable" contenteditable="true" data-path="risks[${i}].implication" onblur="updateField(this)">${esc(rk.implication)}</div>
       </div>`;
     });
-    html += `</div>`;
+    h += `</div>`;
   }
 
   // Opportunities
   if (r.opportunities?.length) {
-    html += `<div class="section"><h2>Oportunidades y Palancas Estratégicas</h2><div class="section-line"></div>`;
-    r.opportunities.forEach(o => { html += `<div class="bullet"><span class="bullet-icon" style="color:var(--success)">✦</span><span>${esc(o)}</span></div>`; });
-    html += `</div>`;
+    h += `<div><h2 class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-3">Oportunidades</h2>`;
+    r.opportunities.forEach((o, i) => {
+      h += `<div class="flex gap-2 mb-1.5 pl-1"><span class="text-emerald-400 font-bold">✦</span>
+        <span class="text-sm editable" contenteditable="true" data-path="opportunities[${i}]" onblur="updateField(this)">${esc(o)}</span></div>`;
+    });
+    h += `</div>`;
   }
 
   // Recommendations
   if (r.recommendations) {
-    html += `<div class="section"><h2>Recomendaciones</h2><div class="section-line"></div>`;
-    const horizons = [
-      { key: 'short_term', label: 'Corto Plazo', color: 'var(--success)' },
-      { key: 'medium_term', label: 'Mediano Plazo', color: 'var(--gold)' },
-      { key: 'long_term', label: 'Largo Plazo', color: 'var(--blue)' },
+    h += `<div><h2 class="text-xs uppercase tracking-widest text-primary font-bold mb-4">Recomendaciones</h2>`;
+    const hz = [
+      { key:'short_term', label:'Corto Plazo', color:'emerald-400' },
+      { key:'medium_term', label:'Mediano Plazo', color:'gold' },
+      { key:'long_term', label:'Largo Plazo', color:'primary' },
     ];
-    horizons.forEach(h => {
-      const items = r.recommendations[h.key];
+    hz.forEach(hz => {
+      const items = r.recommendations[hz.key];
       if (!items?.length) return;
-      html += `<div style="font-size:11px;font-weight:700;color:${h.color};text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 8px">${h.label}</div>`;
+      h += `<div class="text-[10px] uppercase tracking-widest text-${hz.color} font-bold mb-2 mt-4">${hz.label}</div>`;
       items.forEach((rec, i) => {
-        html += `<div class="next-step"><div class="step-num">${i+1}</div>
-          <div><span style="font-weight:600">${esc(rec.action)}</span>
-          <div style="font-size:11px;color:var(--dim);margin-top:2px">${esc(rec.rationale)}</div>
-          <div style="font-size:11px;color:var(--gold);margin-top:2px">Impacto: ${esc(rec.impact)}</div></div>
+        h += `<div class="flex gap-3 mb-3 items-start">
+          <div class="w-6 h-6 rounded bg-navy flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5">${i+1}</div>
+          <div>
+            <div class="text-sm font-semibold editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].action" onblur="updateField(this)">${esc(rec.action)}</div>
+            <div class="text-xs text-on-surface-variant italic mt-0.5 editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].rationale" onblur="updateField(this)">${esc(rec.rationale)}</div>
+            <div class="text-xs text-gold mt-0.5">Impacto: ${ed(`recommendations.${hz.key}[${i}].impact`)}</div>
+          </div>
         </div>`;
       });
     });
-    html += `</div>`;
+    h += `</div>`;
   }
 
   // Info gaps
   if (r.information_gaps?.length) {
-    html += `<div class="appendix"><div class="label">Información faltante para robustecer el análisis</div>`;
-    r.information_gaps.forEach(g => { html += `<div class="bullet"><span class="bullet-icon" style="color:var(--dim)">○</span><span style="font-size:12px;color:var(--muted)">${esc(g)}</span></div>`; });
-    html += `</div>`;
+    h += `<div class="bg-surface-container p-4"><div class="text-[10px] uppercase tracking-widest text-on-surface-variant/60 font-bold mb-2">Información Faltante</div>`;
+    r.information_gaps.forEach((g, i) => {
+      h += `<div class="flex gap-2 mb-1 pl-1"><span class="text-on-surface-variant/40">○</span>
+        <span class="text-xs text-on-surface-variant editable" contenteditable="true" data-path="information_gaps[${i}]" onblur="updateField(this)">${esc(g)}</span></div>`;
+    });
+    h += `</div>`;
   }
 
   // Conclusion
   if (r.conclusion) {
-    html += `<div style="margin-top:24px;padding:18px;background:#0d1b2a;border:1px solid var(--border);border-radius:8px">
-      <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Conclusión Ejecutiva</div>
-      <p style="font-size:13px;line-height:1.8;font-family:Georgia,serif">${esc(r.conclusion)}</p>
+    h += `<div class="bg-surface-container border-l-[3px] border-primary p-5 mt-2">
+      <div class="text-[10px] uppercase tracking-widest text-primary font-bold mb-2">Conclusión Ejecutiva</div>
+      <p class="text-sm leading-relaxed serif-heading editable" contenteditable="true" data-path="conclusion" onblur="updateField(this)">${esc(r.conclusion)}</p>
     </div>`;
   }
 
-  html += `</div></div>`;
-  card.innerHTML = html;
+  h += `</div></div>`;
+  card.innerHTML = h;
 }
 
 // ============================================================
-// Export Functions
+// EXPORT: MARKDOWN
 // ============================================================
 function copyMarkdown() {
   if (!result) return;
-  let md = `# ${result.title}\n*${result.subtitle || ''}*\n\n---\n\n`;
-  md += `## Resumen Ejecutivo\n\n> ${result.executive_summary}\n\n`;
-  if (result.key_messages?.length) {
-    md += `### Mensajes Clave\n\n`;
-    result.key_messages.forEach(m => { md += `- ${m}\n`; });
-    md += `\n`;
-  }
-  if (result.context) md += `## Contexto y Objetivo\n\n${result.context}\n\n`;
-  if (result.findings?.length) {
-    md += `## Hallazgos Clave\n\n`;
-    result.findings.forEach((f, i) => {
-      md += `### ${i+1}. ${f.finding}\n- **Evidencia:** ${f.evidence}\n- **Implicancia:** ${f.business_implication}\n\n`;
-    });
-  }
-  if (result.analysis_blocks?.length) {
-    result.analysis_blocks.forEach((s, i) => {
-      md += `## ${i+1}. ${s.heading}\n\n`;
-      if (s.governing_thought) md += `**${s.governing_thought}**\n\n`;
-      if (s.content) md += `${s.content}\n\n`;
-      s.bullets?.forEach(b => { md += `- ${b}\n`; });
-      if (s.so_what) md += `\n> **So what?** *${s.so_what}*\n`;
-      md += `\n`;
-    });
-  }
-  if (result.risks?.length) {
-    md += `## Riesgos y Tensiones Críticas\n\n`;
-    result.risks.forEach(r => { md += `- **${r.risk}**: ${r.implication}\n`; });
-    md += `\n`;
-  }
-  if (result.opportunities?.length) {
-    md += `## Oportunidades\n\n`;
-    result.opportunities.forEach(o => { md += `- ${o}\n`; });
-    md += `\n`;
-  }
-  if (result.recommendations) {
-    md += `## Recomendaciones\n\n`;
-    ['short_term', 'medium_term', 'long_term'].forEach(h => {
-      const label = { short_term: 'Corto Plazo', medium_term: 'Mediano Plazo', long_term: 'Largo Plazo' }[h];
-      const items = result.recommendations[h];
-      if (!items?.length) return;
-      md += `### ${label}\n\n`;
-      items.forEach((r, i) => { md += `${i+1}. **${r.action}** — ${r.rationale} *(Impacto: ${r.impact})*\n`; });
-      md += `\n`;
-    });
-  }
-  if (result.information_gaps?.length) {
-    md += `## Información Faltante\n\n`;
-    result.information_gaps.forEach(g => { md += `- ${g}\n`; });
-    md += `\n`;
-  }
-  if (result.conclusion) md += `---\n\n## Conclusión Ejecutiva\n\n${result.conclusion}\n`;
-
+  let md = `# ${result.title}\n*${result.subtitle||''}*\n\n---\n\n## Resumen Ejecutivo\n\n> ${result.executive_summary}\n\n`;
+  if (result.key_messages?.length) { md += `### Mensajes Clave\n\n`; result.key_messages.forEach(m => { md += `- ${m}\n`; }); md += `\n`; }
+  if (result.context) md += `## Contexto\n\n${result.context}\n\n`;
+  if (result.findings?.length) { md += `## Hallazgos\n\n`; result.findings.forEach((f,i) => { md += `### ${i+1}. ${f.finding}\n- **Evidencia:** ${f.evidence}\n- **Implicancia:** ${f.business_implication}\n\n`; }); }
+  if (result.analysis_blocks?.length) { result.analysis_blocks.forEach((s,i) => { md += `## ${i+1}. ${s.heading}\n\n`; if(s.governing_thought) md += `**${s.governing_thought}**\n\n`; if(s.content) md += `${s.content}\n\n`; s.bullets?.forEach(b => { md += `- ${b}\n`; }); if(s.so_what) md += `\n> **So what?** *${s.so_what}*\n`; md += `\n`; }); }
+  if (result.risks?.length) { md += `## Riesgos\n\n`; result.risks.forEach(r => { md += `- **${r.risk}**: ${r.implication}\n`; }); md += `\n`; }
+  if (result.opportunities?.length) { md += `## Oportunidades\n\n`; result.opportunities.forEach(o => { md += `- ${o}\n`; }); md += `\n`; }
+  if (result.recommendations) { md += `## Recomendaciones\n\n`; ['short_term','medium_term','long_term'].forEach(h => { const l={short_term:'Corto Plazo',medium_term:'Mediano Plazo',long_term:'Largo Plazo'}[h]; const items=result.recommendations[h]; if(!items?.length) return; md += `### ${l}\n\n`; items.forEach((r,i) => { md += `${i+1}. **${r.action}** — ${r.rationale} *(Impacto: ${r.impact})*\n`; }); md += `\n`; }); }
+  if (result.information_gaps?.length) { md += `## Info Faltante\n\n`; result.information_gaps.forEach(g => { md += `- ${g}\n`; }); md += `\n`; }
+  if (result.conclusion) md += `---\n\n## Conclusión\n\n${result.conclusion}\n`;
   navigator.clipboard.writeText(md);
-  flash('✓ Markdown copiado al portapapeles');
+  flash('✓ Markdown copiado');
 }
 
-function copyJSON() {
+// ============================================================
+// MEJORA #7: PDF EXPORT
+// ============================================================
+async function downloadPdf() {
   if (!result) return;
-  navigator.clipboard.writeText(JSON.stringify(result, null, 2));
-  flash('✓ JSON copiado al portapapeles');
+  showStatus('Generando PDF...');
+
+  try {
+    const el = document.getElementById('reportContent');
+    if (!el) throw new Error('No hay informe para exportar');
+
+    // Temporarily adjust styles for capture
+    el.style.background = '#0f131c';
+    el.style.width = '800px';
+
+    const canvas = await html2canvas(el, {
+      backgroundColor: '#0f131c',
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    });
+
+    el.style.width = '';
+
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+
+    const pxW = canvas.width;
+    const pxH = canvas.height;
+    const pdfW = 210; // A4 mm
+    const pdfH = (pxH * pdfW) / pxW;
+    const pageH = 297; // A4 height mm
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    let position = 0;
+
+    // Multi-page if needed
+    while (position < pdfH) {
+      if (position > 0) pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, -position, pdfW, pdfH);
+      position += pageH;
+    }
+
+    pdf.save('Informe_Ejecutivo_' + new Date().toISOString().slice(0,10) + '.pdf');
+    flash('✓ PDF descargado');
+  } catch (err) {
+    console.error(err);
+    showError('Error generando PDF: ' + err.message);
+  }
 }
 
-// downloadDocx() is defined in the second script block below
-
 // ============================================================
-// Helpers
+// HELPERS
 // ============================================================
-function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function esc(s) { if(!s) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
 function setLoading(on) {
   const btn = document.getElementById('btnAnalyze');
   btn.disabled = on;
-  btn.innerHTML = on ? '<span class="spinner"></span> Generando informe...' : '🧠 Generar Informe Ejecutivo';
+  btn.innerHTML = on
+    ? '<span class="spinner"></span><span class="text-xs uppercase tracking-[0.15em]">Procesando...</span>'
+    : '<span class="material-symbols-outlined text-xl" style="font-variation-settings:\'FILL\' 1;">psychology</span><span class="text-xs uppercase tracking-[0.15em]">Generar Informe Ejecutivo</span>';
 }
 
-function showStatus(msg) { document.getElementById('statusMsg').textContent = msg; document.getElementById('statusMsg').className = 'status'; }
-function showError(msg) { const b = document.getElementById('errorBox'); b.textContent = msg; b.style.display = 'block'; document.getElementById('statusMsg').textContent = ''; }
-function hideError() { document.getElementById('errorBox').style.display = 'none'; }
-function hidePreview() { document.getElementById('previewCard').style.display = 'none'; document.getElementById('emptyState').style.display = 'block'; }
-
-function showExportBtns() { ['btnMd','btnJson','btnDocx'].forEach(id => document.getElementById(id).style.display = ''); }
+function showStatus(msg) { const el=document.getElementById('statusMsg'); el.textContent=msg; el.classList.remove('hidden'); }
+function showError(msg) { const b=document.getElementById('errorBox'); b.textContent=msg; b.classList.remove('hidden'); document.getElementById('statusMsg').classList.add('hidden'); }
+function hideError() { document.getElementById('errorBox').classList.add('hidden'); }
+function hidePreview() { document.getElementById('previewCard').classList.add('hidden'); document.getElementById('editBanner').classList.add('hidden'); document.getElementById('methodCards').classList.remove('hidden'); }
+function showExportBtns() { ['btnMd','btnDocx','btnPdf'].forEach(id => document.getElementById(id).classList.remove('hidden')); }
 
 function setDot(state) {
-  const d = document.getElementById('workerDot');
-  d.className = 'dot ' + ({ ok: 'dot-ok', no: 'dot-no' }[state] || 'dot-idle');
+  const dot=document.getElementById('statusDot'); const label=document.getElementById('statusDotLabel');
+  if(state==='ok'){dot.style.background='#10b981';label.textContent='Conectado';}
+  else if(state==='no'){dot.style.background='#ef4444';label.textContent='Error';}
+  else{dot.style.background='#64748b';label.textContent='Sin conexión';}
 }
-
-function flash(msg) {
-  showStatus(msg);
-  setTimeout(() => { if (result) showStatus('Informe ejecutivo generado'); }, 2500);
-}
+function flash(msg) { showStatus(msg); setTimeout(() => { if(result) showStatus('Informe listo — edita y exporta'); }, 2500); }
 
 function loadSample() {
-  document.getElementById('inputText').value = `Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar. 
-
-Las tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.
-
-Los clientes preguntan seguido: ¿dónde estamos perdiendo más? ¿qué tiendas necesitan más atención? ¿la gestión legal está siendo efectiva?
-
-El área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.
-
-Necesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.
-
-Nota: la data de modus operandi tiene un 30% de registros sin clasificar, lo que puede sesgar el análisis. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;
+  document.getElementById('inputText').value = `Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar.\n\nLas tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.\n\nLos clientes preguntan seguido: ¿dónde estamos perdiendo más? ¿qué tiendas necesitan más atención? ¿la gestión legal está siendo efectiva?\n\nEl área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.\n\nNecesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.\n\nNota: la data de modus operandi tiene un 30% de registros sin clasificar, lo que puede sesgar el análisis. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;
 }
 
-// Restore worker URL from localStorage
 const saved = localStorage.getItem('worker_url');
 if (saved) document.getElementById('workerUrl').value = saved;
-document.getElementById('workerUrl').addEventListener('change', function() {
-  localStorage.setItem('worker_url', this.value);
-});
+document.getElementById('workerUrl').addEventListener('change', function() { localStorage.setItem('worker_url', this.value); });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+
+<!-- ============================================================ -->
+<!-- DOCX GENERATION (same as before) -->
+<!-- ============================================================ -->
 <script>
-// ============================================================
-// DOCX Generation — uses the global `docx` object from UMD
-// ============================================================
 async function downloadDocx() {
   if (!result) return;
-
   showStatus('Generando documento Word...');
-
   try {
-    const {
-      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-      AlignmentType, BorderStyle, WidthType, ShadingType,
-      Header, Footer, PageNumber, PageBreak
-    } = docx;
+    const { Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,AlignmentType,BorderStyle,WidthType,ShadingType,Header,Footer,PageNumber,PageBreak } = docx;
+    const NAVY="003A70",GOLD="B8860B",LGRAY="F5F5F5",MGRAY="E0E0E0",WHITE="FFFFFF";
+    const noBdr={style:BorderStyle.NONE,size:0,color:WHITE};
+    const noBorders={top:noBdr,bottom:noBdr,left:noBdr,right:noBdr};
+    const children=[];
+    const sp=(n)=>new Paragraph({spacing:{after:n||120},children:[]});
+    function govBox(t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[200,9160],rows:[new TableRow({children:[new TableCell({borders:noBorders,shading:{fill:NAVY,type:ShadingType.CLEAR},width:{size:200,type:WidthType.DXA},children:[new Paragraph({children:[]})]}),new TableCell({borders:noBorders,shading:{fill:LGRAY,type:ShadingType.CLEAR},margins:{top:120,bottom:120,left:160,right:160},width:{size:9160,type:WidthType.DXA},children:[new Paragraph({children:[new TextRun({text:t,font:"Georgia",size:21,bold:true,color:NAVY})]})]})]})]})}
+    function grayBox(l,t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({borders:noBorders,shading:{fill:LGRAY,type:ShadingType.CLEAR},margins:{top:160,bottom:160,left:200,right:200},width:{size:9360,type:WidthType.DXA},children:[new Paragraph({spacing:{after:60},children:[new TextRun({text:l,font:"Arial",size:16,bold:true,color:NAVY})]}),new Paragraph({children:[new TextRun({text:t,font:"Georgia",size:22,italics:true,color:"333333"})]})]})]})]})}
+    function secH(t){return [new Paragraph({spacing:{before:360,after:100},children:[new TextRun({text:t.toUpperCase(),font:"Arial",size:24,bold:true,color:NAVY})]}),new Paragraph({spacing:{after:60},border:{bottom:{style:BorderStyle.SINGLE,size:2,color:MGRAY,space:1}},children:[]})]}
+    function blt(t,c){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[360,9000],rows:[new TableRow({children:[new TableCell({borders:noBorders,width:{size:360,type:WidthType.DXA},margins:{top:40,bottom:40,left:80,right:0},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:"\u25B8",font:"Arial",size:20,color:c||GOLD})]})]}),new TableCell({borders:noBorders,width:{size:9000,type:WidthType.DXA},margins:{top:40,bottom:40,left:80,right:80},children:[new Paragraph({children:[new TextRun({text:t,font:"Arial",size:21,color:"333333"})]})]})]})]})}
+    function swBox(t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({borders:{top:{style:BorderStyle.SINGLE,size:1,color:GOLD},bottom:{style:BorderStyle.SINGLE,size:1,color:GOLD},left:{style:BorderStyle.SINGLE,size:4,color:GOLD},right:{style:BorderStyle.SINGLE,size:1,color:GOLD}},margins:{top:100,bottom:100,left:160,right:160},width:{size:9360,type:WidthType.DXA},children:[new Paragraph({children:[new TextRun({text:"So what?  ",font:"Arial",size:20,bold:true,color:GOLD}),new TextRun({text:t,font:"Arial",size:20,italics:true,color:"555555"})]})]})]})]})}
+    function numS(n,t){return new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[600,8760],rows:[new TableRow({children:[new TableCell({borders:noBorders,shading:{fill:NAVY,type:ShadingType.CLEAR},width:{size:600,type:WidthType.DXA},margins:{top:100,bottom:100,left:80,right:80},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:String(n),font:"Arial",size:22,bold:true,color:WHITE})]})]}),new TableCell({borders:noBorders,shading:{fill:LGRAY,type:ShadingType.CLEAR},width:{size:8760,type:WidthType.DXA},margins:{top:100,bottom:100,left:160,right:160},children:[new Paragraph({children:[new TextRun({text:t,font:"Arial",size:21,color:"333333"})]})]})]})]})}
 
-    const NAVY = "003A70";
-    const GOLD = "B8860B";
-    const LGRAY = "F5F5F5";
-    const MGRAY = "E0E0E0";
-    const WHITE = "FFFFFF";
+    // Cover
+    children.push(new Paragraph({spacing:{before:2400},children:[]}));
+    children.push(new Paragraph({spacing:{after:200},children:[new TextRun({text:result.title,font:"Georgia",size:56,bold:true,color:NAVY})]}));
+    if(result.subtitle) children.push(new Paragraph({spacing:{after:100},children:[new TextRun({text:result.subtitle,font:"Georgia",size:28,italics:true,color:"666666"})]}));
+    children.push(new Paragraph({spacing:{before:200,after:200},border:{bottom:{style:BorderStyle.SINGLE,size:6,color:GOLD,space:1}},children:[]}));
+    children.push(new Paragraph({spacing:{after:100},children:[new TextRun({text:"CONFIDENCIAL",font:"Arial",size:18,bold:true,color:NAVY})]}));
+    children.push(new Paragraph({spacing:{after:600},children:[new TextRun({text:new Date().toLocaleDateString("es-CL",{year:"numeric",month:"long",day:"numeric"}),font:"Arial",size:20,color:"666666"})]}));
+    children.push(new Paragraph({children:[new PageBreak()]}));
 
-    const noBdr = { style: BorderStyle.NONE, size: 0, color: WHITE };
-    const noBorders = { top: noBdr, bottom: noBdr, left: noBdr, right: noBdr };
-
-    const children = [];
-
-    // --- COVER ---
-    children.push(new Paragraph({ spacing: { before: 2400 }, children: [] }));
-    children.push(new Paragraph({
-      alignment: AlignmentType.LEFT, spacing: { after: 200 },
-      children: [new TextRun({ text: result.title, font: "Georgia", size: 56, bold: true, color: NAVY })],
-    }));
-    if (result.subtitle) {
-      children.push(new Paragraph({
-        spacing: { after: 100 },
-        children: [new TextRun({ text: result.subtitle, font: "Georgia", size: 28, italics: true, color: "666666" })],
-      }));
-    }
-    children.push(new Paragraph({
-      spacing: { before: 200, after: 200 },
-      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: GOLD, space: 1 } },
-      children: [],
-    }));
-    children.push(new Paragraph({
-      spacing: { after: 100 },
-      children: [new TextRun({ text: "CONFIDENCIAL", font: "Arial", size: 18, bold: true, color: NAVY })],
-    }));
-    children.push(new Paragraph({
-      spacing: { after: 600 },
-      children: [new TextRun({
-        text: new Date().toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric" }),
-        font: "Arial", size: 20, color: "666666",
-      })],
-    }));
-    children.push(new Paragraph({ children: [new PageBreak()] }));
-
-    // Helper: box with navy left bar
-    function govBox(text) {
-      return new Table({
-        width: { size: 9360, type: WidthType.DXA }, columnWidths: [200, 9160],
-        rows: [new TableRow({ children: [
-          new TableCell({ borders: noBorders, shading: { fill: NAVY, type: ShadingType.CLEAR }, width: { size: 200, type: WidthType.DXA }, children: [new Paragraph({ children: [] })] }),
-          new TableCell({ borders: noBorders, shading: { fill: LGRAY, type: ShadingType.CLEAR }, margins: { top: 120, bottom: 120, left: 160, right: 160 }, width: { size: 9160, type: WidthType.DXA },
-            children: [new Paragraph({ children: [new TextRun({ text: text, font: "Georgia", size: 21, bold: true, color: NAVY })] })],
-          }),
-        ] })],
-      });
-    }
-
-    // Helper: gray box
-    function grayBox(label, text) {
-      return new Table({
-        width: { size: 9360, type: WidthType.DXA }, columnWidths: [9360],
-        rows: [new TableRow({ children: [
-          new TableCell({ borders: noBorders, shading: { fill: LGRAY, type: ShadingType.CLEAR }, margins: { top: 160, bottom: 160, left: 200, right: 200 }, width: { size: 9360, type: WidthType.DXA },
-            children: [
-              new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: label, font: "Arial", size: 16, bold: true, color: NAVY })] }),
-              new Paragraph({ children: [new TextRun({ text: text, font: "Georgia", size: 22, italics: true, color: "333333" })] }),
-            ],
-          }),
-        ] })],
-      });
-    }
-
-    // Helper: section heading
-    function sectionHead(text) {
-      return [
-        new Paragraph({ spacing: { before: 360, after: 100 }, children: [new TextRun({ text: text.toUpperCase(), font: "Arial", size: 24, bold: true, color: NAVY })] }),
-        new Paragraph({ spacing: { after: 60 }, border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: MGRAY, space: 1 } }, children: [] }),
-      ];
-    }
-
-    // Helper: bullet
-    function bullet(text, color) {
-      color = color || GOLD;
-      return new Table({
-        width: { size: 9360, type: WidthType.DXA }, columnWidths: [360, 9000],
-        rows: [new TableRow({ children: [
-          new TableCell({ borders: noBorders, width: { size: 360, type: WidthType.DXA }, margins: { top: 40, bottom: 40, left: 80, right: 0 },
-            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "\u25B8", font: "Arial", size: 20, color: color })] })],
-          }),
-          new TableCell({ borders: noBorders, width: { size: 9000, type: WidthType.DXA }, margins: { top: 40, bottom: 40, left: 80, right: 80 },
-            children: [new Paragraph({ children: [new TextRun({ text: text, font: "Arial", size: 21, color: "333333" })] })],
-          }),
-        ] })],
-      });
-    }
-
-    // Helper: so-what box
-    function soWhatBox(text) {
-      return new Table({
-        width: { size: 9360, type: WidthType.DXA }, columnWidths: [9360],
-        rows: [new TableRow({ children: [
-          new TableCell({
-            borders: { top: { style: BorderStyle.SINGLE, size: 1, color: GOLD }, bottom: { style: BorderStyle.SINGLE, size: 1, color: GOLD }, left: { style: BorderStyle.SINGLE, size: 4, color: GOLD }, right: { style: BorderStyle.SINGLE, size: 1, color: GOLD } },
-            margins: { top: 100, bottom: 100, left: 160, right: 160 }, width: { size: 9360, type: WidthType.DXA },
-            children: [new Paragraph({ children: [
-              new TextRun({ text: "So what?  ", font: "Arial", size: 20, bold: true, color: GOLD }),
-              new TextRun({ text: text, font: "Arial", size: 20, italics: true, color: "555555" }),
-            ] })],
-          }),
-        ] })],
-      });
-    }
-
-    // Helper: numbered step
-    function numberedStep(num, text) {
-      return new Table({
-        width: { size: 9360, type: WidthType.DXA }, columnWidths: [600, 8760],
-        rows: [new TableRow({ children: [
-          new TableCell({ borders: noBorders, shading: { fill: NAVY, type: ShadingType.CLEAR }, width: { size: 600, type: WidthType.DXA }, margins: { top: 100, bottom: 100, left: 80, right: 80 },
-            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: String(num), font: "Arial", size: 22, bold: true, color: WHITE })] })],
-          }),
-          new TableCell({ borders: noBorders, shading: { fill: LGRAY, type: ShadingType.CLEAR }, width: { size: 8760, type: WidthType.DXA }, margins: { top: 100, bottom: 100, left: 160, right: 160 },
-            children: [new Paragraph({ children: [new TextRun({ text: text, font: "Arial", size: 21, color: "333333" })] })],
-          }),
-        ] })],
-      });
-    }
-
-    const sp = (n) => new Paragraph({ spacing: { after: n || 120 }, children: [] });
-
-    // --- EXECUTIVE SUMMARY ---
-    children.push(...sectionHead("Resumen Ejecutivo"));
-    children.push(grayBox("RESUMEN EJECUTIVO", result.executive_summary));
+    children.push(...secH("Resumen Ejecutivo"));
+    children.push(grayBox("RESUMEN EJECUTIVO",result.executive_summary));
     children.push(sp(200));
+    if(result.key_messages?.length){children.push(...secH("Mensajes Clave"));result.key_messages.forEach(m=>children.push(blt(m)));children.push(sp(200));}
+    if(result.context){children.push(...secH("Contexto y Objetivo"));children.push(new Paragraph({spacing:{after:200},children:[new TextRun({text:result.context,font:"Arial",size:21,color:"333333"})]}));}
+    if(result.findings?.length){children.push(...secH("Hallazgos Clave"));result.findings.forEach((f,i)=>{children.push(new Paragraph({spacing:{before:160,after:60},children:[new TextRun({text:`${i+1}. ${f.finding}`,font:"Arial",size:22,bold:true,color:NAVY})]}));children.push(new Paragraph({spacing:{after:40},children:[new TextRun({text:"Evidencia: ",font:"Arial",size:20,bold:true,color:"666666"}),new TextRun({text:f.evidence,font:"Arial",size:20,color:"666666"})]}));children.push(new Paragraph({spacing:{after:120},children:[new TextRun({text:"Implicancia: ",font:"Arial",size:20,bold:true,color:GOLD}),new TextRun({text:f.business_implication,font:"Arial",size:20,color:"555555"})]}));});children.push(sp(200));}
+    if(result.analysis_blocks?.length){result.analysis_blocks.forEach((s,i)=>{children.push(...secH(`${i+1}. ${s.heading}`));if(s.governing_thought){children.push(govBox(s.governing_thought));children.push(sp(160));}if(s.content)children.push(new Paragraph({spacing:{after:160},children:[new TextRun({text:s.content,font:"Arial",size:21,color:"333333"})]}));if(s.bullets?.length){s.bullets.forEach(b=>children.push(blt(b)));children.push(sp(80));}if(s.so_what){children.push(swBox(s.so_what));children.push(sp(200));}});}
+    if(result.risks?.length){children.push(new Paragraph({children:[new PageBreak()]}));children.push(...secH("Riesgos y Tensiones Cr\u00EDticas"));result.risks.forEach(rk=>{children.push(new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({borders:{top:noBdr,bottom:noBdr,left:{style:BorderStyle.SINGLE,size:4,color:"CC3333"},right:noBdr},margins:{top:100,bottom:100,left:160,right:160},width:{size:9360,type:WidthType.DXA},children:[new Paragraph({children:[new TextRun({text:rk.risk,font:"Arial",size:21,bold:true,color:"CC3333"})]}),new Paragraph({children:[new TextRun({text:rk.implication,font:"Arial",size:20,color:"666666"})]})]})]})]}));children.push(sp(100));});children.push(sp(200));}
+    if(result.opportunities?.length){children.push(...secH("Oportunidades"));result.opportunities.forEach(o=>children.push(blt(o,"2E8B57")));children.push(sp(200));}
+    if(result.recommendations){children.push(...secH("Recomendaciones"));[{key:"short_term",label:"CORTO PLAZO"},{key:"medium_term",label:"MEDIANO PLAZO"},{key:"long_term",label:"LARGO PLAZO"}].forEach(hz=>{const items=result.recommendations[hz.key];if(!items?.length)return;children.push(new Paragraph({spacing:{before:200,after:100},children:[new TextRun({text:hz.label,font:"Arial",size:20,bold:true,color:NAVY})]}));items.forEach((rec,i)=>{children.push(numS(i+1,rec.action));children.push(new Paragraph({spacing:{after:40},indent:{left:720},children:[new TextRun({text:rec.rationale,font:"Arial",size:19,color:"666666",italics:true})]}));children.push(new Paragraph({spacing:{after:120},indent:{left:720},children:[new TextRun({text:"Impacto: ",font:"Arial",size:19,bold:true,color:GOLD}),new TextRun({text:rec.impact,font:"Arial",size:19,color:"555555"})]}));});});children.push(sp(200));}
+    if(result.information_gaps?.length){children.push(...secH("Informaci\u00F3n Faltante"));result.information_gaps.forEach(g=>children.push(blt(g,"999999")));children.push(sp(200));}
+    if(result.conclusion){children.push(...secH("Conclusi\u00F3n Ejecutiva"));children.push(grayBox("CONCLUSI\u00D3N",result.conclusion));}
 
-    // --- KEY MESSAGES ---
-    if (result.key_messages && result.key_messages.length) {
-      children.push(...sectionHead("Mensajes Clave"));
-      result.key_messages.forEach(m => { children.push(bullet(m)); });
-      children.push(sp(200));
-    }
-
-    // --- CONTEXT ---
-    if (result.context) {
-      children.push(...sectionHead("Contexto y Objetivo"));
-      children.push(new Paragraph({ spacing: { after: 200 }, children: [new TextRun({ text: result.context, font: "Arial", size: 21, color: "333333" })] }));
-    }
-
-    // --- FINDINGS ---
-    if (result.findings && result.findings.length) {
-      children.push(...sectionHead("Hallazgos Clave"));
-      result.findings.forEach((f, i) => {
-        children.push(new Paragraph({ spacing: { before: 160, after: 60 }, children: [
-          new TextRun({ text: (i+1) + ". " + f.finding, font: "Arial", size: 22, bold: true, color: NAVY }),
-        ] }));
-        children.push(new Paragraph({ spacing: { after: 40 }, children: [
-          new TextRun({ text: "Evidencia: ", font: "Arial", size: 20, bold: true, color: "666666" }),
-          new TextRun({ text: f.evidence, font: "Arial", size: 20, color: "666666" }),
-        ] }));
-        children.push(new Paragraph({ spacing: { after: 120 }, children: [
-          new TextRun({ text: "Implicancia: ", font: "Arial", size: 20, bold: true, color: GOLD }),
-          new TextRun({ text: f.business_implication, font: "Arial", size: 20, color: "555555" }),
-        ] }));
-      });
-      children.push(sp(200));
-    }
-
-    // --- ANALYSIS BLOCKS ---
-    if (result.analysis_blocks && result.analysis_blocks.length) {
-      result.analysis_blocks.forEach((sec, i) => {
-        children.push(...sectionHead((i+1) + ". " + sec.heading));
-        if (sec.governing_thought) { children.push(govBox(sec.governing_thought)); children.push(sp(160)); }
-        if (sec.content) { children.push(new Paragraph({ spacing: { after: 160 }, children: [new TextRun({ text: sec.content, font: "Arial", size: 21, color: "333333" })] })); }
-        if (sec.bullets && sec.bullets.length) { sec.bullets.forEach(b => children.push(bullet(b))); children.push(sp(80)); }
-        if (sec.so_what) { children.push(soWhatBox(sec.so_what)); children.push(sp(200)); }
-      });
-    }
-
-    // --- RISKS ---
-    if (result.risks && result.risks.length) {
-      children.push(new Paragraph({ children: [new PageBreak()] }));
-      children.push(...sectionHead("Riesgos y Tensiones Cr\u00EDticas"));
-      result.risks.forEach(rk => {
-        children.push(new Table({
-          width: { size: 9360, type: WidthType.DXA }, columnWidths: [9360],
-          rows: [new TableRow({ children: [
-            new TableCell({
-              borders: { top: noBdr, bottom: noBdr, left: { style: BorderStyle.SINGLE, size: 4, color: "CC3333" }, right: noBdr },
-              margins: { top: 100, bottom: 100, left: 160, right: 160 }, width: { size: 9360, type: WidthType.DXA },
-              children: [
-                new Paragraph({ children: [new TextRun({ text: rk.risk, font: "Arial", size: 21, bold: true, color: "CC3333" })] }),
-                new Paragraph({ children: [new TextRun({ text: rk.implication, font: "Arial", size: 20, color: "666666" })] }),
-              ],
-            }),
-          ] })],
-        }));
-        children.push(sp(100));
-      });
-      children.push(sp(200));
-    }
-
-    // --- OPPORTUNITIES ---
-    if (result.opportunities && result.opportunities.length) {
-      children.push(...sectionHead("Oportunidades y Palancas Estrat\u00E9gicas"));
-      result.opportunities.forEach(o => children.push(bullet(o, "2E8B57")));
-      children.push(sp(200));
-    }
-
-    // --- RECOMMENDATIONS ---
-    if (result.recommendations) {
-      children.push(...sectionHead("Recomendaciones"));
-      const horizons = [
-        { key: "short_term", label: "CORTO PLAZO" },
-        { key: "medium_term", label: "MEDIANO PLAZO" },
-        { key: "long_term", label: "LARGO PLAZO" },
-      ];
-      horizons.forEach(h => {
-        const items = result.recommendations[h.key];
-        if (!items || !items.length) return;
-        children.push(new Paragraph({ spacing: { before: 200, after: 100 }, children: [new TextRun({ text: h.label, font: "Arial", size: 20, bold: true, color: NAVY })] }));
-        items.forEach((rec, i) => {
-          children.push(numberedStep(i + 1, rec.action));
-          children.push(new Paragraph({ spacing: { after: 40 }, indent: { left: 720 }, children: [
-            new TextRun({ text: rec.rationale, font: "Arial", size: 19, color: "666666", italics: true }),
-          ] }));
-          children.push(new Paragraph({ spacing: { after: 120 }, indent: { left: 720 }, children: [
-            new TextRun({ text: "Impacto: ", font: "Arial", size: 19, bold: true, color: GOLD }),
-            new TextRun({ text: rec.impact, font: "Arial", size: 19, color: "555555" }),
-          ] }));
-        });
-      });
-      children.push(sp(200));
-    }
-
-    // --- INFO GAPS ---
-    if (result.information_gaps && result.information_gaps.length) {
-      children.push(...sectionHead("Informaci\u00F3n Faltante para Robustecer el An\u00E1lisis"));
-      result.information_gaps.forEach(g => children.push(bullet(g, "999999")));
-      children.push(sp(200));
-    }
-
-    // --- CONCLUSION ---
-    if (result.conclusion) {
-      children.push(...sectionHead("Conclusi\u00F3n Ejecutiva"));
-      children.push(grayBox("CONCLUSI\u00D3N", result.conclusion));
-    }
-
-    // --- BUILD DOCUMENT ---
     const doc = new Document({
-      styles: { default: { document: { run: { font: "Arial", size: 22 } } } },
-      sections: [{
-        properties: {
-          page: {
-            size: { width: 12240, height: 15840 },
-            margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 },
-          },
-        },
-        headers: {
-          default: new Header({
-            children: [new Paragraph({
-              alignment: AlignmentType.RIGHT,
-              border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: NAVY, space: 4 } },
-              children: [
-                new TextRun({ text: "CONFIDENCIAL  |  ", font: "Arial", size: 14, color: "999999" }),
-                new TextRun({ text: "Grupo Alto", font: "Arial", size: 14, bold: true, color: NAVY }),
-              ],
-            })],
-          }),
-        },
-        footers: {
-          default: new Footer({
-            children: [new Paragraph({
-              alignment: AlignmentType.CENTER,
-              border: { top: { style: BorderStyle.SINGLE, size: 1, color: MGRAY, space: 4 } },
-              children: [
-                new TextRun({ text: "P\u00E1gina ", font: "Arial", size: 16, color: "999999" }),
-                new TextRun({ children: [PageNumber.CURRENT], font: "Arial", size: 16, color: "999999" }),
-              ],
-            })],
-          }),
-        },
+      styles:{default:{document:{run:{font:"Arial",size:22}}}},
+      sections:[{
+        properties:{page:{size:{width:12240,height:15840},margin:{top:1440,right:1440,bottom:1440,left:1440}}},
+        headers:{default:new Header({children:[new Paragraph({alignment:AlignmentType.RIGHT,border:{bottom:{style:BorderStyle.SINGLE,size:2,color:NAVY,space:4}},children:[new TextRun({text:"CONFIDENCIAL  |  ",font:"Arial",size:14,color:"999999"}),new TextRun({text:"Grupo Alto",font:"Arial",size:14,bold:true,color:NAVY})]})]})},
+        footers:{default:new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,border:{top:{style:BorderStyle.SINGLE,size:1,color:MGRAY,space:4}},children:[new TextRun({text:"P\u00E1gina ",font:"Arial",size:16,color:"999999"}),new TextRun({children:[PageNumber.CURRENT],font:"Arial",size:16,color:"999999"})]})]})},
         children,
       }],
     });
@@ -902,14 +739,13 @@ async function downloadDocx() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "Informe_Ejecutivo_" + new Date().toISOString().slice(0, 10) + ".docx";
+    a.download = "Informe_Ejecutivo_" + new Date().toISOString().slice(0,10) + ".docx";
     a.click();
     URL.revokeObjectURL(url);
-
     flash("\u2713 Documento Word descargado");
-  } catch (err) {
+  } catch(err) {
     console.error(err);
-    showError("Error generando el documento: " + err.message);
+    showError("Error generando documento: " + err.message);
   }
 }
 </script>
