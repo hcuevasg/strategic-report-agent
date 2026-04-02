@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO V1.1</title>
+<title>Strategic Report Agent — ALTO v1.2</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -442,118 +442,224 @@ async function downloadPptx(){if(!result)return;
 
   showStatus('Diseñando estructura de slides McKinsey...');
   try{
-    // Step 1: Ask Claude to design the slide structure from the report
     const res=await fetch(wUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userContent:'__PPTX_MODE__',reportJSON:JSON.stringify(result)})});
     const raw=await res.text();
     if(raw.trim().startsWith('<'))throw new Error('Worker devolvió HTML. Status: '+res.status);
-    let data;try{data=JSON.parse(raw);}catch(e){throw new Error('No es JSON');}
+    let data;try{data=JSON.parse(raw);}catch(e){throw new Error('Respuesta no es JSON');}
     if(data.error)throw new Error(data.error.message||data.error);
     const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     const clean=txt.replace(/```json|```/g,'').trim();
     let slideData;try{slideData=JSON.parse(clean);}catch(e){throw new Error('IA no devolvió JSON de slides válido');}
+    console.log('Slide structure from AI:', slideData);
 
     showStatus('Renderizando presentación ALTO...');
-
-    // Step 2: Render slides with PptxGenJS
     const pptx=new PptxGenJS();pptx.layout='LAYOUT_WIDE';pptx.author='ALTO';pptx.title=result.title;
     const A=ALTO;
+    const W=13.33,M=0.5,CW=W-2*M; // slide width, margin, content width
 
+    // --- SLIDE MASTER ---
     pptx.defineSlideMaster({title:'ALTO_MASTER',background:{color:A.WHITE},objects:[
-      {rect:{x:0,y:0,w:'100%',h:0.04,fill:{color:A.RED}}},
-      {rect:{x:0,y:7.2,w:'100%',h:0.3,fill:{color:A.LGRAY}}},
-      {text:{text:'CONFIDENCIAL',options:{x:0.5,y:7.22,w:3,h:0.25,fontSize:7,fontFace:'Arial',color:A.SGRAY,bold:true}}},
-    ],slideNumber:{x:12.3,y:7.22,w:0.8,h:0.25,fontSize:7,fontFace:'Arial',color:A.SGRAY,align:'right'}});
+      {rect:{x:0,y:0,w:'100%',h:0.05,fill:{color:A.RED}}},
+      {rect:{x:0,y:7.15,w:'100%',h:0.35,fill:{color:A.LGRAY}}},
+      {text:{text:'CONFIDENCIAL · ALTO',options:{x:M,y:7.18,w:4,h:0.25,fontSize:7,fontFace:'Arial',color:A.SGRAY,bold:true}}},
+    ],slideNumber:{x:12.3,y:7.18,w:0.8,h:0.25,fontSize:7,fontFace:'Arial',color:A.SGRAY,align:'right'}});
 
-    function addLogo(sl){if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:11.3,y:0.12,w:1.6,h:0.63});}
+    // --- HELPER FUNCTIONS ---
+    function addLogo(sl){if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:11.3,y:0.15,w:1.5,h:0.59});}
+    function actionTitle(sl,t,accent){
+      sl.addText(t||'',{x:M,y:0.15,w:10.3,h:0.55,fontSize:13,fontFace:'Georgia',color:A.NAVY,bold:true,lineSpacingMultiple:1.05,valign:'top'});
+      sl.addShape(pptx.ShapeType.rect,{x:M,y:0.72,w:1.2,h:0.035,fill:{color:accent||A.RED}});
+      addLogo(sl);
+    }
+    function soWhatBox(sl,text,y){
+      if(!text)return;
+      const bY=Math.min(y,6.5);
+      sl.addShape(pptx.ShapeType.rect,{x:M,y:bY,w:CW,h:0.5,fill:{color:'FFF5F5'}});
+      sl.addShape(pptx.ShapeType.rect,{x:M,y:bY,w:0.06,h:0.5,fill:{color:A.RED}});
+      sl.addText([
+        {text:'\u25B6 SO WHAT  ',options:{bold:true,color:A.RED,fontSize:9,fontFace:'Arial'}},
+        {text:text,options:{italic:true,color:A.DGRAY,fontSize:9,fontFace:'Arial'}}
+      ],{x:M+0.2,y:bY+0.05,w:CW-0.3,h:0.4,valign:'middle'});
+    }
+    function srcNote(sl,t){if(t)sl.addText('Fuente: '+t,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Arial',color:A.SGRAY,italic:true});}
 
     const slides=slideData.slides||[];
 
-    slides.forEach((s,idx)=>{
+    slides.forEach((s)=>{
+      const vis=s.visual_suggestion||'none';
+
+      // =================== COVER ===================
       if(s.type==='cover'){
-        // COVER SLIDE
         const sl=pptx.addSlide();sl.background={color:A.DNAVY};
-        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:0.5,y:0.5,w:2.2,h:0.87});
-        sl.addShape(pptx.ShapeType.rect,{x:0.5,y:2.8,w:2.5,h:0.04,fill:{color:A.RED}});
-        sl.addText(s.action_title||result.title,{x:0.5,y:3.0,w:12,h:1.5,fontSize:28,fontFace:'Georgia',color:A.WHITE,bold:true,lineSpacingMultiple:1.1});
-        if(s.subheading)sl.addText(s.subheading,{x:0.5,y:4.5,w:10,h:0.6,fontSize:13,fontFace:'Georgia',color:A.MGRAY,italic:true});
-        sl.addText('CONFIDENCIAL',{x:0.5,y:6.2,w:3,h:0.3,fontSize:9,fontFace:'Arial',color:A.RED,bold:true,letterSpacing:3});
-        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'}),{x:0.5,y:6.5,w:4,h:0.3,fontSize:10,fontFace:'Arial',color:A.GRAY});
-
-      } else if(s.type==='closing'){
-        // CLOSING SLIDE
+        sl.addShape(pptx.ShapeType.rect,{x:0,y:0,w:0.12,h:7.5,fill:{color:A.RED}});
+        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:0.6,y:0.5,w:2.2,h:0.87});
+        sl.addShape(pptx.ShapeType.rect,{x:0.6,y:2.9,w:3,h:0.04,fill:{color:A.RED}});
+        sl.addText(s.action_title||result.title,{x:0.6,y:3.1,w:11.5,h:1.6,fontSize:28,fontFace:'Georgia',color:A.WHITE,bold:true,lineSpacingMultiple:1.15});
+        if(s.subheading)sl.addText(s.subheading,{x:0.6,y:4.7,w:10,h:0.6,fontSize:13,fontFace:'Arial',color:A.MGRAY,italic:true});
+        sl.addText('CONFIDENCIAL',{x:0.6,y:6.2,w:3,h:0.3,fontSize:9,fontFace:'Arial',color:A.RED,bold:true,letterSpacing:3});
+        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'}),{x:0.6,y:6.5,w:4,h:0.3,fontSize:10,fontFace:'Arial',color:A.GRAY});
+        return;
+      }
+      // =================== CLOSING ===================
+      if(s.type==='closing'){
         const sl=pptx.addSlide();sl.background={color:A.DNAVY};
-        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:5.0,y:2.3,w:3.3,h:1.3});
-        sl.addShape(pptx.ShapeType.rect,{x:5.5,y:3.5,w:2.33,h:0.04,fill:{color:A.RED}});
-        sl.addText(s.action_title||'Gracias',{x:0,y:3.8,w:'100%',h:1,fontSize:36,fontFace:'Georgia',color:A.WHITE,align:'center',bold:true});
+        sl.addShape(pptx.ShapeType.rect,{x:0,y:0,w:0.12,h:7.5,fill:{color:A.RED}});
+        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:5.0,y:2.0,w:3.3,h:1.3});
+        sl.addShape(pptx.ShapeType.rect,{x:5.5,y:3.3,w:2.33,h:0.04,fill:{color:A.RED}});
+        sl.addText(s.action_title||'Gracias',{x:0,y:3.6,w:'100%',h:0.8,fontSize:32,fontFace:'Georgia',color:A.WHITE,align:'center',bold:true});
+        if(s.subheading)sl.addText(s.subheading,{x:1,y:4.5,w:11,h:0.5,fontSize:12,fontFace:'Arial',color:A.MGRAY,align:'center',italic:true});
+        return;
+      }
 
-      } else if(s.type==='data_callout' && s.data_points?.length){
-        // DATA CALLOUT SLIDE (stat cards)
-        const sl=pptx.addSlide({masterName:'ALTO_MASTER'});
-        sl.addText(s.action_title,{x:0.5,y:0.2,w:10,h:0.5,fontSize:13,fontFace:'Georgia',color:A.NAVY,bold:true});
-        sl.addShape(pptx.ShapeType.rect,{x:0.5,y:0.72,w:1.5,h:0.03,fill:{color:A.RED}});
-        addLogo(sl);
-        if(s.subheading)sl.addText(s.subheading,{x:0.5,y:0.85,w:11,h:0.3,fontSize:9,fontFace:'Arial',color:A.SGRAY,italic:true});
+      // =================== CONTENT SLIDES ===================
+      const sl=pptx.addSlide({masterName:'ALTO_MASTER'});
+      const accentColor=s.type==='risks'?'CC3333':s.type==='opportunities'?'1B7A4A':A.RED;
+      actionTitle(sl,s.action_title,accentColor);
+      let cy=0.85;
+      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:CW,h:0.28,fontSize:9,fontFace:'Arial',color:A.SGRAY,italic:true});cy+=0.32;}
+
+      // ========== LAYOUT: STAT CALLOUTS ==========
+      if(vis==='stat_callouts' && s.data_points&&s.data_points.length){
         const dp=s.data_points.slice(0,4);
-        const cols=dp.length;const colW=12.33/cols;
+        const cols=dp.length;const colW=CW/cols;
+        const cardColors=[A.BLUE,A.RED,'1B7A4A',A.NAVY];
         dp.forEach((d,i)=>{
-          const cx=0.5+(i*colW);
-          sl.addShape(pptx.ShapeType.rect,{x:cx+0.1,y:1.3,w:colW-0.2,h:2.4,fill:{color:A.LGRAY}});
-          sl.addShape(pptx.ShapeType.rect,{x:cx+0.1,y:1.3,w:colW-0.2,h:0.04,fill:{color:i%2===0?A.BLUE:A.RED}});
-          sl.addText(d.value,{x:cx+0.1,y:1.6,w:colW-0.2,h:1.0,fontSize:36,fontFace:'Georgia',color:A.NAVY,bold:true,align:'center',valign:'middle'});
-          sl.addText(d.label,{x:cx+0.2,y:2.7,w:colW-0.4,h:0.8,fontSize:9,fontFace:'Arial',color:A.SGRAY,align:'center',valign:'top',lineSpacingMultiple:1.2});
+          const cx=M+(i*colW);
+          sl.addShape(pptx.ShapeType.rect,{x:cx+0.08,y:cy,w:colW-0.16,h:3.0,fill:{color:A.LGRAY}});
+          sl.addShape(pptx.ShapeType.rect,{x:cx+0.08,y:cy,w:colW-0.16,h:0.06,fill:{color:cardColors[i%4]}});
+          sl.addText(String(d.value),{x:cx+0.08,y:cy+0.3,w:colW-0.16,h:1.3,fontSize:42,fontFace:'Georgia',color:A.NAVY,bold:true,align:'center',valign:'middle'});
+          sl.addText(d.label,{x:cx+0.15,y:cy+1.7,w:colW-0.3,h:1.1,fontSize:9,fontFace:'Arial',color:A.SGRAY,align:'center',valign:'top',lineSpacingMultiple:1.3});
         });
-        // Chart if 3+ data points with numeric values
-        try{
-          const numericDp=dp.filter(d=>parseFloat(d.value));
-          if(numericDp.length>=3){
-            sl.addChart(pptx.ChartType.bar,[{name:'',labels:numericDp.map(d=>d.label.substring(0,18)),values:numericDp.map(d=>parseFloat(d.value)||0)}],{
-              x:0.5,y:4.0,w:12.33,h:2.8,showTitle:false,showValue:true,valueFontSize:8,catAxisLabelFontSize:7,valAxisHidden:true,chartColors:[A.BLUE],
-            });
-          }
-        }catch(e){}
-        if(s.so_what)sl.addText([{text:'So what?  ',options:{bold:true,color:A.RED,fontSize:9}},{text:s.so_what,options:{italic:true,color:A.SGRAY,fontSize:9}}],{x:0.5,y:6.8,w:12,h:0.3,fontFace:'Arial'});
+        soWhatBox(sl,s.so_what,cy+3.3);
 
-      } else {
-        // STANDARD CONTENT SLIDE
-        const sl=pptx.addSlide({masterName:'ALTO_MASTER'});
-        // Action title (Georgia, assertion style)
-        sl.addText(s.action_title||'',{x:0.5,y:0.2,w:10,h:0.5,fontSize:13,fontFace:'Georgia',color:A.NAVY,bold:true});
-        sl.addShape(pptx.ShapeType.rect,{x:0.5,y:0.72,w:1.5,h:0.03,fill:{color:s.type==='risks'?'CC3333':A.RED}});
-        addLogo(sl);
-        // Subheading
-        let cy=0.9;
-        if(s.subheading){sl.addText(s.subheading,{x:0.5,y:cy,w:12,h:0.3,fontSize:9,fontFace:'Arial',color:A.SGRAY,italic:true});cy+=0.35;}
-        // Body text
+      // ========== LAYOUT: COMPARISON COLUMNS ==========
+      } else if(vis==='comparison' && s.columns&&s.columns.length){
+        const cols=s.columns.slice(0,3);
+        const colW=CW/cols.length;
+        const colColors=[A.BLUE,A.RED,'1B7A4A'];
+        cols.forEach((col,i)=>{
+          const cx=M+(i*colW);
+          sl.addShape(pptx.ShapeType.rect,{x:cx+0.06,y:cy,w:colW-0.12,h:0.5,fill:{color:colColors[i%3]}});
+          sl.addText(col.title||'',{x:cx+0.06,y:cy,w:colW-0.12,h:0.5,fontSize:11,fontFace:'Arial',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          sl.addShape(pptx.ShapeType.rect,{x:cx+0.06,y:cy+0.5,w:colW-0.12,h:3.5,fill:{color:A.LGRAY}});
+          let iy=cy+0.65;
+          (col.items||[]).forEach(item=>{
+            sl.addText([{text:'\u25B8 ',options:{fontSize:10,color:colColors[i%3],bold:true}},{text:item,options:{fontSize:9,color:A.BODY}}],{x:cx+0.2,y:iy,w:colW-0.35,h:0.32,fontFace:'Arial',valign:'top'});
+            iy+=0.38;
+          });
+        });
+        soWhatBox(sl,s.so_what,cy+4.2);
+
+      // ========== LAYOUT: TIMELINE / ROADMAP ==========
+      } else if(vis==='timeline' && s.columns&&s.columns.length){
+        const phases=s.columns.slice(0,4);
+        const phW=CW/phases.length;
+        sl.addShape(pptx.ShapeType.rect,{x:M,y:cy+0.2,w:CW,h:0.06,fill:{color:A.LGRAY}});
+        phases.forEach((ph,i)=>{
+          const px=M+(i*phW);
+          sl.addShape(pptx.ShapeType.oval,{x:px+phW/2-0.18,y:cy+0.05,w:0.36,h:0.36,fill:{color:i===0?A.RED:A.BLUE},line:{color:A.WHITE,width:2}});
+          sl.addText(String(i+1),{x:px+phW/2-0.18,y:cy+0.05,w:0.36,h:0.36,fontSize:11,fontFace:'Arial',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          sl.addText(ph.title||'',{x:px+0.05,y:cy+0.55,w:phW-0.1,h:0.4,fontSize:10,fontFace:'Arial',color:A.NAVY,bold:true,align:'center',valign:'top'});
+          sl.addShape(pptx.ShapeType.rect,{x:px+0.05,y:cy+1.0,w:phW-0.1,h:2.8,fill:{color:A.LGRAY}});
+          let iy=cy+1.1;
+          (ph.items||[]).forEach(item=>{
+            sl.addText('\u2022 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:0.3,fontSize:8,fontFace:'Arial',color:A.BODY,valign:'top'});
+            iy+=0.35;
+          });
+        });
+        soWhatBox(sl,s.so_what,cy+4.1);
+
+      // ========== LAYOUT: PILLARS ==========
+      } else if(vis==='pillars' && s.columns&&s.columns.length){
+        const pils=s.columns.slice(0,4);
+        const pW=CW/pils.length;
+        const pilColors=[A.NAVY,A.BLUE,A.RED,'1B7A4A'];
+        pils.forEach((p,i)=>{
+          const px=M+(i*pW);
+          sl.addShape(pptx.ShapeType.rect,{x:px+0.06,y:cy,w:pW-0.12,h:3.8,fill:{color:A.LGRAY}});
+          sl.addShape(pptx.ShapeType.rect,{x:px+0.06,y:cy,w:pW-0.12,h:0.55,fill:{color:pilColors[i%4]}});
+          sl.addText(p.title||'',{x:px+0.06,y:cy,w:pW-0.12,h:0.55,fontSize:10,fontFace:'Arial',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          let iy=cy+0.7;
+          (p.items||[]).forEach(item=>{
+            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:pW-0.3,h:0.35,fontSize:8.5,fontFace:'Arial',color:A.BODY,valign:'top',lineSpacingMultiple:1.1});
+            iy+=0.4;
+          });
+        });
+        soWhatBox(sl,s.so_what,cy+4.0);
+
+      // ========== LAYOUT: MATRIX 2x2 ==========
+      } else if(vis==='matrix' && s.columns&&s.columns.length>=4){
+        const q=s.columns.slice(0,4);
+        const halfW=CW/2,halfH=2.2;
+        const qColors=[A.BLUE,A.RED,'1B7A4A',A.NAVY];
+        q.forEach((qd,i)=>{
+          const qx=M+(i%2)*halfW;
+          const qy=cy+(Math.floor(i/2))*halfH;
+          sl.addShape(pptx.ShapeType.rect,{x:qx+0.05,y:qy,w:halfW-0.1,h:halfH-0.08,fill:{color:A.LGRAY}});
+          sl.addShape(pptx.ShapeType.rect,{x:qx+0.05,y:qy,w:halfW-0.1,h:0.05,fill:{color:qColors[i]}});
+          sl.addText(qd.title||'',{x:qx+0.15,y:qy+0.12,w:halfW-0.3,h:0.3,fontSize:10,fontFace:'Arial',color:qColors[i],bold:true});
+          let iy=qy+0.5;
+          (qd.items||[]).forEach(item=>{
+            sl.addText('\u2022 '+item,{x:qx+0.2,y:iy,w:halfW-0.4,h:0.28,fontSize:8,fontFace:'Arial',color:A.BODY,valign:'top'});
+            iy+=0.32;
+          });
+        });
+        soWhatBox(sl,s.so_what,cy+halfH*2+0.15);
+
+      // ========== LAYOUT: SPLIT (text + highlight box) ==========
+      } else if(vis==='split'){
+        const leftW=CW*0.58,rightW=CW*0.38;
         if(s.body_text){
-          // Governing thought style for executive_summary type
-          if(s.type==='executive_summary'){
-            sl.addShape(pptx.ShapeType.rect,{x:0.5,y:cy,w:12.33,h:1.4,fill:{color:A.LGRAY}});
-            sl.addShape(pptx.ShapeType.rect,{x:0.5,y:cy,w:0.06,h:1.4,fill:{color:A.BLUE}});
-            sl.addText(s.body_text,{x:0.8,y:cy+0.1,w:11.8,h:1.2,fontSize:11,fontFace:'Georgia',color:A.DGRAY,italic:true,lineSpacingMultiple:1.4,valign:'top'});
-            cy+=1.6;
-          } else {
-            sl.addText(s.body_text,{x:0.5,y:cy,w:12.33,h:1.8,fontSize:10,fontFace:'Arial',color:A.BODY,lineSpacingMultiple:1.4,valign:'top'});
-            cy+=1.9;
-          }
+          sl.addText(s.body_text,{x:M,y:cy,w:leftW,h:2.0,fontSize:10,fontFace:'Arial',color:A.BODY,lineSpacingMultiple:1.4,valign:'top'});
         }
-        // Bullets
-        if(s.bullets?.length){
-          const bColor=s.type==='risks'?'CC3333':s.type==='opportunities'?'2E8B57':A.RED;
+        let bcy=cy+(s.body_text?2.1:0);
+        if(s.bullets&&s.bullets.length){
           s.bullets.forEach(b=>{
-            sl.addText([{text:'▸ ',options:{fontSize:11,fontFace:'Arial',color:bColor,bold:true}},{text:b,options:{fontSize:10,fontFace:'Arial',color:A.BODY}}],{x:0.7,y:cy,w:11.8,h:0.35,valign:'top'});
-            cy+=0.35;
+            sl.addText([{text:'\u25B8 ',options:{fontSize:10,color:accentColor,bold:true}},{text:b,options:{fontSize:9,color:A.BODY}}],{x:M+0.1,y:bcy,w:leftW-0.2,h:0.32,fontFace:'Arial',valign:'top'});
+            bcy+=0.35;
+          });
+        }
+        const rX=M+leftW+CW*0.04;
+        const rY=0.85+(s.subheading?0.32:0);
+        sl.addShape(pptx.ShapeType.rect,{x:rX,y:rY,w:rightW,h:3.5,fill:{color:A.NAVY}});
+        sl.addShape(pptx.ShapeType.rect,{x:rX,y:rY,w:0.06,h:3.5,fill:{color:A.RED}});
+        const hText=s.highlight_box||s.so_what||'';
+        sl.addText(hText,{x:rX+0.2,y:rY+0.3,w:rightW-0.4,h:2.9,fontSize:12,fontFace:'Georgia',color:A.WHITE,italic:true,lineSpacingMultiple:1.5,valign:'top'});
+        soWhatBox(sl,s.so_what,5.5);
+
+      // ========== LAYOUT: DEFAULT ==========
+      } else {
+        if(s.type==='executive_summary' && s.body_text){
+          sl.addShape(pptx.ShapeType.rect,{x:M,y:cy,w:CW,h:1.6,fill:{color:A.LGRAY}});
+          sl.addShape(pptx.ShapeType.rect,{x:M,y:cy,w:0.06,h:1.6,fill:{color:A.BLUE}});
+          sl.addText(s.body_text,{x:M+0.25,y:cy+0.1,w:CW-0.4,h:1.4,fontSize:11,fontFace:'Georgia',color:A.DGRAY,italic:true,lineSpacingMultiple:1.4,valign:'top'});
+          cy+=1.8;
+        } else if(s.body_text){
+          sl.addText(s.body_text,{x:M,y:cy,w:CW,h:1.6,fontSize:10,fontFace:'Arial',color:A.BODY,lineSpacingMultiple:1.4,valign:'top'});
+          cy+=1.7;
+        }
+        if(s.bullets&&s.bullets.length){
+          s.bullets.forEach(b=>{
+            sl.addText([{text:'\u25B8 ',options:{fontSize:11,fontFace:'Arial',color:accentColor,bold:true}},{text:b,options:{fontSize:10,fontFace:'Arial',color:A.BODY}}],{x:M+0.15,y:cy,w:CW-0.2,h:0.38,valign:'top'});
+            cy+=0.42;
           });
           cy+=0.1;
         }
-        // So What box
-        if(s.so_what){
-          sl.addShape(pptx.ShapeType.rect,{x:0.5,y:cy,w:0.06,h:0.5,fill:{color:A.RED}});
-          sl.addShape(pptx.ShapeType.rect,{x:0.56,y:cy,w:12.27,h:0.5,fill:{color:'FFF5F5'}});
-          sl.addText([{text:'So what?  ',options:{bold:true,color:A.RED,fontSize:10}},{text:s.so_what,options:{italic:true,color:A.SGRAY,fontSize:10}}],{x:0.75,y:cy+0.05,w:11.9,h:0.4,fontFace:'Arial',valign:'top'});
+        if(s.data_points&&s.data_points.length){
+          const dp=s.data_points.slice(0,4);
+          const dpW=CW/dp.length;
+          dp.forEach((d,i)=>{
+            const dx=M+(i*dpW);
+            sl.addShape(pptx.ShapeType.rect,{x:dx+0.05,y:cy,w:dpW-0.1,h:1.4,fill:{color:A.LGRAY}});
+            sl.addShape(pptx.ShapeType.rect,{x:dx+0.05,y:cy,w:dpW-0.1,h:0.05,fill:{color:i%2===0?A.BLUE:A.RED}});
+            sl.addText(String(d.value),{x:dx+0.05,y:cy+0.15,w:dpW-0.1,h:0.6,fontSize:28,fontFace:'Georgia',color:A.NAVY,bold:true,align:'center',valign:'middle'});
+            sl.addText(d.label,{x:dx+0.1,y:cy+0.8,w:dpW-0.2,h:0.5,fontSize:8,fontFace:'Arial',color:A.SGRAY,align:'center',valign:'top'});
+          });
+          cy+=1.6;
         }
-        // Source note
-        if(s.source_note)sl.addText('Fuente: '+s.source_note,{x:0.5,y:6.9,w:10,h:0.2,fontSize:7,fontFace:'Arial',color:A.SGRAY,italic:true});
+        soWhatBox(sl,s.so_what,cy+0.1);
       }
+      srcNote(sl,s.source_note);
     });
 
     await pptx.writeFile({fileName:'Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pptx'});
