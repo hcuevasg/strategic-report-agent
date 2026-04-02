@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO</title>
+<title>Strategic Report Agent — ALTO V1.1</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -129,6 +129,21 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{
       Haz click en cualquier texto para editarlo antes de exportar
     </div>
     <button onclick="resetEdits()" class="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300">Restaurar</button>
+  </div>
+
+  <!-- Follow-up Chat (mejora #8) -->
+  <div id="chatSection" class="hidden mt-6 bg-surface-container-low border-t-2 border-alto-blue shadow-xl shadow-black/40 overflow-hidden">
+    <div class="px-5 py-3 bg-[#2B3A4E] flex items-center gap-2">
+      <span class="material-symbols-outlined text-white text-lg">forum</span>
+      <span class="text-[10px] uppercase tracking-widest text-white font-semibold">Consultar sobre el informe</span>
+    </div>
+    <div id="chatMessages" class="p-4 space-y-3 max-h-80 overflow-y-auto"></div>
+    <div class="p-4 border-t border-outline-variant/20 flex gap-3">
+      <input id="chatInput" type="text" class="flex-1 bg-surface-container-high border-none h-11 px-4 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-2 focus:ring-alto-blue transition-all text-sm" placeholder="Ej: Profundiza el hallazgo 3, agrega análisis financiero, reformula para el CFO..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button onclick="sendChat()" class="bg-alto-blue hover:bg-alto-blue/90 text-white font-bold h-11 px-5 flex items-center gap-2 transition-all text-xs uppercase tracking-wider disabled:opacity-40" id="btnChat">
+        <span class="material-symbols-outlined text-lg">send</span>
+      </button>
+    </div>
   </div>
 
   <section id="methodCards" class="mt-16 grid md:grid-cols-3 gap-6">
@@ -295,7 +310,87 @@ function showStatus(m){const e=document.getElementById('statusMsg');e.textConten
 function showError(m){const b=document.getElementById('errorBox');b.textContent=m;b.classList.remove('hidden');document.getElementById('statusMsg').classList.add('hidden');}
 function hideError(){document.getElementById('errorBox').classList.add('hidden');}
 function hidePreview(){document.getElementById('previewCard').classList.add('hidden');document.getElementById('editBanner').classList.add('hidden');document.getElementById('methodCards').classList.remove('hidden');}
-function showExportBtns(){['btnMd','btnDocx','btnPdf','btnPptx'].forEach(id=>document.getElementById(id).classList.remove('hidden'));}
+function showExportBtns(){['btnMd','btnDocx','btnPdf','btnPptx'].forEach(id=>document.getElementById(id).classList.remove('hidden'));document.getElementById('chatSection').classList.remove('hidden');}
+
+// ============================================================
+// MEJORA #8: FOLLOW-UP CHAT
+// ============================================================
+let chatHistory = [];
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  const wUrl = document.getElementById('workerUrl').value.trim();
+  if (!msg || !result || !wUrl) return;
+
+  input.value = '';
+  addChatBubble('user', msg);
+
+  const btn = document.getElementById('btnChat');
+  btn.disabled = true;
+
+  // Build context with current report state
+  chatHistory.push({ role: 'user', content: msg });
+
+  try {
+    const res = await fetch(wUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userContent: '__CHAT_MODE__',
+        chatMessages: [
+          { role: 'user', content: `Este es el informe ejecutivo actual en JSON:\n\n${JSON.stringify(result, null, 2)}\n\nEl usuario tiene una consulta sobre este informe. Responde de forma concisa y profesional. Si el usuario pide modificar el informe, responde con el JSON actualizado completo precedido de la etiqueta __JSON_UPDATE__ en una línea separada. Si solo pide información o aclaración, responde en texto normal.\n\nConsulta del usuario: ${msg}` },
+        ],
+      }),
+    });
+
+    const raw = await res.text();
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { throw new Error('Respuesta no válida'); }
+    if (data.error) throw new Error(data.error.message || data.error);
+
+    const reply = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+
+    // Check if response includes a JSON update
+    if (reply.includes('__JSON_UPDATE__')) {
+      const parts = reply.split('__JSON_UPDATE__');
+      const textPart = parts[0].trim();
+      const jsonPart = parts[1].replace(/```json|```/g, '').trim();
+      try {
+        const updated = JSON.parse(jsonPart);
+        result = updated;
+        renderPreview(result);
+        addChatBubble('assistant', (textPart || 'Informe actualizado.') + '\n\n✅ El informe ha sido actualizado. Los cambios se reflejan en la vista previa y en las exportaciones.');
+      } catch(e) {
+        addChatBubble('assistant', textPart || reply);
+      }
+    } else {
+      addChatBubble('assistant', reply);
+    }
+
+    chatHistory.push({ role: 'assistant', content: reply });
+  } catch(err) {
+    addChatBubble('assistant', '❌ Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function addChatBubble(role, text) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = role === 'user'
+    ? 'flex justify-end'
+    : 'flex justify-start';
+  const bubble = document.createElement('div');
+  bubble.className = role === 'user'
+    ? 'bg-alto-blue/20 text-on-surface text-sm px-4 py-2 rounded-lg max-w-[85%] whitespace-pre-wrap'
+    : 'bg-surface-container-high text-on-surface text-sm px-4 py-2 rounded-lg max-w-[85%] whitespace-pre-wrap border border-outline-variant/20';
+  bubble.textContent = text;
+  div.appendChild(bubble);
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
 function setDot(s){const d=document.getElementById('statusDot'),l=document.getElementById('statusDotLabel');if(s==='ok'){d.style.background='#10b981';l.textContent='Conectado';}else if(s==='no'){d.style.background='#ef4444';l.textContent='Error';}else{d.style.background='#64748b';l.textContent='Sin conexión';}}
 function flash(m){showStatus(m);setTimeout(()=>{if(result)showStatus('Informe listo — edita y exporta');},2500);}
 function loadSample(){document.getElementById('inputText').value=`Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar.\n\nLas tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.\n\nEl área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.\n\nNecesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.\n\nNota: la data de modus operandi tiene un 30% de registros sin clasificar. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;}
@@ -303,74 +398,167 @@ const saved=localStorage.getItem('worker_url');if(saved)document.getElementById(
 </script>
 
 <!-- ============================================================ -->
+<!-- CHART UTILITIES -->
+<!-- ============================================================ -->
+<script>
+function extractNumbers(r) {
+  const nums = [];
+  const pctRegex = /(\d+[\.,]?\d*)\s*%/g;
+  const numRegex = /(\d+[\.,]?\d*)\s*(eventos|expedientes|tiendas|casos|guardias|sentencias|meses|d\u00edas|semanas|millones|M|K|USD|\$|CLP|MXN)/gi;
+  const allText = [
+    r.executive_summary, r.context,
+    ...(r.findings||[]).map(f=>f.finding+' '+f.evidence+' '+f.business_implication),
+    ...(r.analysis_blocks||[]).map(b=>(b.content||'')+' '+(b.governing_thought||'')+' '+(b.bullets||[]).join(' ')),
+    ...(r.key_messages||[]),
+  ].filter(Boolean).join(' ');
+  let m;
+  while((m=pctRegex.exec(allText))!==null){
+    const val=m[1].replace(',','.');
+    const before=allText.substring(Math.max(0,m.index-80),m.index).trim();
+    const words=before.split(/\s+/).slice(-6).join(' ');
+    nums.push({value:m[0],raw:val,label:words||'Porcentaje'});
+  }
+  while((m=numRegex.exec(allText))!==null){
+    const val=m[1].replace(',','.');
+    const unit=m[2];
+    const before=allText.substring(Math.max(0,m.index-60),m.index).trim();
+    const words=before.split(/\s+/).slice(-4).join(' ');
+    if(!nums.some(n=>n.raw===val&&Math.abs(allText.indexOf(n.value)-m.index)<10)){
+      nums.push({value:m[1]+' '+unit,raw:val,label:words||unit});
+    }
+  }
+  const seen=new Set();
+  return nums.filter(n=>{if(seen.has(n.value))return false;seen.add(n.value);return true;}).slice(0,8);
+}
+</script>
+
+<!-- ============================================================ -->
 <!-- PPTX GENERATION — ALTO Corporate Style -->
 <!-- ============================================================ -->
 <script>
-async function downloadPptx(){if(!result)return;showStatus('Generando presentación ALTO...');try{
-  const pptx=new PptxGenJS();pptx.layout='LAYOUT_WIDE';pptx.author='ALTO';pptx.title=result.title;
-  const A=ALTO;
-  // Master
-  pptx.defineSlideMaster({title:'ALTO_MASTER',background:{color:A.WHITE},objects:[
-    {rect:{x:0,y:0,w:'100%',h:0.04,fill:{color:A.RED}}},
-    {rect:{x:0,y:7.2,w:'100%',h:0.3,fill:{color:A.LGRAY}}},
-    {text:{text:'CONFIDENCIAL',options:{x:0.5,y:7.22,w:3,h:0.25,fontSize:7,fontFace:'Arial',color:A.SGRAY,bold:true}}},
-  ],slideNumber:{x:12.3,y:7.22,w:0.8,h:0.25,fontSize:7,fontFace:'Arial',color:A.SGRAY,align:'right'}});
+async function downloadPptx(){if(!result)return;
+  const wUrl=document.getElementById('workerUrl').value.trim();
+  if(!wUrl){showError('Configura el Worker URL para generar PPTX.');return;}
 
-  function addLogo(slide){if(logoBase64){slide.addImage({data:'image/png;base64,'+logoBase64,x:11.2,y:0.15,w:1.8,h:0.45});}}
-  function addLogoW(slide){if(logoWhiteBase64){slide.addImage({data:'image/png;base64,'+logoWhiteBase64,x:11.2,y:0.15,w:1.8,h:0.45});}}
-  function sTitle(sl,t){sl.addText(t.toUpperCase(),{x:0.5,y:0.2,w:10,h:0.5,fontSize:14,fontFace:'Arial',color:A.NAVY,bold:true,letterSpacing:2});sl.addShape(pptx.ShapeType.rect,{x:0.5,y:0.72,w:1.5,h:0.03,fill:{color:A.RED}});addLogo(sl);}
-  function govT(sl,t,y){sl.addShape(pptx.ShapeType.rect,{x:0.5,y,w:0.06,h:0.5,fill:{color:A.NAVY}});sl.addShape(pptx.ShapeType.rect,{x:0.56,y,w:12.27,h:0.5,fill:{color:A.LGRAY}});sl.addText(t,{x:0.75,y:y+0.05,w:11.9,h:0.4,fontSize:11,fontFace:'Georgia',color:A.NAVY,bold:true,italic:true});return y+0.6;}
-  function addBlt(sl,items,y,c){c=c||A.RED;items.forEach(it=>{sl.addText([{text:'▸ ',options:{fontSize:11,fontFace:'Arial',color:c,bold:true}},{text:it,options:{fontSize:10,fontFace:'Arial',color:A.BODY}}],{x:0.7,y,w:11.8,h:0.35,valign:'top'});y+=0.35;});return y;}
+  showStatus('Diseñando estructura de slides McKinsey...');
+  try{
+    // Step 1: Ask Claude to design the slide structure from the report
+    const res=await fetch(wUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userContent:'__PPTX_MODE__',reportJSON:JSON.stringify(result)})});
+    const raw=await res.text();
+    if(raw.trim().startsWith('<'))throw new Error('Worker devolvió HTML. Status: '+res.status);
+    let data;try{data=JSON.parse(raw);}catch(e){throw new Error('No es JSON');}
+    if(data.error)throw new Error(data.error.message||data.error);
+    const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const clean=txt.replace(/```json|```/g,'').trim();
+    let slideData;try{slideData=JSON.parse(clean);}catch(e){throw new Error('IA no devolvió JSON de slides válido');}
 
-  // COVER
-  const s1=pptx.addSlide();s1.background={color:A.DNAVY};
-  if(logoWhiteBase64)s1.addImage({data:'image/png;base64,'+logoWhiteBase64,x:0.5,y:0.5,w:2.5,h:0.65});
-  s1.addShape(pptx.ShapeType.rect,{x:0.5,y:2.8,w:2.5,h:0.04,fill:{color:A.RED}});
-  s1.addText(result.title,{x:0.5,y:3.0,w:12,h:1.5,fontSize:30,fontFace:'Georgia',color:A.WHITE,bold:true,lineSpacingMultiple:1.1});
-  if(result.subtitle)s1.addText(result.subtitle,{x:0.5,y:4.5,w:10,h:0.6,fontSize:14,fontFace:'Georgia',color:A.MGRAY,italic:true});
-  s1.addText('CONFIDENCIAL',{x:0.5,y:6.2,w:3,h:0.3,fontSize:9,fontFace:'Arial',color:A.RED,bold:true,letterSpacing:3});
-  s1.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'}),{x:0.5,y:6.5,w:4,h:0.3,fontSize:10,fontFace:'Arial',color:A.GRAY});
+    showStatus('Renderizando presentación ALTO...');
 
-  // EXEC SUMMARY
-  const s2=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(s2,'Resumen Ejecutivo');
-  s2.addShape(pptx.ShapeType.rect,{x:0.5,y:1.0,w:12.33,h:1.5,fill:{color:A.LGRAY}});
-  s2.addShape(pptx.ShapeType.rect,{x:0.5,y:1.0,w:0.06,h:1.5,fill:{color:A.BLUE}});
-  s2.addText(result.executive_summary,{x:0.8,y:1.1,w:11.8,h:1.3,fontSize:12,fontFace:'Georgia',color:A.DGRAY,italic:true,lineSpacingMultiple:1.4,valign:'top'});
-  if(result.key_messages?.length){s2.addText('MENSAJES CLAVE',{x:0.5,y:2.8,w:5,h:0.3,fontSize:9,fontFace:'Arial',color:A.BLUE,bold:true,letterSpacing:2});addBlt(s2,result.key_messages,3.2);}
+    // Step 2: Render slides with PptxGenJS
+    const pptx=new PptxGenJS();pptx.layout='LAYOUT_WIDE';pptx.author='ALTO';pptx.title=result.title;
+    const A=ALTO;
 
-  // CONTEXT
-  if(result.context){const s3=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(s3,'Contexto y Objetivo');s3.addText(result.context,{x:0.5,y:1.0,w:12.33,h:5.5,fontSize:11,fontFace:'Arial',color:A.BODY,lineSpacingMultiple:1.5,valign:'top'});}
+    pptx.defineSlideMaster({title:'ALTO_MASTER',background:{color:A.WHITE},objects:[
+      {rect:{x:0,y:0,w:'100%',h:0.04,fill:{color:A.RED}}},
+      {rect:{x:0,y:7.2,w:'100%',h:0.3,fill:{color:A.LGRAY}}},
+      {text:{text:'CONFIDENCIAL',options:{x:0.5,y:7.22,w:3,h:0.25,fontSize:7,fontFace:'Arial',color:A.SGRAY,bold:true}}},
+    ],slideNumber:{x:12.3,y:7.22,w:0.8,h:0.25,fontSize:7,fontFace:'Arial',color:A.SGRAY,align:'right'}});
 
-  // FINDINGS
-  if(result.findings?.length){const sf=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sf,'Hallazgos Clave');let fy=1.0;result.findings.forEach((f,i)=>{if(fy>6)return;sf.addText((i+1)+'. '+f.finding,{x:0.5,y:fy,w:12.33,h:0.35,fontSize:11,fontFace:'Arial',color:A.NAVY,bold:true});fy+=0.35;sf.addText([{text:'Evidencia: ',options:{bold:true,color:A.SGRAY}},{text:f.evidence,options:{color:A.SGRAY}}],{x:0.7,y:fy,w:12,h:0.3,fontSize:9,fontFace:'Arial',valign:'top'});fy+=0.3;sf.addText([{text:'Implicancia: ',options:{bold:true,color:A.RED}},{text:f.business_implication,options:{color:A.BODY}}],{x:0.7,y:fy,w:12,h:0.3,fontSize:9,fontFace:'Arial',valign:'top'});fy+=0.45;});}
+    function addLogo(sl){if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:11.3,y:0.12,w:1.6,h:0.63});}
 
-  // ANALYSIS BLOCKS
-  if(result.analysis_blocks?.length){result.analysis_blocks.forEach((sec,i)=>{const sa=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sa,(i+1)+'. '+sec.heading);let ay=1.0;if(sec.governing_thought){ay=govT(sa,sec.governing_thought,ay);ay+=0.1;}if(sec.content){sa.addText(sec.content,{x:0.5,y:ay,w:12.33,h:1.5,fontSize:10,fontFace:'Arial',color:A.BODY,lineSpacingMultiple:1.4,valign:'top'});ay+=1.6;}if(sec.bullets?.length){ay=addBlt(sa,sec.bullets,ay);ay+=0.15;}if(sec.so_what){sa.addShape(pptx.ShapeType.rect,{x:0.5,y:ay,w:0.06,h:0.5,fill:{color:A.RED}});sa.addShape(pptx.ShapeType.rect,{x:0.56,y:ay,w:12.27,h:0.5,fill:{color:'FFF5F5'}});sa.addText([{text:'So what?  ',options:{bold:true,color:A.RED,fontSize:10}},{text:sec.so_what,options:{italic:true,color:A.SGRAY,fontSize:10}}],{x:0.75,y:ay+0.05,w:11.9,h:0.4,fontFace:'Arial',valign:'top'});}});}
+    const slides=slideData.slides||[];
 
-  // RISKS
-  if(result.risks?.length){const sr=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sr,'Riesgos y Tensiones');let ry=1.0;result.risks.forEach(rk=>{sr.addShape(pptx.ShapeType.rect,{x:0.5,y:ry,w:0.06,h:0.7,fill:{color:A.RED}});sr.addShape(pptx.ShapeType.rect,{x:0.56,y:ry,w:12.27,h:0.7,fill:{color:'FFF5F5'}});sr.addText(rk.risk,{x:0.75,y:ry+0.05,w:11.9,h:0.3,fontSize:10,fontFace:'Arial',color:A.RED,bold:true});sr.addText(rk.implication,{x:0.75,y:ry+0.35,w:11.9,h:0.3,fontSize:9,fontFace:'Arial',color:A.SGRAY});ry+=0.85;});}
+    slides.forEach((s,idx)=>{
+      if(s.type==='cover'){
+        // COVER SLIDE
+        const sl=pptx.addSlide();sl.background={color:A.DNAVY};
+        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:0.5,y:0.5,w:2.2,h:0.87});
+        sl.addShape(pptx.ShapeType.rect,{x:0.5,y:2.8,w:2.5,h:0.04,fill:{color:A.RED}});
+        sl.addText(s.action_title||result.title,{x:0.5,y:3.0,w:12,h:1.5,fontSize:28,fontFace:'Georgia',color:A.WHITE,bold:true,lineSpacingMultiple:1.1});
+        if(s.subheading)sl.addText(s.subheading,{x:0.5,y:4.5,w:10,h:0.6,fontSize:13,fontFace:'Georgia',color:A.MGRAY,italic:true});
+        sl.addText('CONFIDENCIAL',{x:0.5,y:6.2,w:3,h:0.3,fontSize:9,fontFace:'Arial',color:A.RED,bold:true,letterSpacing:3});
+        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'}),{x:0.5,y:6.5,w:4,h:0.3,fontSize:10,fontFace:'Arial',color:A.GRAY});
 
-  // OPPORTUNITIES
-  if(result.opportunities?.length){const so=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(so,'Oportunidades');addBlt(so,result.opportunities,1.0,'2E8B57');}
+      } else if(s.type==='closing'){
+        // CLOSING SLIDE
+        const sl=pptx.addSlide();sl.background={color:A.DNAVY};
+        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:5.0,y:2.3,w:3.3,h:1.3});
+        sl.addShape(pptx.ShapeType.rect,{x:5.5,y:3.5,w:2.33,h:0.04,fill:{color:A.RED}});
+        sl.addText(s.action_title||'Gracias',{x:0,y:3.8,w:'100%',h:1,fontSize:36,fontFace:'Georgia',color:A.WHITE,align:'center',bold:true});
 
-  // RECOMMENDATIONS
-  if(result.recommendations){const allH=[{key:'short_term',label:'Corto Plazo'},{key:'medium_term',label:'Mediano Plazo'},{key:'long_term',label:'Largo Plazo'}].filter(h=>result.recommendations[h.key]?.length);if(allH.length){const sr=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sr,'Recomendaciones');let ry=1.0;allH.forEach(hz=>{const items=result.recommendations[hz.key];sr.addText(hz.label.toUpperCase(),{x:0.5,y:ry,w:4,h:0.3,fontSize:9,fontFace:'Arial',color:A.BLUE,bold:true,letterSpacing:2});ry+=0.35;items.forEach((rec,i)=>{sr.addShape(pptx.ShapeType.rect,{x:0.5,y:ry,w:0.35,h:0.35,fill:{color:A.NAVY},rectRadius:0.05});sr.addText(String(i+1),{x:0.5,y:ry,w:0.35,h:0.35,fontSize:10,fontFace:'Arial',color:A.WHITE,bold:true,align:'center',valign:'middle'});sr.addText(rec.action,{x:1.0,y:ry,w:7,h:0.3,fontSize:10,fontFace:'Arial',color:A.DGRAY,bold:true,valign:'top'});sr.addText(rec.rationale+'  |  Impacto: '+rec.impact,{x:1.0,y:ry+0.28,w:11.5,h:0.25,fontSize:8,fontFace:'Arial',color:A.SGRAY,italic:true,valign:'top'});ry+=0.6;});ry+=0.15;});}}
+      } else if(s.type==='data_callout' && s.data_points?.length){
+        // DATA CALLOUT SLIDE (stat cards)
+        const sl=pptx.addSlide({masterName:'ALTO_MASTER'});
+        sl.addText(s.action_title,{x:0.5,y:0.2,w:10,h:0.5,fontSize:13,fontFace:'Georgia',color:A.NAVY,bold:true});
+        sl.addShape(pptx.ShapeType.rect,{x:0.5,y:0.72,w:1.5,h:0.03,fill:{color:A.RED}});
+        addLogo(sl);
+        if(s.subheading)sl.addText(s.subheading,{x:0.5,y:0.85,w:11,h:0.3,fontSize:9,fontFace:'Arial',color:A.SGRAY,italic:true});
+        const dp=s.data_points.slice(0,4);
+        const cols=dp.length;const colW=12.33/cols;
+        dp.forEach((d,i)=>{
+          const cx=0.5+(i*colW);
+          sl.addShape(pptx.ShapeType.rect,{x:cx+0.1,y:1.3,w:colW-0.2,h:2.4,fill:{color:A.LGRAY}});
+          sl.addShape(pptx.ShapeType.rect,{x:cx+0.1,y:1.3,w:colW-0.2,h:0.04,fill:{color:i%2===0?A.BLUE:A.RED}});
+          sl.addText(d.value,{x:cx+0.1,y:1.6,w:colW-0.2,h:1.0,fontSize:36,fontFace:'Georgia',color:A.NAVY,bold:true,align:'center',valign:'middle'});
+          sl.addText(d.label,{x:cx+0.2,y:2.7,w:colW-0.4,h:0.8,fontSize:9,fontFace:'Arial',color:A.SGRAY,align:'center',valign:'top',lineSpacingMultiple:1.2});
+        });
+        // Chart if 3+ data points with numeric values
+        try{
+          const numericDp=dp.filter(d=>parseFloat(d.value));
+          if(numericDp.length>=3){
+            sl.addChart(pptx.ChartType.bar,[{name:'',labels:numericDp.map(d=>d.label.substring(0,18)),values:numericDp.map(d=>parseFloat(d.value)||0)}],{
+              x:0.5,y:4.0,w:12.33,h:2.8,showTitle:false,showValue:true,valueFontSize:8,catAxisLabelFontSize:7,valAxisHidden:true,chartColors:[A.BLUE],
+            });
+          }
+        }catch(e){}
+        if(s.so_what)sl.addText([{text:'So what?  ',options:{bold:true,color:A.RED,fontSize:9}},{text:s.so_what,options:{italic:true,color:A.SGRAY,fontSize:9}}],{x:0.5,y:6.8,w:12,h:0.3,fontFace:'Arial'});
 
-  // INFO GAPS
-  if(result.information_gaps?.length){const sg=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sg,'Información Faltante');addBlt(sg,result.information_gaps,1.0,'999999');}
+      } else {
+        // STANDARD CONTENT SLIDE
+        const sl=pptx.addSlide({masterName:'ALTO_MASTER'});
+        // Action title (Georgia, assertion style)
+        sl.addText(s.action_title||'',{x:0.5,y:0.2,w:10,h:0.5,fontSize:13,fontFace:'Georgia',color:A.NAVY,bold:true});
+        sl.addShape(pptx.ShapeType.rect,{x:0.5,y:0.72,w:1.5,h:0.03,fill:{color:s.type==='risks'?'CC3333':A.RED}});
+        addLogo(sl);
+        // Subheading
+        let cy=0.9;
+        if(s.subheading){sl.addText(s.subheading,{x:0.5,y:cy,w:12,h:0.3,fontSize:9,fontFace:'Arial',color:A.SGRAY,italic:true});cy+=0.35;}
+        // Body text
+        if(s.body_text){
+          // Governing thought style for executive_summary type
+          if(s.type==='executive_summary'){
+            sl.addShape(pptx.ShapeType.rect,{x:0.5,y:cy,w:12.33,h:1.4,fill:{color:A.LGRAY}});
+            sl.addShape(pptx.ShapeType.rect,{x:0.5,y:cy,w:0.06,h:1.4,fill:{color:A.BLUE}});
+            sl.addText(s.body_text,{x:0.8,y:cy+0.1,w:11.8,h:1.2,fontSize:11,fontFace:'Georgia',color:A.DGRAY,italic:true,lineSpacingMultiple:1.4,valign:'top'});
+            cy+=1.6;
+          } else {
+            sl.addText(s.body_text,{x:0.5,y:cy,w:12.33,h:1.8,fontSize:10,fontFace:'Arial',color:A.BODY,lineSpacingMultiple:1.4,valign:'top'});
+            cy+=1.9;
+          }
+        }
+        // Bullets
+        if(s.bullets?.length){
+          const bColor=s.type==='risks'?'CC3333':s.type==='opportunities'?'2E8B57':A.RED;
+          s.bullets.forEach(b=>{
+            sl.addText([{text:'▸ ',options:{fontSize:11,fontFace:'Arial',color:bColor,bold:true}},{text:b,options:{fontSize:10,fontFace:'Arial',color:A.BODY}}],{x:0.7,y:cy,w:11.8,h:0.35,valign:'top'});
+            cy+=0.35;
+          });
+          cy+=0.1;
+        }
+        // So What box
+        if(s.so_what){
+          sl.addShape(pptx.ShapeType.rect,{x:0.5,y:cy,w:0.06,h:0.5,fill:{color:A.RED}});
+          sl.addShape(pptx.ShapeType.rect,{x:0.56,y:cy,w:12.27,h:0.5,fill:{color:'FFF5F5'}});
+          sl.addText([{text:'So what?  ',options:{bold:true,color:A.RED,fontSize:10}},{text:s.so_what,options:{italic:true,color:A.SGRAY,fontSize:10}}],{x:0.75,y:cy+0.05,w:11.9,h:0.4,fontFace:'Arial',valign:'top'});
+        }
+        // Source note
+        if(s.source_note)sl.addText('Fuente: '+s.source_note,{x:0.5,y:6.9,w:10,h:0.2,fontSize:7,fontFace:'Arial',color:A.SGRAY,italic:true});
+      }
+    });
 
-  // CONCLUSION
-  if(result.conclusion){const sc=pptx.addSlide({masterName:'ALTO_MASTER'});sTitle(sc,'Conclusión Ejecutiva');sc.addShape(pptx.ShapeType.rect,{x:0.5,y:1.0,w:12.33,h:2.0,fill:{color:A.LGRAY}});sc.addShape(pptx.ShapeType.rect,{x:0.5,y:1.0,w:0.06,h:2.0,fill:{color:A.BLUE}});sc.addText(result.conclusion,{x:0.8,y:1.1,w:11.8,h:1.8,fontSize:13,fontFace:'Georgia',color:A.DGRAY,lineSpacingMultiple:1.5,valign:'top'});}
-
-  // CLOSING
-  const sE=pptx.addSlide();sE.background={color:A.DNAVY};
-  if(logoWhiteBase64)sE.addImage({data:'image/png;base64,'+logoWhiteBase64,x:5.2,y:2.5,w:3,h:0.78});
-  sE.addShape(pptx.ShapeType.rect,{x:5.5,y:3.5,w:2.33,h:0.04,fill:{color:A.RED}});
-  sE.addText('Gracias',{x:0,y:3.8,w:'100%',h:1,fontSize:36,fontFace:'Georgia',color:A.WHITE,align:'center',bold:true});
-
-  await pptx.writeFile({fileName:'Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pptx'});
-  flash('\u2713 Presentación ALTO descargada');
-}catch(err){console.error(err);showError('Error PPTX: '+err.message);}}
+    await pptx.writeFile({fileName:'Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pptx'});
+    flash('\u2713 Presentación McKinsey/ALTO descargada');
+  }catch(err){console.error(err);showError('Error PPTX: '+err.message);}}
 </script>
 
 <!-- ============================================================ -->
@@ -391,7 +579,7 @@ async function downloadDocx(){if(!result)return;showStatus('Generando documento 
   // Cover
   children.push(sp(1200));
   // Logo in docx
-  if(logoBase64){try{const logoBytes=Uint8Array.from(atob(logoBase64),c=>c.charCodeAt(0));children.push(new Paragraph({children:[new ImageRun({data:logoBytes,transformation:{width:200,height:52},type:'png'})]}));}catch(e){children.push(new Paragraph({children:[new TextRun({text:"ALTO",font:"Arial",size:40,bold:true,color:A.RED})]}));}}
+  if(logoBase64){try{const logoBytes=Uint8Array.from(atob(logoBase64),c=>c.charCodeAt(0));children.push(new Paragraph({children:[new ImageRun({data:logoBytes,transformation:{width:200,height:79},type:'png'})]}));}catch(e){children.push(new Paragraph({children:[new TextRun({text:"ALTO",font:"Arial",size:40,bold:true,color:A.RED})]}));}}
   children.push(sp(400));
   children.push(new Paragraph({spacing:{after:200},children:[new TextRun({text:result.title,font:"Georgia",size:56,bold:true,color:A.NAVY})]}));
   if(result.subtitle)children.push(new Paragraph({spacing:{after:100},children:[new TextRun({text:result.subtitle,font:"Georgia",size:28,italics:true,color:A.SGRAY})]}));
