@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO 1.4</title>
+<title>Strategic Report Agent — ALTO v1.5</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -110,7 +110,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{
         <button id="btnPdf" onclick="downloadPdf()" class="hidden bg-alto-red hover:bg-alto-red/90 text-white font-bold h-14 px-4 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
           <span class="material-symbols-outlined text-lg">picture_as_pdf</span> PDF
         </button>
-        <button id="btnPptx" onclick="downloadPptx()" class="hidden bg-alto-navy hover:bg-alto-navy/90 text-white font-bold h-14 px-4 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+        <button id="btnPptx" onclick="downloadPptx()" id="btnPptxInner" class="hidden bg-alto-navy hover:bg-alto-navy/90 text-white font-bold h-14 px-4 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex disabled:opacity-40 disabled:cursor-not-allowed">
           <span class="material-symbols-outlined text-lg">slideshow</span> PPTX
         </button>
         <button id="btnDocx" onclick="downloadDocx()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-14 px-4 items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-600/20 text-xs uppercase tracking-wider flex">
@@ -122,6 +122,34 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{
 
   <div id="statusMsg" class="text-center mt-6 text-sm text-alto-blue hidden"></div>
   <div id="errorBox" class="mt-6 bg-red-950/50 border border-red-500/20 p-4 text-red-400 text-sm hidden"></div>
+  <!-- PPTX Progress -->
+  <div id="pptxProgressSection" class="hidden mt-6 bg-surface-container-low border border-outline-variant/20 overflow-hidden fade-in">
+    <div class="px-5 py-3 bg-alto-navy flex items-center gap-2">
+      <span class="material-symbols-outlined text-white text-lg" style="font-variation-settings:'FILL'1;">auto_awesome</span>
+      <span class="text-[10px] uppercase tracking-widest text-white font-semibold" id="pptxProgressLabel">Diseñando slides...</span>
+    </div>
+    <div class="px-5 pb-4 pt-3 space-y-2">
+      <div class="progress-track"><div id="pptxProgressFill" class="progress-fill" style="width:0%"></div></div>
+      <div class="flex justify-between items-center">
+        <span id="pptxProgressStep" class="text-[10px] uppercase tracking-widest text-alto-blue font-medium"></span>
+        <span id="pptxProgressPct" class="text-[10px] text-on-surface-variant font-mono"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide Thumbnails -->
+  <div id="slideThumbnails" class="hidden mt-6 fade-in">
+    <div class="flex items-center justify-between mb-3 px-1">
+      <span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm text-alto-blue">auto_awesome_mosaic</span>
+        Vista previa de slides
+      </span>
+      <span id="slideCount" class="text-[10px] text-on-surface-variant/60 font-mono"></span>
+    </div>
+    <div id="thumbnailGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
+    <p class="text-[10px] text-on-surface-variant/40 mt-3 text-center italic">Vista previa aproximada · el archivo .pptx descargado es la versión final</p>
+  </div>
+
   <div id="previewCard" class="hidden fade-in mt-10"></div>
   <div id="editBanner" class="hidden mt-4 bg-surface-container border border-outline-variant/20 p-3 flex items-center justify-between rounded">
     <div class="flex items-center gap-2 text-xs text-on-surface-variant">
@@ -421,11 +449,313 @@ function extractNumbers(r) {
 <!-- PPTX GENERATION — ALTO Corporate Style -->
 <!-- ============================================================ -->
 <script>
+// ── PPTX Progress helpers ──────────────────────────────────
+const PPTX_STEPS = [
+  {pct:8,  msg:'Analizando estructura del informe...'},
+  {pct:18, msg:'Diseñando narrativa de slides...'},
+  {pct:30, msg:'Aplicando principios McKinsey...'},
+  {pct:42, msg:'Definiendo layouts y visualizaciones...'},
+  {pct:55, msg:'Optimizando flujo argumental...'},
+  {pct:68, msg:'Construyendo action titles...'},
+  {pct:78, msg:'Incorporando datos clave...'},
+  {pct:88, msg:'Finalizando estructura de slides...'},
+  {pct:94, msg:'Validando coherencia narrativa...'},
+  {pct:97, msg:'Preparando para renderizado...'},
+];
+let pptxProgressTimer = null;
+
+function startPptxProgress(phase){
+  const sec = document.getElementById('pptxProgressSection');
+  const fill = document.getElementById('pptxProgressFill');
+  const step = document.getElementById('pptxProgressStep');
+  const pct  = document.getElementById('pptxProgressPct');
+  const lbl  = document.getElementById('pptxProgressLabel');
+  sec.classList.remove('hidden');
+  document.getElementById('slideThumbnails').classList.add('hidden');
+  lbl.textContent = phase || 'Diseñando slides...';
+  fill.style.width = '0%';
+  step.textContent = '';
+  pct.textContent  = '';
+  let i = 0;
+  pptxProgressTimer = setInterval(() => {
+    if(i < PPTX_STEPS.length){
+      fill.style.width = PPTX_STEPS[i].pct + '%';
+      step.textContent = PPTX_STEPS[i].msg;
+      pct.textContent  = PPTX_STEPS[i].pct + '%';
+      i++;
+    }
+  }, 2400);
+}
+
+function updatePptxProgress(pctVal, msg){
+  clearInterval(pptxProgressTimer);
+  document.getElementById('pptxProgressFill').style.width = pctVal + '%';
+  document.getElementById('pptxProgressStep').textContent = msg || '';
+  document.getElementById('pptxProgressPct').textContent  = pctVal + '%';
+  document.getElementById('pptxProgressLabel').textContent = msg || 'Renderizando...';
+}
+
+function stopPptxProgress(ok){
+  clearInterval(pptxProgressTimer);
+  if(ok){
+    document.getElementById('pptxProgressFill').style.width = '100%';
+    document.getElementById('pptxProgressStep').textContent = 'Completado';
+    document.getElementById('pptxProgressPct').textContent  = '100%';
+    setTimeout(() => document.getElementById('pptxProgressSection').classList.add('hidden'), 1800);
+  } else {
+    document.getElementById('pptxProgressSection').classList.add('hidden');
+  }
+}
+
+// ── Thumbnail generator ─────────────────────────────────────
+function renderSlideThumbnails(slides){
+  const grid = document.getElementById('thumbnailGrid');
+  const countEl = document.getElementById('slideCount');
+  grid.innerHTML = '';
+  countEl.textContent = slides.length + ' slides';
+
+  const A = ALTO;
+  slides.forEach((s, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'relative group cursor-default';
+
+    // Canvas thumbnail 16:9
+    const canvas = document.createElement('canvas');
+    canvas.width  = 320;
+    canvas.height = 180;
+    const ctx = canvas.getContext('2d');
+
+    const isCover   = s.type === 'cover';
+    const isClosing = s.type === 'closing';
+    const isDark    = isCover || isClosing;
+    const vis = s.visual_suggestion || 'none';
+
+    // Background
+    ctx.fillStyle = isDark ? '#1E2A3A' : '#FFFFFF';
+    ctx.fillRect(0, 0, 320, 180);
+
+    // Left accent stripe (cover/closing)
+    if(isDark){
+      ctx.fillStyle = '#E84244';
+      ctx.fillRect(0, 0, 5, 180);
+    }
+
+    // Logo top-right (small box)
+    if(!isDark){
+      ctx.fillStyle = '#F5F5F5';
+      ctx.fillRect(258, 4, 58, 20);
+      ctx.fillStyle = '#E84244';
+      ctx.font = 'bold 8px Calibri, Arial';
+      ctx.fillText('ALTO', 272, 17);
+    }
+
+    // Title
+    const titleColor = isDark ? '#FFFFFF' : '#2B3A4E';
+    ctx.fillStyle = titleColor;
+    ctx.font = isDark ? 'bold 13px Calibri, Arial' : 'bold 11px Calibri, Arial';
+    const title = s.action_title || s.type || '';
+    // Word-wrap title
+    const maxW = isDark ? 220 : 240;
+    const titleX = isDark ? 16 : 12;
+    const titleY = isDark ? 72 : 14;
+    wrapText(ctx, title, titleX, titleY, maxW, 15);
+
+    // Content preview depending on layout
+    const cy = isDark ? 110 : 40;
+
+    if(vis === 'stat_callouts' && s.data_points && s.data_points.length){
+      const dp = s.data_points.slice(0,4);
+      const cw = 280 / dp.length;
+      dp.forEach((d,i) => {
+        const cx2 = 12 + i*cw;
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(cx2+2, cy, cw-4, 72);
+        ctx.fillStyle = i%2===0 ? '#4174B9' : '#E84244';
+        ctx.fillRect(cx2+2, cy, cw-4, 3);
+        ctx.fillStyle = '#2B3A4E';
+        ctx.font = 'bold 16px Calibri, Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(String(d.value).substring(0,6), cx2+cw/2, cy+28);
+        ctx.fillStyle = '#666';
+        ctx.font = '7px Calibri, Arial';
+        wrapText(ctx, d.label||'', cx2+cw/2-cw/2+4, cy+38, cw-8, 9, 'center');
+        ctx.textAlign = 'left';
+      });
+    } else if((vis === 'comparison' || vis === 'pillars') && s.columns && s.columns.length){
+      const cols = s.columns.slice(0,3);
+      const cw = 280 / cols.length;
+      const colC = ['#4174B9','#E84244','#1B7A4A'];
+      cols.forEach((col,i) => {
+        const cx2 = 12 + i*cw;
+        ctx.fillStyle = colC[i%3];
+        ctx.fillRect(cx2+2, cy, cw-4, 16);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 7px Calibri, Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText((col.title||'').substring(0,14), cx2+cw/2, cy+11);
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(cx2+2, cy+16, cw-4, 60);
+        ctx.fillStyle = '#444';
+        ctx.font = '6px Calibri, Arial';
+        ctx.textAlign = 'left';
+        (col.items||[]).slice(0,5).forEach((item,j) => {
+          ctx.fillText('▸ '+(item||'').substring(0,18), cx2+6, cy+28+j*10);
+        });
+        ctx.textAlign = 'left';
+      });
+    } else if(vis === 'timeline' && s.columns && s.columns.length){
+      const phases = s.columns.slice(0,4);
+      const pw = 280 / phases.length;
+      ctx.fillStyle = '#E8E8E8';
+      ctx.fillRect(12, cy+8, 280, 3);
+      phases.forEach((ph,i) => {
+        const px2 = 12 + i*pw + pw/2;
+        ctx.fillStyle = i===0 ? '#E84244' : '#4174B9';
+        ctx.beginPath();ctx.arc(px2, cy+9, 7, 0, Math.PI*2);ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 7px Calibri, Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(String(i+1), px2, cy+13);
+        ctx.fillStyle = '#2B3A4E';
+        ctx.font = 'bold 6px Calibri, Arial';
+        wrapText(ctx, (ph.title||'').substring(0,16), px2-pw/2+4, cy+26, pw-8, 8, 'left');
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(12+i*pw+2, cy+34, pw-4, 38);
+        ctx.fillStyle = '#555';
+        ctx.font = '5.5px Calibri, Arial';
+        ctx.textAlign = 'left';
+        (ph.items||[]).slice(0,4).forEach((item,j) => {
+          ctx.fillText('• '+(item||'').substring(0,20), 12+i*pw+5, cy+44+j*8);
+        });
+      });
+      ctx.textAlign = 'left';
+    } else if(vis === 'matrix' && s.columns && s.columns.length >= 4){
+      const qC = ['#4174B9','#E84244','#1B7A4A','#2B3A4E'];
+      s.columns.slice(0,4).forEach((q,i) => {
+        const qx = 12 + (i%2)*142;
+        const qy = cy + Math.floor(i/2)*40;
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(qx, qy, 138, 37);
+        ctx.fillStyle = qC[i];
+        ctx.fillRect(qx, qy, 138, 3);
+        ctx.fillStyle = qC[i];
+        ctx.font = 'bold 6.5px Calibri, Arial';
+        ctx.fillText((q.title||'').substring(0,20), qx+4, qy+13);
+        ctx.fillStyle = '#555';
+        ctx.font = '5.5px Calibri, Arial';
+        (q.items||[]).slice(0,3).forEach((item,j) => {
+          ctx.fillText('• '+(item||'').substring(0,22), qx+4, qy+22+j*7);
+        });
+      });
+    } else if(vis === 'split'){
+      // Left text area
+      ctx.fillStyle = '#F9F9F9';
+      ctx.fillRect(12, cy, 168, 90);
+      ctx.fillStyle = '#444';
+      ctx.font = '6.5px Calibri, Arial';
+      wrapText(ctx, s.body_text||'', 17, cy+12, 158, 9);
+      // Right highlight box
+      ctx.fillStyle = '#2B3A4E';
+      ctx.fillRect(186, cy, 106, 90);
+      ctx.fillStyle = '#E84244';
+      ctx.fillRect(186, cy, 3, 90);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'italic 6.5px Calibri, Arial';
+      wrapText(ctx, s.highlight_box||s.so_what||'', 193, cy+12, 96, 9);
+    } else {
+      // Default: body text block
+      if(s.body_text){
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(12, cy, 280, 44);
+        ctx.fillStyle = '#4174B9';
+        ctx.fillRect(12, cy, 3, 44);
+        ctx.fillStyle = '#333';
+        ctx.font = '6.5px Calibri, Arial';
+        wrapText(ctx, s.body_text, 20, cy+10, 266, 9);
+      }
+      if(s.bullets && s.bullets.length){
+        const bY = s.body_text ? cy+50 : cy;
+        s.bullets.slice(0,5).forEach((b,j) => {
+          ctx.fillStyle = '#E84244';
+          ctx.font = 'bold 7px Arial';
+          ctx.fillText('▸', 14, bY+j*11);
+          ctx.fillStyle = '#333';
+          ctx.font = '6px Calibri, Arial';
+          ctx.fillText((b||'').substring(0,50), 22, bY+j*11);
+        });
+      }
+    }
+
+    // So what bar at bottom (content slides)
+    if(!isDark && s.so_what){
+      ctx.fillStyle = '#FFF5F5';
+      ctx.fillRect(12, 155, 296, 18);
+      ctx.fillStyle = '#E84244';
+      ctx.fillRect(12, 155, 3, 18);
+      ctx.font = 'bold 6px Calibri, Arial';
+      ctx.fillStyle = '#E84244';
+      ctx.fillText('SO WHAT  ', 18, 167);
+      ctx.fillStyle = '#444';
+      ctx.font = 'italic 6px Calibri, Arial';
+      ctx.fillText((s.so_what||'').substring(0,55), 55, 167);
+    }
+
+    // Slide number badge
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.15)' : '#F0F0F0';
+    ctx.fillRect(0, 0, 22, 14);
+    ctx.fillStyle = isDark ? '#FFFFFF' : '#888';
+    ctx.font = 'bold 7px Calibri, Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(idx+1), 11, 10);
+    ctx.textAlign = 'left';
+
+    // Hover overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'absolute inset-0 bg-alto-blue/0 group-hover:bg-alto-blue/10 transition-all flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100';
+    overlay.innerHTML = '<span class="text-[9px] text-white bg-alto-navy/80 px-2 py-0.5 rounded font-medium">' + (s.type||'slide').toUpperCase() + '</span>';
+
+    wrap.appendChild(canvas);
+    wrap.appendChild(overlay);
+
+    // Slide type label below
+    const label = document.createElement('p');
+    label.className = 'text-[9px] text-on-surface-variant/60 mt-1 truncate text-center px-1';
+    label.textContent = (s.action_title || s.type || '').substring(0, 40);
+    wrap.appendChild(label);
+
+    grid.appendChild(wrap);
+  });
+
+  document.getElementById('slideThumbnails').classList.remove('hidden');
+}
+
+// Utility: wrap text in canvas
+function wrapText(ctx, text, x, y, maxW, lineH, align){
+  if(!text) return;
+  const words = text.split(' ');
+  let line = '';
+  const origAlign = ctx.textAlign;
+  if(align) ctx.textAlign = align;
+  words.forEach(word => {
+    const test = line + word + ' ';
+    if(ctx.measureText(test).width > maxW && line !== ''){
+      ctx.fillText(line, x, y);
+      line = word + ' ';
+      y += lineH;
+    } else { line = test; }
+  });
+  ctx.fillText(line, x, y);
+  ctx.textAlign = origAlign;
+}
+
+// ── downloadPptx con progreso ───────────────────────────────
 async function downloadPptx(){if(!result)return;
   const wUrl=document.getElementById('workerUrl').value.trim();
   if(!wUrl){showError('Configura el Worker URL para generar PPTX.');return;}
-
-  showStatus('Diseñando estructura de slides McKinsey...');
+  const btn=document.getElementById('btnPptx');
+  btn.disabled=true;
+  startPptxProgress('Diseñando estructura de slides...');
+  hideError();
   try{
     const res=await fetch(wUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userContent:'__PPTX_MODE__',reportJSON:JSON.stringify(result)})});
     const raw=await res.text();
@@ -435,9 +765,8 @@ async function downloadPptx(){if(!result)return;
     const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     const clean=txt.replace(/```json|```/g,'').trim();
     let slideData;try{slideData=JSON.parse(clean);}catch(e){throw new Error('IA no devolvió JSON de slides válido');}
-    console.log('Slide structure from AI:', slideData);
 
-    showStatus('Renderizando presentación ALTO...');
+    updatePptxProgress(98, 'Renderizando presentación ALTO...');
     const pptx=new PptxGenJS();pptx.layout='LAYOUT_WIDE';pptx.author='ALTO';pptx.title=result.title;
     const A=ALTO;
     const W=13.33,M=0.5,CW=W-2*M; // slide width, margin, content width
@@ -645,9 +974,19 @@ async function downloadPptx(){if(!result)return;
       srcNote(sl,s.source_note);
     });
 
+    renderSlideThumbnails(slides);
+    updatePptxProgress(99, 'Generando archivo .pptx...');
     await pptx.writeFile({fileName:'Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pptx'});
-    flash('\u2713 Presentación McKinsey/ALTO descargada');
-  }catch(err){console.error(err);showError('Error PPTX: '+err.message);}}
+    stopPptxProgress(true);
+    flash('✓ Presentación McKinsey/ALTO descargada');
+  }catch(err){
+    console.error(err);
+    stopPptxProgress(false);
+    showError('Error PPTX: '+err.message);
+  }finally{
+    document.getElementById('btnPptx').disabled=false;
+  }
+}
 </script>
 
 <!-- ============================================================ -->
