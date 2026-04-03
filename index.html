@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO v3.0</title>
+<title>Strategic Report Agent — ALTO v3.1</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -265,6 +265,7 @@ const ALTO = {
   BODY:  '44474C',  // on-surface-variant
   SGRAY: '74777D',  // outline
   DGRAY: '191C1E',  // on-surface
+  TBLUE: '4279B0',  // tertiary blue (3rd accent)
 };
 
 // Logos ALTO embebidos (extraídos del template corporativo oficial)
@@ -652,6 +653,18 @@ function extractNumbers(r) {
 <!-- PPTX GENERATION — ALTO Corporate Style -->
 <!-- ============================================================ -->
 <script>
+// ============================================================
+// PPTX GENERATION v4 — ALTO Corporate Style (Fixed Colors + Space)
+// ============================================================
+// Changes from v3:
+// - Replaced #1B7A4A (green) with #4279B0 (ALTO tertiary blue) 
+// - Replaced #CC3333 with #BB0014 (ALTO corporate red)
+// - Taller cards/columns in all layouts (better space usage)
+// - Improved closing slide (no dead space)
+// - Larger SoWhat boxes
+// - Calibri typography throughout
+// ============================================================
+
 // ── PPTX Progress helpers ──────────────────────────────────
 const PPTX_STEPS = [
   {pct:8,  msg:'Analizando estructura del informe...'},
@@ -722,7 +735,6 @@ function renderSlideThumbnails(slides){
     const wrap = document.createElement('div');
     wrap.className = 'relative group cursor-default';
 
-    // Canvas thumbnail 16:9
     const canvas = document.createElement('canvas');
     canvas.width  = 320;
     canvas.height = 180;
@@ -734,36 +746,34 @@ function renderSlideThumbnails(slides){
     const vis = s.visual_suggestion || 'none';
 
     // Background
-    ctx.fillStyle = isDark ? '#1E2A3A' : '#FFFFFF';
+    ctx.fillStyle = isDark ? '#'+A.DNAVY : '#FFFFFF';
     ctx.fillRect(0, 0, 320, 180);
 
-    // Left accent stripe (cover/closing)
+    // Left accent stripe
     if(isDark){
-      ctx.fillStyle = '#E84244';
+      ctx.fillStyle = '#'+A.RED;
       ctx.fillRect(0, 0, 5, 180);
     }
 
-    // Logo top-right (small box)
+    // Logo badge top-right
     if(!isDark){
-      ctx.fillStyle = '#F5F5F5';
+      ctx.fillStyle = '#'+A.LGRAY;
       ctx.fillRect(258, 4, 58, 20);
-      ctx.fillStyle = '#E84244';
+      ctx.fillStyle = '#'+A.RED;
       ctx.font = 'bold 8px Calibri, Arial';
       ctx.fillText('ALTO', 272, 17);
     }
 
     // Title
-    const titleColor = isDark ? '#FFFFFF' : '#2B3A4E';
+    const titleColor = isDark ? '#FFFFFF' : '#'+A.NAVY;
     ctx.fillStyle = titleColor;
     ctx.font = isDark ? 'bold 13px Calibri, Arial' : 'bold 11px Calibri, Arial';
     const title = s.action_title || s.type || '';
-    // Word-wrap title
     const maxW = isDark ? 220 : 240;
     const titleX = isDark ? 16 : 12;
     const titleY = isDark ? 72 : 14;
     wrapText(ctx, title, titleX, titleY, maxW, 15);
 
-    // Content preview depending on layout
     const cy = isDark ? 110 : 40;
 
     if(vis === 'stat_callouts' && s.data_points && s.data_points.length){
@@ -771,11 +781,12 @@ function renderSlideThumbnails(slides){
       const cw = 280 / dp.length;
       dp.forEach((d,i) => {
         const cx2 = 12 + i*cw;
-        ctx.fillStyle = '#F5F5F5';
+        ctx.fillStyle = '#'+A.LGRAY;
         ctx.fillRect(cx2+2, cy, cw-4, 72);
-        ctx.fillStyle = i%2===0 ? '#4174B9' : '#E84244';
+        // Use ALTO corporate colors only: NAVY, RED, TBLUE
+        ctx.fillStyle = '#'+[A.NAVY,A.RED,A.TBLUE,A.NAVY][i%4];
         ctx.fillRect(cx2+2, cy, cw-4, 3);
-        ctx.fillStyle = '#2B3A4E';
+        ctx.fillStyle = '#'+A.NAVY;
         ctx.font = 'bold 16px Calibri, Arial';
         ctx.textAlign = 'center';
         ctx.fillText(String(d.value).substring(0,6), cx2+cw/2, cy+28);
@@ -787,7 +798,8 @@ function renderSlideThumbnails(slides){
     } else if((vis === 'comparison' || vis === 'pillars') && s.columns && s.columns.length){
       const cols = s.columns.slice(0,3);
       const cw = 280 / cols.length;
-      const colC = ['#4174B9','#E84244','#1B7A4A'];
+      // Corporate colors only
+      const colC = ['#'+A.NAVY,'#'+A.RED,'#'+A.TBLUE];
       cols.forEach((col,i) => {
         const cx2 = 12 + i*cw;
         ctx.fillStyle = colC[i%3];
@@ -796,48 +808,48 @@ function renderSlideThumbnails(slides){
         ctx.font = 'bold 7px Calibri, Arial';
         ctx.textAlign = 'center';
         ctx.fillText((col.title||'').substring(0,14), cx2+cw/2, cy+11);
-        ctx.fillStyle = '#F5F5F5';
+        ctx.fillStyle = '#'+A.LGRAY;
         ctx.fillRect(cx2+2, cy+16, cw-4, 60);
         ctx.fillStyle = '#444';
         ctx.font = '6px Calibri, Arial';
         ctx.textAlign = 'left';
         (col.items||[]).slice(0,5).forEach((item,j) => {
-          ctx.fillText('▸ '+(item||'').substring(0,18), cx2+6, cy+28+j*10);
+          ctx.fillText('\u25B8 '+(item||'').substring(0,18), cx2+6, cy+28+j*10);
         });
         ctx.textAlign = 'left';
       });
     } else if(vis === 'timeline' && s.columns && s.columns.length){
       const phases = s.columns.slice(0,4);
       const pw = 280 / phases.length;
-      ctx.fillStyle = '#E8E8E8';
+      ctx.fillStyle = '#'+A.MGRAY;
       ctx.fillRect(12, cy+8, 280, 3);
       phases.forEach((ph,i) => {
         const px2 = 12 + i*pw + pw/2;
-        ctx.fillStyle = i===0 ? '#E84244' : '#4174B9';
+        ctx.fillStyle = i===0 ? '#'+A.RED : '#'+A.NAVY;
         ctx.beginPath();ctx.arc(px2, cy+9, 7, 0, Math.PI*2);ctx.fill();
         ctx.fillStyle = '#FFFFFF';
         ctx.font = 'bold 7px Calibri, Arial';
         ctx.textAlign = 'center';
         ctx.fillText(String(i+1), px2, cy+13);
-        ctx.fillStyle = '#2B3A4E';
+        ctx.fillStyle = '#'+A.NAVY;
         ctx.font = 'bold 6px Calibri, Arial';
         wrapText(ctx, (ph.title||'').substring(0,16), px2-pw/2+4, cy+26, pw-8, 8, 'left');
-        ctx.fillStyle = '#F5F5F5';
+        ctx.fillStyle = '#'+A.LGRAY;
         ctx.fillRect(12+i*pw+2, cy+34, pw-4, 38);
         ctx.fillStyle = '#555';
         ctx.font = '5.5px Calibri, Arial';
         ctx.textAlign = 'left';
         (ph.items||[]).slice(0,4).forEach((item,j) => {
-          ctx.fillText('• '+(item||'').substring(0,20), 12+i*pw+5, cy+44+j*8);
+          ctx.fillText('\u2022 '+(item||'').substring(0,20), 12+i*pw+5, cy+44+j*8);
         });
       });
       ctx.textAlign = 'left';
     } else if(vis === 'matrix' && s.columns && s.columns.length >= 4){
-      const qC = ['#4174B9','#E84244','#1B7A4A','#2B3A4E'];
+      const qC = ['#'+A.NAVY,'#'+A.RED,'#'+A.TBLUE,'#'+A.NAVY];
       s.columns.slice(0,4).forEach((q,i) => {
         const qx = 12 + (i%2)*142;
         const qy = cy + Math.floor(i/2)*40;
-        ctx.fillStyle = '#F5F5F5';
+        ctx.fillStyle = '#'+A.LGRAY;
         ctx.fillRect(qx, qy, 138, 37);
         ctx.fillStyle = qC[i];
         ctx.fillRect(qx, qy, 138, 3);
@@ -847,30 +859,27 @@ function renderSlideThumbnails(slides){
         ctx.fillStyle = '#555';
         ctx.font = '5.5px Calibri, Arial';
         (q.items||[]).slice(0,3).forEach((item,j) => {
-          ctx.fillText('• '+(item||'').substring(0,22), qx+4, qy+22+j*7);
+          ctx.fillText('\u2022 '+(item||'').substring(0,22), qx+4, qy+22+j*7);
         });
       });
     } else if(vis === 'split'){
-      // Left text area
-      ctx.fillStyle = '#F9F9F9';
+      ctx.fillStyle = '#'+A.LGRAY;
       ctx.fillRect(12, cy, 168, 90);
       ctx.fillStyle = '#444';
       ctx.font = '6.5px Calibri, Arial';
       wrapText(ctx, s.body_text||'', 17, cy+12, 158, 9);
-      // Right highlight box
-      ctx.fillStyle = '#2B3A4E';
+      ctx.fillStyle = '#'+A.NAVY;
       ctx.fillRect(186, cy, 106, 90);
-      ctx.fillStyle = '#E84244';
+      ctx.fillStyle = '#'+A.RED;
       ctx.fillRect(186, cy, 3, 90);
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'italic 6.5px Calibri, Arial';
       wrapText(ctx, s.highlight_box||s.so_what||'', 193, cy+12, 96, 9);
     } else {
-      // Default: body text block
       if(s.body_text){
-        ctx.fillStyle = '#F5F5F5';
+        ctx.fillStyle = '#'+A.LGRAY;
         ctx.fillRect(12, cy, 280, 44);
-        ctx.fillStyle = '#4174B9';
+        ctx.fillStyle = '#'+A.NAVY;
         ctx.fillRect(12, cy, 3, 44);
         ctx.fillStyle = '#333';
         ctx.font = '6.5px Calibri, Arial';
@@ -879,9 +888,9 @@ function renderSlideThumbnails(slides){
       if(s.bullets && s.bullets.length){
         const bY = s.body_text ? cy+50 : cy;
         s.bullets.slice(0,5).forEach((b,j) => {
-          ctx.fillStyle = '#E84244';
+          ctx.fillStyle = '#'+A.RED;
           ctx.font = 'bold 7px Arial';
-          ctx.fillText('▸', 14, bY+j*11);
+          ctx.fillText('\u25B8', 14, bY+j*11);
           ctx.fillStyle = '#333';
           ctx.font = '6px Calibri, Arial';
           ctx.fillText((b||'').substring(0,50), 22, bY+j*11);
@@ -889,22 +898,22 @@ function renderSlideThumbnails(slides){
       }
     }
 
-    // So what bar at bottom (content slides)
+    // So what bar
     if(!isDark && s.so_what){
       ctx.fillStyle = '#FFF5F5';
       ctx.fillRect(12, 155, 296, 18);
-      ctx.fillStyle = '#E84244';
+      ctx.fillStyle = '#'+A.RED;
       ctx.fillRect(12, 155, 3, 18);
       ctx.font = 'bold 6px Calibri, Arial';
-      ctx.fillStyle = '#E84244';
+      ctx.fillStyle = '#'+A.RED;
       ctx.fillText('SO WHAT  ', 18, 167);
       ctx.fillStyle = '#444';
       ctx.font = 'italic 6px Calibri, Arial';
       ctx.fillText((s.so_what||'').substring(0,55), 55, 167);
     }
 
-    // Slide number badge
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.15)' : '#F0F0F0';
+    // Slide number
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.15)' : '#'+A.LGRAY;
     ctx.fillRect(0, 0, 22, 14);
     ctx.fillStyle = isDark ? '#FFFFFF' : '#888';
     ctx.font = 'bold 7px Calibri, Arial';
@@ -912,15 +921,13 @@ function renderSlideThumbnails(slides){
     ctx.fillText(String(idx+1), 11, 10);
     ctx.textAlign = 'left';
 
-    // Hover overlay
     const overlay = document.createElement('div');
     overlay.className = 'absolute inset-0 bg-alto-blue/0 group-hover:bg-alto-blue/10 transition-all flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100';
-    overlay.innerHTML = '<span class="text-[9px] text-white bg-alto-navy/80 px-2 py-0.5 rounded font-medium">' + (s.type||'slide').toUpperCase() + '</span>';
+    overlay.innerHTML = '<span class="text-[9px] text-white bg-alto-navy/80 px-2 py-0.5 font-medium">' + (s.type||'slide').toUpperCase() + '</span>';
 
     wrap.appendChild(canvas);
     wrap.appendChild(overlay);
 
-    // Slide type label below
     const label = document.createElement('p');
     label.className = 'text-[9px] text-on-surface-variant/60 mt-1 truncate text-center px-1';
     label.textContent = (s.action_title || s.type || '').substring(0, 40);
@@ -932,7 +939,6 @@ function renderSlideThumbnails(slides){
   document.getElementById('slideThumbnails').classList.remove('hidden');
 }
 
-// Utility: wrap text in canvas
 function wrapText(ctx, text, x, y, maxW, lineH, align){
   if(!text) return;
   const words = text.split(' ');
@@ -951,7 +957,7 @@ function wrapText(ctx, text, x, y, maxW, lineH, align){
   ctx.textAlign = origAlign;
 }
 
-// ── downloadPptx con progreso ───────────────────────────────
+// ── downloadPptx v4 ─────────────────────────────────────────
 async function downloadPptx(){if(!result)return;
   const wUrl=document.getElementById('workerUrl').value.trim();
   if(!wUrl){showError('Configura el Worker URL para generar PPTX.');return;}
@@ -972,12 +978,12 @@ async function downloadPptx(){if(!result)return;
     updatePptxProgress(98, 'Renderizando presentación ALTO...');
     const pptx=new PptxGenJS();pptx.layout='LAYOUT_WIDE';pptx.author='ALTO';pptx.title=result.title;
     const A=ALTO;
-    const W=13.33,M=0.5,CW=W-2*M; // slide width, margin, content width
+    const W=13.33,M=0.5,CW=W-2*M;
 
-    // --- SLIDE MASTER — template ALTO corporativo ---
+    // --- SLIDE MASTER ---
     pptx.defineSlideMaster({title:'ALTO_MASTER',background:{color:A.WHITE},objects:[
-      {text:{text:'CONFIDENCIAL · ALTO',options:{x:M,y:7.25,w:5,h:0.2,fontSize:7,fontFace:'Calibri',color:'BBBBBB',bold:false}}},
-    ],slideNumber:{x:12.0,y:7.25,w:1.0,h:0.2,fontSize:7,fontFace:'Calibri',color:'74777D',align:'right'}});
+      {text:{text:'CONFIDENCIAL · ALTO',options:{x:M,y:7.25,w:5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false}}},
+    ],slideNumber:{x:12.0,y:7.25,w:1.0,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,align:'right'}});
 
     // --- HELPER FUNCTIONS ---
     function addLogo(sl){if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:12.1,y:0.1,w:1.0,h:0.39});}
@@ -988,13 +994,13 @@ async function downloadPptx(){if(!result)return;
     }
     function soWhatBox(sl,text,y){
       if(!text)return;
-      const bY=Math.min(y,6.5);
-      sl.addShape('rect',{x:M,y:bY,w:CW,h:0.5,fill:{color:'FFF5F5'}});
-      sl.addShape('rect',{x:M,y:bY,w:0.06,h:0.5,fill:{color:A.RED}});
+      const bY=Math.min(y,6.3);
+      sl.addShape('rect',{x:M,y:bY,w:CW,h:0.65,fill:{color:'FFF5F5'}});
+      sl.addShape('rect',{x:M,y:bY,w:0.06,h:0.65,fill:{color:A.RED}});
       sl.addText([
         {text:'\u25B6 SO WHAT  ',options:{bold:true,color:A.RED,fontSize:9,fontFace:'Calibri'}},
         {text:text,options:{italic:true,color:A.DGRAY,fontSize:9,fontFace:'Calibri'}}
-      ],{x:M+0.2,y:bY+0.05,w:CW-0.3,h:0.4,valign:'middle'});
+      ],{x:M+0.2,y:bY+0.08,w:CW-0.3,h:0.5,valign:'middle'});
     }
     function srcNote(sl,t){if(t)sl.addText('Fuente: '+t,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true});}
 
@@ -1019,16 +1025,20 @@ async function downloadPptx(){if(!result)return;
       if(s.type==='closing'){
         const sl=pptx.addSlide();sl.background={color:A.DNAVY};
         sl.addShape('rect',{x:0,y:0,w:0.12,h:7.5,fill:{color:A.RED}});
-        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:5.0,y:2.0,w:3.3,h:1.3});
-        sl.addShape('rect',{x:5.5,y:3.3,w:2.33,h:0.04,fill:{color:A.RED}});
-        sl.addText(s.action_title||'Gracias',{x:0,y:3.6,w:'100%',h:0.8,fontSize:32,fontFace:'Calibri',color:A.WHITE,align:'center',bold:true});
-        if(s.subheading)sl.addText(s.subheading,{x:1,y:4.5,w:11,h:0.5,fontSize:12,fontFace:'Calibri',color:'8192A7',align:'center',italic:true});
+        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:5.0,y:1.4,w:3.3,h:1.3});
+        sl.addShape('rect',{x:5.5,y:2.75,w:2.33,h:0.04,fill:{color:A.RED}});
+        sl.addText(s.action_title||'Gracias',{x:0,y:3.0,w:'100%',h:0.8,fontSize:32,fontFace:'Calibri',color:A.WHITE,align:'center',bold:true});
+        if(s.subheading)sl.addText(s.subheading,{x:1,y:3.85,w:11,h:0.5,fontSize:12,fontFace:'Calibri',color:'8192A7',align:'center',italic:true});
+        sl.addShape('rect',{x:2,y:5.2,w:9.33,h:0.01,fill:{color:A.RED}});
+        sl.addText('CONFIDENCIAL · USO INTERNO',{x:0,y:5.5,w:'100%',h:0.3,fontSize:9,fontFace:'Calibri',color:A.SGRAY,align:'center',bold:true,letterSpacing:3});
+        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'}),{x:0,y:5.85,w:'100%',h:0.3,fontSize:9,fontFace:'Calibri',color:A.SGRAY,align:'center'});
         return;
       }
 
       // =================== CONTENT SLIDES ===================
       const sl=pptx.addSlide({masterName:'ALTO_MASTER'});
-      const accentColor=s.type==='risks'?'CC3333':s.type==='opportunities'?'1B7A4A':A.RED;
+      // FIXED: Use only ALTO corporate colors for accents
+      const accentColor=s.type==='risks'?A.RED:s.type==='opportunities'?A.TBLUE:A.RED;
       actionTitle(sl,s.action_title,accentColor);
       let cy=0.82;
       if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:CW,h:0.28,fontSize:9,fontFace:'Calibri',color:A.SGRAY,italic:true});cy+=0.32;}
@@ -1037,61 +1047,62 @@ async function downloadPptx(){if(!result)return;
       if(vis==='stat_callouts' && s.data_points&&s.data_points.length){
         const dp=s.data_points.slice(0,4);
         const cols=dp.length;const colW=CW/cols;
-        const cardColors=[A.BLUE,A.RED,'1B7A4A',A.NAVY];
+        // FIXED: Corporate colors only
+        const cardColors=[A.NAVY,A.RED,A.TBLUE,A.NAVY];
         dp.forEach((d,i)=>{
           const cx=M+(i*colW);
-          sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:3.0,fill:{color:A.LGRAY}});
+          sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:4.5,fill:{color:A.LGRAY}});
           sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:0.06,fill:{color:cardColors[i%4]}});
-          sl.addText(String(d.value),{x:cx+0.08,y:cy+0.3,w:colW-0.16,h:1.3,fontSize:42,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle'});
-          sl.addText(d.label,{x:cx+0.15,y:cy+1.7,w:colW-0.3,h:1.1,fontSize:9,fontFace:'Calibri',color:A.SGRAY,align:'center',valign:'top',lineSpacingMultiple:1.3});
+          sl.addText(String(d.value),{x:cx+0.08,y:cy+0.4,w:colW-0.16,h:1.6,fontSize:48,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle'});
+          sl.addText(d.label,{x:cx+0.15,y:cy+2.2,w:colW-0.3,h:2.0,fontSize:10,fontFace:'Calibri',color:A.SGRAY,align:'center',valign:'top',lineSpacingMultiple:1.3});
         });
-        soWhatBox(sl,s.so_what,cy+3.3);
+        soWhatBox(sl,s.so_what,cy+4.8);
 
       // ========== LAYOUT: COMPARISON COLUMNS ==========
       } else if(vis==='comparison' && s.columns&&s.columns.length){
         const cols=s.columns.slice(0,3);
         const colW=CW/cols.length;
-        const colColors=[A.BLUE,A.RED,'1B7A4A'];
+        const colColors=[A.NAVY,A.RED,A.TBLUE];
         cols.forEach((col,i)=>{
           const cx=M+(i*colW);
           sl.addShape('rect',{x:cx+0.06,y:cy,w:colW-0.12,h:0.5,fill:{color:colColors[i%3]}});
           sl.addText(col.title||'',{x:cx+0.06,y:cy,w:colW-0.12,h:0.5,fontSize:11,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
-          sl.addShape('rect',{x:cx+0.06,y:cy+0.5,w:colW-0.12,h:3.5,fill:{color:A.LGRAY}});
+          sl.addShape('rect',{x:cx+0.06,y:cy+0.5,w:colW-0.12,h:4.5,fill:{color:A.LGRAY}});
           let iy=cy+0.65;
           (col.items||[]).forEach(item=>{
             sl.addText([{text:'\u25B8 ',options:{fontSize:10,color:colColors[i%3],bold:true}},{text:item,options:{fontSize:9,color:A.BODY}}],{x:cx+0.2,y:iy,w:colW-0.35,h:0.32,fontFace:'Calibri',valign:'top'});
             iy+=0.38;
           });
         });
-        soWhatBox(sl,s.so_what,cy+4.2);
+        soWhatBox(sl,s.so_what,cy+5.2);
 
-      // ========== LAYOUT: TIMELINE / ROADMAP ==========
+      // ========== LAYOUT: TIMELINE ==========
       } else if(vis==='timeline' && s.columns&&s.columns.length){
         const phases=s.columns.slice(0,4);
         const phW=CW/phases.length;
-        sl.addShape('rect',{x:M,y:cy+0.2,w:CW,h:0.06,fill:{color:A.LGRAY}});
+        sl.addShape('rect',{x:M,y:cy+0.2,w:CW,h:0.06,fill:{color:A.MGRAY}});
         phases.forEach((ph,i)=>{
           const px=M+(i*phW);
-          sl.addShape('ellipse',{x:px+phW/2-0.18,y:cy+0.05,w:0.36,h:0.36,fill:{color:i===0?A.RED:A.BLUE},line:{color:A.WHITE,width:2}});
+          sl.addShape('ellipse',{x:px+phW/2-0.18,y:cy+0.05,w:0.36,h:0.36,fill:{color:i===0?A.RED:A.NAVY},line:{color:A.WHITE,width:2}});
           sl.addText(String(i+1),{x:px+phW/2-0.18,y:cy+0.05,w:0.36,h:0.36,fontSize:11,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
           sl.addText(ph.title||'',{x:px+0.05,y:cy+0.55,w:phW-0.1,h:0.4,fontSize:10,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'top'});
-          sl.addShape('rect',{x:px+0.05,y:cy+1.0,w:phW-0.1,h:2.8,fill:{color:A.LGRAY}});
+          sl.addShape('rect',{x:px+0.05,y:cy+1.0,w:phW-0.1,h:3.8,fill:{color:A.LGRAY}});
           let iy=cy+1.1;
           (ph.items||[]).forEach(item=>{
             sl.addText('\u2022 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:0.3,fontSize:8,fontFace:'Calibri',color:A.BODY,valign:'top'});
             iy+=0.35;
           });
         });
-        soWhatBox(sl,s.so_what,cy+4.1);
+        soWhatBox(sl,s.so_what,cy+5.1);
 
       // ========== LAYOUT: PILLARS ==========
       } else if(vis==='pillars' && s.columns&&s.columns.length){
         const pils=s.columns.slice(0,4);
         const pW=CW/pils.length;
-        const pilColors=[A.NAVY,A.BLUE,A.RED,'1B7A4A'];
+        const pilColors=[A.NAVY,A.TBLUE,A.RED,A.NAVY];
         pils.forEach((p,i)=>{
           const px=M+(i*pW);
-          sl.addShape('rect',{x:px+0.06,y:cy,w:pW-0.12,h:3.8,fill:{color:A.LGRAY}});
+          sl.addShape('rect',{x:px+0.06,y:cy,w:pW-0.12,h:4.8,fill:{color:A.LGRAY}});
           sl.addShape('rect',{x:px+0.06,y:cy,w:pW-0.12,h:0.55,fill:{color:pilColors[i%4]}});
           sl.addText(p.title||'',{x:px+0.06,y:cy,w:pW-0.12,h:0.55,fontSize:10,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
           let iy=cy+0.7;
@@ -1100,13 +1111,13 @@ async function downloadPptx(){if(!result)return;
             iy+=0.4;
           });
         });
-        soWhatBox(sl,s.so_what,cy+4.0);
+        soWhatBox(sl,s.so_what,cy+5.0);
 
       // ========== LAYOUT: MATRIX 2x2 ==========
       } else if(vis==='matrix' && s.columns&&s.columns.length>=4){
         const q=s.columns.slice(0,4);
-        const halfW=CW/2,halfH=2.2;
-        const qColors=[A.BLUE,A.RED,'1B7A4A',A.NAVY];
+        const halfW=CW/2,halfH=2.8;
+        const qColors=[A.NAVY,A.RED,A.TBLUE,A.NAVY];
         q.forEach((qd,i)=>{
           const qx=M+(i%2)*halfW;
           const qy=cy+(Math.floor(i/2))*halfH;
@@ -1121,7 +1132,7 @@ async function downloadPptx(){if(!result)return;
         });
         soWhatBox(sl,s.so_what,cy+halfH*2+0.15);
 
-      // ========== LAYOUT: SPLIT (text + highlight box) ==========
+      // ========== LAYOUT: SPLIT ==========
       } else if(vis==='split'){
         const leftW=CW*0.58,rightW=CW*0.38;
         if(s.body_text){
@@ -1136,22 +1147,22 @@ async function downloadPptx(){if(!result)return;
         }
         const rX=M+leftW+CW*0.04;
         const rY=0.85+(s.subheading?0.32:0);
-        sl.addShape('rect',{x:rX,y:rY,w:rightW,h:3.5,fill:{color:A.NAVY}});
-        sl.addShape('rect',{x:rX,y:rY,w:0.06,h:3.5,fill:{color:A.RED}});
+        sl.addShape('rect',{x:rX,y:rY,w:rightW,h:5.0,fill:{color:A.NAVY}});
+        sl.addShape('rect',{x:rX,y:rY,w:0.06,h:5.0,fill:{color:A.RED}});
         const hText=s.highlight_box||s.so_what||'';
-        sl.addText(hText,{x:rX+0.2,y:rY+0.3,w:rightW-0.4,h:2.9,fontSize:12,fontFace:'Calibri',color:A.WHITE,italic:true,lineSpacingMultiple:1.5,valign:'top'});
-        soWhatBox(sl,s.so_what,5.5);
+        sl.addText(hText,{x:rX+0.2,y:rY+0.3,w:rightW-0.4,h:4.2,fontSize:12,fontFace:'Calibri',color:A.WHITE,italic:true,lineSpacingMultiple:1.5,valign:'top'});
+        soWhatBox(sl,s.so_what,6.1);
 
       // ========== LAYOUT: DEFAULT ==========
       } else {
         if(s.type==='executive_summary' && s.body_text){
-          sl.addShape('rect',{x:M,y:cy,w:CW,h:1.6,fill:{color:A.LGRAY}});
-          sl.addShape('rect',{x:M,y:cy,w:0.06,h:1.6,fill:{color:A.BLUE}});
-          sl.addText(s.body_text,{x:M+0.25,y:cy+0.1,w:CW-0.4,h:1.4,fontSize:11,fontFace:'Calibri',color:A.DGRAY,italic:true,lineSpacingMultiple:1.4,valign:'top'});
-          cy+=1.8;
+          sl.addShape('rect',{x:M,y:cy,w:CW,h:2.0,fill:{color:A.LGRAY}});
+          sl.addShape('rect',{x:M,y:cy,w:0.06,h:2.0,fill:{color:A.NAVY}});
+          sl.addText(s.body_text,{x:M+0.25,y:cy+0.15,w:CW-0.4,h:1.7,fontSize:11,fontFace:'Calibri',color:A.DGRAY,italic:true,lineSpacingMultiple:1.4,valign:'top'});
+          cy+=2.2;
         } else if(s.body_text){
-          sl.addText(s.body_text,{x:M,y:cy,w:CW,h:1.6,fontSize:10,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.4,valign:'top'});
-          cy+=1.7;
+          sl.addText(s.body_text,{x:M,y:cy,w:CW,h:2.0,fontSize:10,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.4,valign:'top'});
+          cy+=2.1;
         }
         if(s.bullets&&s.bullets.length){
           s.bullets.forEach(b=>{
@@ -1166,7 +1177,7 @@ async function downloadPptx(){if(!result)return;
           dp.forEach((d,i)=>{
             const dx=M+(i*dpW);
             sl.addShape('rect',{x:dx+0.05,y:cy,w:dpW-0.1,h:1.4,fill:{color:A.LGRAY}});
-            sl.addShape('rect',{x:dx+0.05,y:cy,w:dpW-0.1,h:0.05,fill:{color:i%2===0?A.BLUE:A.RED}});
+            sl.addShape('rect',{x:dx+0.05,y:cy,w:dpW-0.1,h:0.05,fill:{color:i%2===0?A.NAVY:A.RED}});
             sl.addText(String(d.value),{x:dx+0.05,y:cy+0.15,w:dpW-0.1,h:0.6,fontSize:28,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle'});
             sl.addText(d.label,{x:dx+0.1,y:cy+0.8,w:dpW-0.2,h:0.5,fontSize:8,fontFace:'Calibri',color:A.SGRAY,align:'center',valign:'top'});
           });
@@ -1181,7 +1192,7 @@ async function downloadPptx(){if(!result)return;
     updatePptxProgress(99, 'Generando archivo .pptx...');
     await pptx.writeFile({fileName:'Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pptx'});
     stopPptxProgress(true);
-    flash('✓ Presentación McKinsey/ALTO descargada');
+    flash('\u2713 Presentación McKinsey/ALTO descargada');
   }catch(err){
     console.error(err);
     stopPptxProgress(false);
@@ -1190,6 +1201,7 @@ async function downloadPptx(){if(!result)return;
     document.getElementById('btnPptx').disabled=false;
   }
 }
+
 </script>
 
 <!-- ============================================================ -->
