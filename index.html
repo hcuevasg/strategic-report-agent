@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO v3.7</title>
+<title>Strategic Report Agent — ALTO v3.8</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -1249,54 +1249,76 @@ function buildBriefHTML(r){
   const keyMsgs=(r.key_messages||[]).slice(0,4);
   const conclusion=r.conclusion||r.executive_summary||'';
   const dateStr=new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
+  const P='32px';  // consistent padding
   const s=[];
-  s.push('<div style="background:#041627;padding:28px 40px 20px;display:flex;justify-content:space-between;align-items:flex-end;">');
-  s.push('<div>');
-  s.push('<div style="color:#BB0014;font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;">ALTO · Executive Brief</div>');
-  s.push('<div style="color:#fff;font-size:20px;font-weight:800;line-height:1.2;max-width:580px;">'+esc(r.title)+'</div>');
-  if(r.subtitle)s.push('<div style="color:#8192A7;font-size:11px;margin-top:6px;font-style:italic;">'+esc(r.subtitle)+'</div>');
-  s.push('</div>');
-  s.push('<div style="color:#74777D;font-size:9px;white-space:nowrap;">'+dateStr+'</div>');
+
+  // ── Outer wrapper — fixed width, overflow hidden ──────────
+  s.push('<div style="width:750px;background:#fff;overflow:hidden;box-sizing:border-box;">');
+
+  // ── Header navy ───────────────────────────────────────────
+  s.push('<div style="background:#041627;padding:24px '+P+' 18px;box-sizing:border-box;">');
+  s.push('<div style="color:#BB0014;font-size:8px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;font-weight:700;">ALTO · Executive Brief</div>');
+  s.push('<div style="color:#fff;font-size:19px;font-weight:800;line-height:1.25;word-wrap:break-word;">'+esc(r.title)+'</div>');
+  if(r.subtitle)s.push('<div style="color:#8192A7;font-size:11px;margin-top:6px;font-style:italic;word-wrap:break-word;">'+esc(r.subtitle)+'</div>');
+  s.push('<div style="color:#74777D;font-size:8px;margin-top:10px;">'+dateStr+'</div>');
   s.push('</div>');
   s.push('<div style="height:3px;background:#BB0014;"></div>');
-  s.push('<div style="padding:20px 40px 0;">');
-  s.push('<div style="background:#F2F4F6;border-left:3px solid #041627;padding:12px 16px;">');
-  s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#BB0014;font-weight:700;margin-bottom:5px;">Resumen Ejecutivo</div>');
-  s.push('<div style="font-size:11px;color:#191C1E;line-height:1.6;font-style:italic;">'+esc(r.executive_summary||'')+'</div>');
+
+  // ── Resumen ejecutivo ─────────────────────────────────────
+  s.push('<div style="padding:18px '+P+' 0;box-sizing:border-box;">');
+  s.push('<div style="background:#F2F4F6;border-left:3px solid #041627;padding:12px 14px;box-sizing:border-box;">');
+  s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#BB0014;font-weight:700;margin-bottom:6px;">Resumen Ejecutivo</div>');
+  s.push('<div style="font-size:10.5px;color:#191C1E;line-height:1.65;font-style:italic;word-wrap:break-word;">'+esc(r.executive_summary||'')+'</div>');
   s.push('</div></div>');
+
+  // ── Hallazgos — usar tabla para compatibilidad con html2canvas ──
   if(stats.length){
-    s.push('<div style="padding:16px 40px 0;">');
+    const colPct = stats.length===1?'100%': stats.length===2?'49%':'32%';
+    const gap = stats.length===1?'0': '1%';
+    s.push('<div style="padding:14px '+P+' 0;box-sizing:border-box;">');
     s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#041627;font-weight:700;margin-bottom:10px;">Hallazgos Clave</div>');
-    s.push('<div style="display:grid;grid-template-columns:repeat('+Math.min(stats.length,3)+',1fr);gap:10px;">');
+    s.push('<table style="width:100%;border-collapse:separate;border-spacing:8px 0;table-layout:fixed;">');
+    s.push('<tr style="vertical-align:top;">');
     stats.forEach(function(f,i){
-      s.push('<div style="background:#F8F9FB;border-top:3px solid '+(i===0?'#BB0014':'#041627')+';padding:12px;">');
-      s.push('<div style="font-size:10px;font-weight:700;color:#041627;margin-bottom:4px;">'+esc(f.finding||'')+'</div>');
-      s.push('<div style="font-size:8.5px;color:#74777D;line-height:1.4;">'+esc(f.evidence||'')+'</div>');
-      s.push('</div>');
+      s.push('<td style="width:'+colPct+';background:#F8F9FB;border-top:3px solid '+(i===0?'#BB0014':'#041627')+';padding:11px;vertical-align:top;word-wrap:break-word;">');
+      s.push('<div style="font-size:9.5px;font-weight:700;color:#041627;margin-bottom:5px;line-height:1.3;">'+esc(f.finding||'')+'</div>');
+      s.push('<div style="font-size:8px;color:#74777D;line-height:1.45;word-wrap:break-word;">'+esc(f.evidence||'')+'</div>');
+      s.push('</td>');
     });
-    s.push('</div></div>');
+    s.push('</tr></table></div>');
   }
+
+  // ── Mensajes clave ────────────────────────────────────────
   if(keyMsgs.length){
-    s.push('<div style="padding:16px 40px 0;">');
-    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#041627;font-weight:700;margin-bottom:8px;">Mensajes Clave</div>');
+    s.push('<div style="padding:14px '+P+' 0;box-sizing:border-box;">');
+    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#041627;font-weight:700;margin-bottom:9px;">Mensajes Clave</div>');
     keyMsgs.forEach(function(m){
-      s.push('<div style="display:flex;gap:8px;margin-bottom:5px;"><span style="color:#BB0014;font-weight:900;font-size:10px;margin-top:1px;">▸</span><span style="font-size:10px;color:#191C1E;line-height:1.4;">'+esc(m)+'</span></div>');
+      s.push('<div style="display:table;width:100%;margin-bottom:6px;">');
+      s.push('<div style="display:table-cell;width:16px;color:#BB0014;font-weight:900;font-size:10px;vertical-align:top;padding-top:1px;">▸</div>');
+      s.push('<div style="display:table-cell;font-size:10px;color:#191C1E;line-height:1.45;word-wrap:break-word;">'+esc(m)+'</div>');
+      s.push('</div>');
     });
     s.push('</div>');
   }
+
+  // ── Conclusión ────────────────────────────────────────────
   if(conclusion){
-    s.push('<div style="padding:16px 40px 0;">');
-    s.push('<div style="display:flex;gap:0;">');
-    s.push('<div style="width:3px;background:#BB0014;flex-shrink:0;"></div>');
-    s.push('<div style="background:#FFF5F5;flex:1;padding:12px 14px;">');
-    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#BB0014;font-weight:700;margin-bottom:4px;">Conclusión Ejecutiva</div>');
-    s.push('<div style="font-size:10.5px;color:#041627;line-height:1.5;font-weight:600;">'+esc(conclusion)+'</div>');
+    s.push('<div style="padding:14px '+P+' 0;box-sizing:border-box;">');
+    s.push('<div style="display:table;width:100%;">');
+    s.push('<div style="display:table-cell;width:3px;background:#BB0014;vertical-align:top;"> </div>');
+    s.push('<div style="display:table-cell;background:#FFF5F5;padding:12px 14px;word-wrap:break-word;">');
+    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#BB0014;font-weight:700;margin-bottom:5px;">Conclusión Ejecutiva</div>');
+    s.push('<div style="font-size:10px;color:#041627;line-height:1.55;font-weight:600;word-wrap:break-word;">'+esc(conclusion)+'</div>');
     s.push('</div></div></div>');
   }
-  s.push('<div style="margin-top:20px;padding:10px 40px;background:#F2F4F6;border-left:3px solid #BB0014;display:flex;justify-content:space-between;align-items:center;">');
-  s.push('<div style="font-size:9px;font-weight:800;color:#041627;letter-spacing:1px;">ALTO</div>');
-  s.push('<div style="font-size:8px;color:#74777D;font-style:italic;">Confidencial · Uso interno</div>');
+
+  // ── Footer ────────────────────────────────────────────────
+  s.push('<div style="margin-top:18px;padding:10px '+P+';background:#F2F4F6;border-left:3px solid #BB0014;display:table;width:100%;box-sizing:border-box;">');
+  s.push('<div style="display:table-cell;font-size:9px;font-weight:800;color:#041627;letter-spacing:1px;">ALTO</div>');
+  s.push('<div style="display:table-cell;text-align:right;font-size:8px;color:#74777D;font-style:italic;">Confidencial · Uso interno</div>');
   s.push('</div>');
+
+  s.push('</div>');  // outer wrapper
   return s.join('');
 }
 async function downloadBrief(){
@@ -1304,10 +1326,10 @@ async function downloadBrief(){
   showStatus('Generando Executive Brief...');
   try{
     const briefEl=document.createElement('div');
-    briefEl.style.cssText='position:fixed;left:-9999px;top:0;width:794px;background:#fff;font-family:Calibri,Inter,sans-serif;';
+    briefEl.style.cssText='position:fixed;left:-9999px;top:0;width:750px;background:#fff;font-family:Inter,Calibri,sans-serif;font-size:13px;line-height:1.4;';
     briefEl.innerHTML=buildBriefHTML(result);
     document.body.appendChild(briefEl);
-    const canvas=await html2canvas(briefEl,{backgroundColor:'#fff',scale:2,useCORS:true,logging:false});
+    const canvas=await html2canvas(briefEl,{backgroundColor:'#fff',scale:2,useCORS:true,logging:false,width:750,windowWidth:750});
     document.body.removeChild(briefEl);
     const imgData=canvas.toDataURL('image/png');
     const{jsPDF}=window.jspdf;
