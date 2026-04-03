@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO v3.3</title>
+<title>Strategic Report Agent — ALTO v3.4</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -741,7 +741,18 @@ async function downloadPptx(){if(!result)return;
   startPptxProgress('Diseñando estructura de slides...');
   hideError();
   try{
-    const res=await fetch(wUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userContent:'__PPTX_MODE__',reportJSON:JSON.stringify(result)})});
+    const res=await fetch(wUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+          userContent:'__PPTX_MODE__',
+          reportJSON:JSON.stringify(result),
+          pptxInstructions:`VARIEDAD VISUAL OBLIGATORIA:
+- Slide 2 SIEMPRE debe ser type:"toc" con items: lista de títulos de slides del deck (sin cover ni closing). Incluye campo "tagline" con la tesis central en 1 frase.
+- OBLIGATORIO incluir al menos: 1x stat_callouts, 1x comparison, 1x split, 1x timeline o pillars.
+- NO repitas el mismo visual_suggestion más de 2 veces seguidas.
+- Slides de riesgos → visual_suggestion:"comparison" con type:"risks".
+- Slides de oportunidades → visual_suggestion:"pillars" o "matrix" con type:"opportunities".
+- Si hay datos numéricos → visual_suggestion:"stat_callouts" OBLIGATORIO.
+- Mínimo 8 slides, máximo 14 (sin contar cover y closing).`
+        })});
     const raw=await res.text();
     if(raw.trim().startsWith('<'))throw new Error('Worker devolvió HTML. Status: '+res.status);
     let data;try{data=JSON.parse(raw);}catch(e){throw new Error('Respuesta no es JSON');}
@@ -807,6 +818,44 @@ async function downloadPptx(){if(!result)return;
         sl.addShape('rect',{x:2,y:5.2,w:9.33,h:0.01,fill:{color:A.RED}});
         sl.addText('CONFIDENCIAL · USO INTERNO',{x:0,y:5.5,w:'100%',h:0.3,fontSize:9,fontFace:'Calibri',color:A.SGRAY,align:'center',bold:true,letterSpacing:3});
         sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'}),{x:0,y:5.85,w:'100%',h:0.3,fontSize:9,fontFace:'Calibri',color:A.SGRAY,align:'center'});
+        return;
+      }
+
+      // =================== TABLE OF CONTENTS ===================
+      if(s.type==='toc'){
+        const sl=pptx.addSlide();sl.background={color:A.WHITE};
+        addLogo(sl);
+        // Left navy bar
+        sl.addShape('rect',{x:0,y:0,w:0.12,h:7.5,fill:{color:A.NAVY}});
+        // Title
+        sl.addText('Contenido',{x:M,y:0.3,w:5,h:0.55,fontSize:22,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addShape('rect',{x:M,y:0.88,w:1.2,h:0.04,fill:{color:A.RED}});
+        // TOC items
+        const items=s.items||[];
+        const startY=1.1;
+        const rowH=0.62;
+        items.forEach((item,i)=>{
+          const iy=startY+(i*rowH);
+          // Number badge
+          sl.addShape('rect',{x:M,y:iy,w:0.4,h:0.4,fill:{color:i===0?A.RED:A.NAVY}});
+          sl.addText(String(i+1),{x:M,y:iy,w:0.4,h:0.4,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          // Item title
+          sl.addText(item.title||item,{x:M+0.55,y:iy+0.02,w:CW*0.55,h:0.36,fontSize:12,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle'});
+          // Item description if present
+          if(item.description){
+            sl.addText(item.description,{x:M+0.55,y:iy+0.26,w:CW*0.55,h:0.25,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'top'});
+          }
+          // Dotted separator line
+          if(i<items.length-1){
+            sl.addShape('rect',{x:M,y:iy+rowH-0.06,w:CW*0.75,h:0.01,fill:{color:A.MGRAY}});
+          }
+        });
+        // Right accent block
+        sl.addShape('rect',{x:CW*0.75,y:1.0,w:CW*0.27,h:items.length*rowH+0.1,fill:{color:A.LGRAY}});
+        sl.addShape('rect',{x:CW*0.75,y:1.0,w:0.05,h:items.length*rowH+0.1,fill:{color:A.RED}});
+        if(s.tagline){
+          sl.addText(s.tagline,{x:CW*0.75+0.15,y:1.2,w:CW*0.25,h:items.length*rowH-0.3,fontSize:10,fontFace:'Calibri',color:A.SGRAY,italic:true,lineSpacingMultiple:1.6,valign:'middle'});
+        }
         return;
       }
 
