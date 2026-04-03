@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO v3.6</title>
+<title>Strategic Report Agent — ALTO v3.7</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -30,23 +30,114 @@ tailwind.config={theme:{extend:{colors:{
   body{background:#F8F9FB;color:#191C1E;font-family:'Inter',sans-serif}
   h1,h2,h3,h4{font-family:'Manrope',sans-serif}
   .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+
+  /* ── Spinner ─────────────────────────────────────────────── */
   @keyframes spin{to{transform:rotate(360deg)}}
   .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(4,22,39,0.2);border-top-color:#041627;animation:spin .7s linear infinite}
-  .fade-in{animation:fadeIn .4s ease-out}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-  .editable{cursor:text;transition:background .15s;padding:1px 3px;margin:-1px -3px}
+
+  /* ── Fade-in on appear ───────────────────────────────────── */
+  .fade-in{animation:fadeIn .5s cubic-bezier(.16,1,.3,1) both}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── Slide-in from left (sidebar history items) ──────────── */
+  @keyframes slideInLeft{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+  .slide-in-left{animation:slideInLeft .35s cubic-bezier(.16,1,.3,1) both}
+
+  /* ── Stagger children ────────────────────────────────────── */
+  .stagger-children > *:nth-child(1){animation-delay:.05s}
+  .stagger-children > *:nth-child(2){animation-delay:.1s}
+  .stagger-children > *:nth-child(3){animation-delay:.15s}
+  .stagger-children > *:nth-child(4){animation-delay:.2s}
+  .stagger-children > *:nth-child(5){animation-delay:.25s}
+
+  /* ── Editable fields ─────────────────────────────────────── */
+  .editable{cursor:text;transition:background .15s,box-shadow .15s;padding:1px 3px;margin:-1px -3px}
   .editable:hover{background:rgba(4,22,39,0.04)}
   .editable:focus{outline:2px solid #BB0014;background:rgba(187,0,20,0.04)}
-  .drop-zone{border:2px dashed #C4C6CD;transition:all .2s}
-  .drop-zone.drag-over{border-color:#BB0014;background:rgba(187,0,20,0.03)}
+
+  /* ── Drop zone ───────────────────────────────────────────── */
+  .drop-zone{border:2px dashed #C4C6CD;transition:all .25s cubic-bezier(.16,1,.3,1)}
+  .drop-zone.drag-over{border-color:#BB0014;background:rgba(187,0,20,0.03);transform:scale(1.005)}
+
+  /* ── Progress bars ───────────────────────────────────────── */
   .progress-track{height:2px;background:#E0E3E5;overflow:hidden}
-  .progress-fill{height:100%;background:linear-gradient(90deg,#041627,#BB0014);transition:width .5s ease}
-  input,textarea{border-radius:0!important}
-  input:focus,textarea:focus{outline:none;border-bottom:2px solid #041627!important;box-shadow:none!important}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#041627,#BB0014);transition:width .6s cubic-bezier(.16,1,.3,1)}
+
+  /* ── Accent bar ──────────────────────────────────────────── */
   .accent-bar{width:4px;background:#BB0014;flex-shrink:0}
+
+  /* ── Input / textarea ────────────────────────────────────── */
+  input,textarea{border-radius:0!important;transition:border-color .2s}
+  input:focus,textarea:focus{outline:none;border-bottom:2px solid #041627!important;box-shadow:none!important}
+
+  /* ── Header shimmer on load ──────────────────────────────── */
+  @keyframes headerGlow{
+    0%{box-shadow:0 2px 0 0 rgba(187,0,20,0)}
+    50%{box-shadow:0 2px 0 0 rgba(187,0,20,.5)}
+    100%{box-shadow:0 2px 0 0 rgba(187,0,20,0)}
+  }
+  header.bg-\[\#041627\]{animation:headerGlow 3s ease-in-out 1s 1}
+
+  /* ── Button hover lift — only main action buttons ───────── */
+  button{transition:background .15s,opacity .15s,color .15s}
+  #btnAnalyze:not(:disabled){transition:transform .15s,box-shadow .15s,background .15s}
+  #btnAnalyze:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(4,22,39,0.25)}
+  #btnAnalyze:not(:disabled):active{transform:translateY(0);box-shadow:none}
+
+  /* ── Status dot pulse ────────────────────────────────────── */
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.4)}}
+  #statusDot.connected{animation:pulse 2s ease-in-out infinite}
+
+  /* ── Skeleton loader ─────────────────────────────────────── */
+  @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  .skeleton{background:linear-gradient(90deg,#E0E3E5 25%,#F2F4F6 50%,#E0E3E5 75%);background-size:400px 100%;animation:shimmer 1.4s ease-in-out infinite}
+
+  /* ── Finding cards hover ─────────────────────────────────── */
+  .finding-card{transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s}
+  .finding-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(4,22,39,0.1)}
+
+  /* ── So What box entrance ────────────────────────────────── */
+  @keyframes soWhatIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+  .so-what-box{animation:soWhatIn .4s cubic-bezier(.16,1,.3,1) .2s both}
+
+  /* ── Report section collapse ─────────────────────────────── */
+  .section-collapsible .section-body{transition:max-height .4s cubic-bezier(.16,1,.3,1),opacity .3s}
+  .section-collapsible.collapsed .section-body{max-height:0!important;opacity:0;overflow:hidden}
+  .section-collapsible .collapse-icon{transition:transform .3s cubic-bezier(.16,1,.3,1)}
+  .section-collapsible.collapsed .collapse-icon{transform:rotate(-90deg)}
+
+  /* ── Tooltip ─────────────────────────────────────────────── */
+  .tooltip-wrap{position:relative;display:inline-flex}
+  .tooltip-wrap .tooltip{
+    position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);
+    background:#041627;color:#fff;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.05em;
+    white-space:nowrap;padding:4px 10px;pointer-events:none;
+    opacity:0;transition:opacity .15s,transform .15s;z-index:200;
+  }
+  .tooltip-wrap:hover .tooltip{opacity:1;transform:translateX(-50%) translateY(0)}
+  .tooltip-wrap > button{flex:1}
+
+  /* ── Generating overlay shimmer ──────────────────────────── */
+  @keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .generating-glow{
+    background:linear-gradient(135deg,#041627,#1A2B3C,#BB0014,#041627);
+    background-size:300% 300%;
+    animation:gradientShift 4s ease infinite;
+  }
+
+  /* ── Flash notification ──────────────────────────────────── */
+  #flashMsg{
+    position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:#041627;color:#fff;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;padding:10px 24px;z-index:999;
+    opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;
+  }
+  #flashMsg.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #flashMsg .flash-bar{position:absolute;bottom:0;left:0;height:2px;background:#BB0014;width:0;transition:width 2s linear}
 </style>
 </head>
 <body class="min-h-screen flex flex-col bg-surface">
+<div id="flashMsg"><span id="flashText"></span><div class="flash-bar" id="flashBar"></div></div>
 
 <!-- Nav -->
 <header class="bg-[#041627] flex justify-between items-center w-full px-8 md:px-12 py-5 fixed top-0 z-50">
@@ -97,10 +188,10 @@ tailwind.config={theme:{extend:{colors:{
           <div class="flex justify-between items-end">
             <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">Documento Fuente</label>
             <div class="flex gap-4">
-              <button onclick="document.getElementById('fileInput').click()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#BB0014] transition-all flex items-center gap-1">
+              <button onclick="document.getElementById('fileInput').click()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#BB0014] transition-all flex items-center gap-1" style="position:relative;z-index:10">
                 <span class="material-symbols-outlined text-[13px]">upload_file</span> Subir archivo
               </button>
-              <button onclick="loadSample()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#041627] transition-all flex items-center gap-1">
+              <button onclick="loadSample()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#041627] transition-all flex items-center gap-1" style="position:relative;z-index:10">
                 Ejemplo <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
               </button>
             </div>
@@ -132,18 +223,18 @@ tailwind.config={theme:{extend:{colors:{
           <button id="btnMd" onclick="copyMarkdown()" class="hidden bg-[#F2F4F6] hover:bg-[#E6E8EA] text-[#041627] font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
             <span class="material-symbols-outlined text-base">content_copy</span> MD
           </button>
-          <button id="btnPdf" onclick="downloadPdf()" class="hidden bg-[#BB0014] hover:bg-red-800 text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+          <div class="tooltip-wrap"><span class="tooltip">Exportar PDF</span><button id="btnPdf" onclick="downloadPdf()" class="hidden bg-[#BB0014] hover:bg-red-800 text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
             <span class="material-symbols-outlined text-base">picture_as_pdf</span> PDF
-          </button>
-          <button id="btnPptx" onclick="downloadPptx()" class="hidden bg-[#041627] hover:bg-[#1A2B3C] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex disabled:opacity-40 disabled:cursor-not-allowed">
+          </button></div>
+          <div class="tooltip-wrap"><span class="tooltip">Generar PPTX</span><button id="btnPptx" onclick="downloadPptx()" class="hidden bg-[#041627] hover:bg-[#1A2B3C] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex disabled:opacity-40 disabled:cursor-not-allowed">
             <span class="material-symbols-outlined text-base">slideshow</span> PPTX
-          </button>
-          <button id="btnDocx" onclick="downloadDocx()" class="hidden bg-emerald-700 hover:bg-emerald-800 text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+          </button></div>
+          <div class="tooltip-wrap"><span class="tooltip">Exportar Word</span><button id="btnDocx" onclick="downloadDocx()" class="hidden bg-emerald-700 hover:bg-emerald-800 text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
             <span class="material-symbols-outlined text-base">download</span> DOCX
-          </button>
-          <button id="btnBrief" onclick="downloadBrief()" class="hidden bg-[#F2F4F6] hover:bg-[#E0E3E5] text-[#041627] border border-[#C4C6CD] font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex" title="1 página ejecutiva">
+          </button></div>
+          <div class="tooltip-wrap"><span class="tooltip">Brief 1 página</span><button id="btnBrief" onclick="downloadBrief()" class="hidden bg-[#F2F4F6] hover:bg-[#E0E3E5] text-[#041627] border border-[#C4C6CD] font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex" title="">
             <span class="material-symbols-outlined text-base">bolt</span> Brief
-          </button>
+          </button></div>
         </div>
       </div>
     </section>
@@ -373,7 +464,7 @@ function resetEdits(){if(originalResult){result=JSON.parse(JSON.stringify(origin
 function renderPreview(r){
   document.getElementById('methodCards').classList.add('hidden');
   document.getElementById('editBanner').classList.remove('hidden');
-  const card=document.getElementById('previewCard');card.classList.remove('hidden');
+  const card=document.getElementById('previewCard');card.classList.remove('hidden');card.style.animation='none';void card.offsetHeight;card.style.animation='';
   let h=`<div id="reportContent" class="bg-white overflow-hidden fade-in" style="box-shadow:0 2px 40px rgba(4,22,39,0.08)">`;
 
   // ── Cover bar ──────────────────────────────────────────────
@@ -428,11 +519,15 @@ function renderPreview(r){
 
   // ── Findings ───────────────────────────────────────────────
   if(r.findings?.length){
-    h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-6">Hallazgos Clave</h2>
+    h+=`<div class="px-10 py-8 border-b border-[#E0E3E5] section-collapsible">
+      <div class="flex items-center justify-between mb-6 cursor-pointer select-none" onclick="this.closest('.section-collapsible').classList.toggle('collapsed')">
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">Hallazgos Clave</h2>
+        <span class="collapse-icon material-symbols-outlined text-sm text-slate-400">expand_more</span>
+      </div>
+      <div class="section-body" style="max-height:2000px">
       <div class="space-y-5">`;
     r.findings.forEach((f,i)=>{
-      h+=`<div class="grid grid-cols-12 gap-0">
+      h+=`<div class="grid grid-cols-12 gap-0 finding-card">
         <div class="col-span-1 bg-[#041627] flex items-center justify-center py-4">
           <span class="font-['Manrope'] font-black text-white text-sm">${i+1}</span>
         </div>
@@ -471,7 +566,7 @@ function renderPreview(r){
         });
       }
       if(s.so_what){
-        h+=`<div class="flex gap-0 mt-5">
+        h+=`<div class="flex gap-0 mt-5 so-what-box">
           <div style="width:3px;background:#BB0014;flex-shrink:0"></div>
           <div class="bg-[#FFF5F5] flex-1 px-5 py-3">
             <span class="font-['Inter'] text-[10px] font-bold text-[#BB0014] uppercase tracking-widest">So what?  </span>
@@ -576,7 +671,17 @@ async function downloadPdf(){if(!result)return;showStatus('Generando PDF...');tr
 // HELPERS
 // ============================================================
 function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
-function setLoading(on){const b=document.getElementById('btnAnalyze');b.disabled=on;b.innerHTML=on?'<span class="spinner"></span><span class="font-[Manrope] text-xs uppercase tracking-[0.2em]">Procesando...</span>':'<span class="material-symbols-outlined text-lg" style="font-variation-settings:\'FILL\' 1;">psychology</span><span class="font-[Manrope] text-xs uppercase tracking-[0.2em]">Generar Informe Ejecutivo</span>';}
+function setLoading(on){
+  const b=document.getElementById('btnAnalyze');
+  b.disabled=on;
+  if(on){
+    b.classList.add('generating-glow');
+    b.innerHTML='<span class="spinner" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></span><span class="font-[Manrope] text-xs uppercase tracking-[0.2em]">Procesando...</span>';
+  }else{
+    b.classList.remove('generating-glow');
+    b.innerHTML='<span class="material-symbols-outlined text-lg" style="font-variation-settings:\'FILL\' 1;">psychology</span><span class="font-[Manrope] text-xs uppercase tracking-[0.2em]">Generar Informe Ejecutivo</span>';
+  }
+}
 function showStatus(m){const e=document.getElementById('statusMsg');e.textContent=m;e.classList.remove('hidden');}
 function showError(m){const b=document.getElementById('errorBox');b.textContent=m;b.classList.remove('hidden');document.getElementById('statusMsg').classList.add('hidden');}
 function hideError(){document.getElementById('errorBox').classList.add('hidden');}
@@ -662,7 +767,13 @@ function addChatBubble(role, text) {
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
 }
-function setDot(s){const d=document.getElementById('statusDot'),l=document.getElementById('statusDotLabel');if(s==='ok'){d.style.background='#10b981';l.textContent='Conectado';}else if(s==='no'){d.style.background='#BB0014';l.textContent='Error';}else{d.style.background='#64748b';l.textContent='Sin conexión';}}
+function setDot(s){
+  const d=document.getElementById('statusDot'),l=document.getElementById('statusDotLabel');
+  d.classList.remove('connected');
+  if(s==='ok'){d.style.background='#10b981';d.style.boxShadow='0 0 8px rgba(16,185,129,0.6)';d.classList.add('connected');l.textContent='Conectado';}
+  else if(s==='no'){d.style.background='#BB0014';d.style.boxShadow='0 0 8px rgba(187,0,20,0.6)';l.textContent='Error';}
+  else{d.style.background='#64748b';d.style.boxShadow='none';l.textContent='Sin conexión';}
+}
 function flash(m){showStatus(m);setTimeout(()=>{if(result)showStatus('Informe listo — edita y exporta');},2500);}
 function loadSample(){document.getElementById('inputText').value=`Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar.\n\nLas tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.\n\nEl área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.\n\nNecesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.\n\nNota: la data de modus operandi tiene un 30% de registros sin clasificar. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;}
 const saved=localStorage.getItem('worker_url');if(saved)document.getElementById('workerUrl').value=saved;document.getElementById('workerUrl').addEventListener('change',function(){localStorage.setItem('worker_url',this.value);});
