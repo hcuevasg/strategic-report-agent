@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO v3.2</title>
+<title>Strategic Report Agent — ALTO v3.3</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -164,18 +164,7 @@ tailwind.config={theme:{extend:{colors:{
       </div>
     </div>
 
-    <!-- Slide Thumbnails -->
-    <div id="slideThumbnails" class="hidden mt-8 fade-in">
-      <div class="flex items-center justify-between mb-4">
-        <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 font-semibold flex items-center gap-2">
-          <span class="material-symbols-outlined text-sm text-[#BB0014]">auto_awesome_mosaic</span>
-          Vista previa de slides
-        </span>
-        <span id="slideCount" class="font-['Inter'] text-[10px] text-slate-400 font-mono"></span>
-      </div>
-      <div id="thumbnailGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
-      <p class="font-['Inter'] text-[10px] text-slate-400 mt-4 text-center">Vista previa aproximada · el archivo .pptx descargado es la versión final</p>
-    </div>
+
 
     <!-- Report preview -->
     <div id="previewCard" class="hidden fade-in mt-10"></div>
@@ -526,7 +515,7 @@ function setLoading(on){const b=document.getElementById('btnAnalyze');b.disabled
 function showStatus(m){const e=document.getElementById('statusMsg');e.textContent=m;e.classList.remove('hidden');}
 function showError(m){const b=document.getElementById('errorBox');b.textContent=m;b.classList.remove('hidden');document.getElementById('statusMsg').classList.add('hidden');}
 function hideError(){document.getElementById('errorBox').classList.add('hidden');}
-function hidePreview(){document.getElementById('previewCard').classList.add('hidden');document.getElementById('editBanner').classList.add('hidden');document.getElementById('methodCards').classList.remove('hidden');document.getElementById('slideThumbnails').classList.add('hidden');}
+function hidePreview(){document.getElementById('previewCard').classList.add('hidden');document.getElementById('editBanner').classList.add('hidden');document.getElementById('methodCards').classList.remove('hidden');}
 function showExportBtns(){['btnMd','btnDocx','btnPdf','btnPptx'].forEach(id=>document.getElementById(id).classList.remove('hidden'));document.getElementById('chatSection').classList.remove('hidden');}
 
 // ============================================================
@@ -687,7 +676,7 @@ function startPptxProgress(phase){
   const pct  = document.getElementById('pptxProgressPct');
   const lbl  = document.getElementById('pptxProgressLabel');
   sec.classList.remove('hidden');
-  document.getElementById('slideThumbnails').classList.add('hidden');
+  
   lbl.textContent = phase || 'Diseñando slides...';
   fill.style.width = '0%';
   step.textContent = '';
@@ -724,220 +713,6 @@ function stopPptxProgress(ok){
 }
 
 // ── Thumbnail generator ─────────────────────────────────────
-function renderSlideThumbnails(slides){
-  const grid = document.getElementById('thumbnailGrid');
-  const countEl = document.getElementById('slideCount');
-  grid.innerHTML = '';
-  countEl.textContent = slides.length + ' slides';
-
-  const A = ALTO;
-  slides.forEach((s, idx) => {
-    const wrap = document.createElement('div');
-    wrap.className = 'relative group cursor-default';
-
-    const canvas = document.createElement('canvas');
-    canvas.width  = 320;
-    canvas.height = 180;
-    const ctx = canvas.getContext('2d');
-
-    const isCover   = s.type === 'cover';
-    const isClosing = s.type === 'closing';
-    const isDark    = isCover || isClosing;
-    const vis = s.visual_suggestion || 'none';
-
-    // Background
-    ctx.fillStyle = isDark ? '#'+A.DNAVY : '#FFFFFF';
-    ctx.fillRect(0, 0, 320, 180);
-
-    // Left accent stripe
-    if(isDark){
-      ctx.fillStyle = '#'+A.RED;
-      ctx.fillRect(0, 0, 5, 180);
-    }
-
-    // Logo badge top-right
-    if(!isDark){
-      ctx.fillStyle = '#'+A.LGRAY;
-      ctx.fillRect(258, 4, 58, 20);
-      ctx.fillStyle = '#'+A.RED;
-      ctx.font = 'bold 8px Calibri, Arial';
-      ctx.fillText('ALTO', 272, 17);
-    }
-
-    // Title
-    const titleColor = isDark ? '#FFFFFF' : '#'+A.NAVY;
-    ctx.fillStyle = titleColor;
-    ctx.font = isDark ? 'bold 13px Calibri, Arial' : 'bold 11px Calibri, Arial';
-    const title = s.action_title || s.type || '';
-    const maxW = isDark ? 220 : 240;
-    const titleX = isDark ? 16 : 12;
-    const titleY = isDark ? 72 : 14;
-    wrapText(ctx, title, titleX, titleY, maxW, 15);
-
-    const cy = isDark ? 110 : 40;
-
-    if(vis === 'stat_callouts' && s.data_points && s.data_points.length){
-      const dp = s.data_points.slice(0,4);
-      const cw = 280 / dp.length;
-      dp.forEach((d,i) => {
-        const cx2 = 12 + i*cw;
-        ctx.fillStyle = '#'+A.LGRAY;
-        ctx.fillRect(cx2+2, cy, cw-4, 72);
-        // Use ALTO corporate colors only: NAVY, RED, TBLUE
-        ctx.fillStyle = '#'+[A.NAVY,A.RED,A.TBLUE,A.NAVY][i%4];
-        ctx.fillRect(cx2+2, cy, cw-4, 3);
-        ctx.fillStyle = '#'+A.NAVY;
-        ctx.font = 'bold 16px Calibri, Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(String(d.value).substring(0,6), cx2+cw/2, cy+28);
-        ctx.fillStyle = '#666';
-        ctx.font = '7px Calibri, Arial';
-        wrapText(ctx, d.label||'', cx2+cw/2-cw/2+4, cy+38, cw-8, 9, 'center');
-        ctx.textAlign = 'left';
-      });
-    } else if((vis === 'comparison' || vis === 'pillars') && s.columns && s.columns.length){
-      const cols = s.columns.slice(0,3);
-      const cw = 280 / cols.length;
-      // Corporate colors only
-      const colC = ['#'+A.NAVY,'#'+A.RED,'#'+A.TBLUE];
-      cols.forEach((col,i) => {
-        const cx2 = 12 + i*cw;
-        ctx.fillStyle = colC[i%3];
-        ctx.fillRect(cx2+2, cy, cw-4, 16);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 7px Calibri, Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText((col.title||'').substring(0,14), cx2+cw/2, cy+11);
-        ctx.fillStyle = '#'+A.LGRAY;
-        ctx.fillRect(cx2+2, cy+16, cw-4, 60);
-        ctx.fillStyle = '#444';
-        ctx.font = '6px Calibri, Arial';
-        ctx.textAlign = 'left';
-        (col.items||[]).slice(0,5).forEach((item,j) => {
-          ctx.fillText('\u25B8 '+(item||'').substring(0,18), cx2+6, cy+28+j*10);
-        });
-        ctx.textAlign = 'left';
-      });
-    } else if(vis === 'timeline' && s.columns && s.columns.length){
-      const phases = s.columns.slice(0,4);
-      const pw = 280 / phases.length;
-      ctx.fillStyle = '#'+A.MGRAY;
-      ctx.fillRect(12, cy+8, 280, 3);
-      phases.forEach((ph,i) => {
-        const px2 = 12 + i*pw + pw/2;
-        ctx.fillStyle = i===0 ? '#'+A.RED : '#'+A.NAVY;
-        ctx.beginPath();ctx.arc(px2, cy+9, 7, 0, Math.PI*2);ctx.fill();
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 7px Calibri, Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(String(i+1), px2, cy+13);
-        ctx.fillStyle = '#'+A.NAVY;
-        ctx.font = 'bold 6px Calibri, Arial';
-        wrapText(ctx, (ph.title||'').substring(0,16), px2-pw/2+4, cy+26, pw-8, 8, 'left');
-        ctx.fillStyle = '#'+A.LGRAY;
-        ctx.fillRect(12+i*pw+2, cy+34, pw-4, 38);
-        ctx.fillStyle = '#555';
-        ctx.font = '5.5px Calibri, Arial';
-        ctx.textAlign = 'left';
-        (ph.items||[]).slice(0,4).forEach((item,j) => {
-          ctx.fillText('\u2022 '+(item||'').substring(0,20), 12+i*pw+5, cy+44+j*8);
-        });
-      });
-      ctx.textAlign = 'left';
-    } else if(vis === 'matrix' && s.columns && s.columns.length >= 4){
-      const qC = ['#'+A.NAVY,'#'+A.RED,'#'+A.TBLUE,'#'+A.NAVY];
-      s.columns.slice(0,4).forEach((q,i) => {
-        const qx = 12 + (i%2)*142;
-        const qy = cy + Math.floor(i/2)*40;
-        ctx.fillStyle = '#'+A.LGRAY;
-        ctx.fillRect(qx, qy, 138, 37);
-        ctx.fillStyle = qC[i];
-        ctx.fillRect(qx, qy, 138, 3);
-        ctx.fillStyle = qC[i];
-        ctx.font = 'bold 6.5px Calibri, Arial';
-        ctx.fillText((q.title||'').substring(0,20), qx+4, qy+13);
-        ctx.fillStyle = '#555';
-        ctx.font = '5.5px Calibri, Arial';
-        (q.items||[]).slice(0,3).forEach((item,j) => {
-          ctx.fillText('\u2022 '+(item||'').substring(0,22), qx+4, qy+22+j*7);
-        });
-      });
-    } else if(vis === 'split'){
-      ctx.fillStyle = '#'+A.LGRAY;
-      ctx.fillRect(12, cy, 168, 90);
-      ctx.fillStyle = '#444';
-      ctx.font = '6.5px Calibri, Arial';
-      wrapText(ctx, s.body_text||'', 17, cy+12, 158, 9);
-      ctx.fillStyle = '#'+A.NAVY;
-      ctx.fillRect(186, cy, 106, 90);
-      ctx.fillStyle = '#'+A.RED;
-      ctx.fillRect(186, cy, 3, 90);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'italic 6.5px Calibri, Arial';
-      wrapText(ctx, s.highlight_box||s.so_what||'', 193, cy+12, 96, 9);
-    } else {
-      if(s.body_text){
-        ctx.fillStyle = '#'+A.LGRAY;
-        ctx.fillRect(12, cy, 280, 44);
-        ctx.fillStyle = '#'+A.NAVY;
-        ctx.fillRect(12, cy, 3, 44);
-        ctx.fillStyle = '#333';
-        ctx.font = '6.5px Calibri, Arial';
-        wrapText(ctx, s.body_text, 20, cy+10, 266, 9);
-      }
-      if(s.bullets && s.bullets.length){
-        const bY = s.body_text ? cy+50 : cy;
-        s.bullets.slice(0,5).forEach((b,j) => {
-          ctx.fillStyle = '#'+A.RED;
-          ctx.font = 'bold 7px Arial';
-          ctx.fillText('\u25B8', 14, bY+j*11);
-          ctx.fillStyle = '#333';
-          ctx.font = '6px Calibri, Arial';
-          ctx.fillText((b||'').substring(0,50), 22, bY+j*11);
-        });
-      }
-    }
-
-    // So what bar
-    if(!isDark && s.so_what){
-      ctx.fillStyle = '#FFF5F5';
-      ctx.fillRect(12, 155, 296, 18);
-      ctx.fillStyle = '#'+A.RED;
-      ctx.fillRect(12, 155, 3, 18);
-      ctx.font = 'bold 6px Calibri, Arial';
-      ctx.fillStyle = '#'+A.RED;
-      ctx.fillText('SO WHAT  ', 18, 167);
-      ctx.fillStyle = '#444';
-      ctx.font = 'italic 6px Calibri, Arial';
-      ctx.fillText((s.so_what||'').substring(0,55), 55, 167);
-    }
-
-    // Slide number
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.15)' : '#'+A.LGRAY;
-    ctx.fillRect(0, 0, 22, 14);
-    ctx.fillStyle = isDark ? '#FFFFFF' : '#888';
-    ctx.font = 'bold 7px Calibri, Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(String(idx+1), 11, 10);
-    ctx.textAlign = 'left';
-
-    const overlay = document.createElement('div');
-    overlay.className = 'absolute inset-0 bg-alto-blue/0 group-hover:bg-alto-blue/10 transition-all flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100';
-    overlay.innerHTML = '<span class="text-[9px] text-white bg-alto-navy/80 px-2 py-0.5 font-medium">' + (s.type||'slide').toUpperCase() + '</span>';
-
-    wrap.appendChild(canvas);
-    wrap.appendChild(overlay);
-
-    const label = document.createElement('p');
-    label.className = 'text-[9px] text-on-surface-variant/60 mt-1 truncate text-center px-1';
-    label.textContent = (s.action_title || s.type || '').substring(0, 40);
-    wrap.appendChild(label);
-
-    grid.appendChild(wrap);
-  });
-
-  document.getElementById('slideThumbnails').classList.remove('hidden');
-}
 
 function wrapText(ctx, text, x, y, maxW, lineH, align){
   if(!text) return;
@@ -1192,7 +967,6 @@ async function downloadPptx(){if(!result)return;
       srcNote(sl,s.source_note);
     });
 
-    renderSlideThumbnails(slides);
     updatePptxProgress(99, 'Generando archivo .pptx...');
     await pptx.writeFile({fileName:'Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pptx'});
     stopPptxProgress(true);
