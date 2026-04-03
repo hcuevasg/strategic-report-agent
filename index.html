@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO v3.8</title>
+<title>Strategic Report Agent — ALTO v3.9</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -1249,11 +1249,11 @@ function buildBriefHTML(r){
   const keyMsgs=(r.key_messages||[]).slice(0,4);
   const conclusion=r.conclusion||r.executive_summary||'';
   const dateStr=new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
-  const P='32px';  // consistent padding
+  const P='28px';  // consistent padding
   const s=[];
 
   // ── Outer wrapper — fixed width, overflow hidden ──────────
-  s.push('<div style="width:750px;background:#fff;overflow:hidden;box-sizing:border-box;">');
+  s.push('<div style="width:700px;background:#fff;overflow:hidden;box-sizing:border-box;">');
 
   // ── Header navy ───────────────────────────────────────────
   s.push('<div style="background:#041627;padding:24px '+P+' 18px;box-sizing:border-box;">');
@@ -1325,21 +1325,39 @@ async function downloadBrief(){
   if(!result)return;
   showStatus('Generando Executive Brief...');
   try{
-    const briefEl=document.createElement('div');
-    briefEl.style.cssText='position:fixed;left:-9999px;top:0;width:750px;background:#fff;font-family:Inter,Calibri,sans-serif;font-size:13px;line-height:1.4;';
-    briefEl.innerHTML=buildBriefHTML(result);
-    document.body.appendChild(briefEl);
-    const canvas=await html2canvas(briefEl,{backgroundColor:'#fff',scale:2,useCORS:true,logging:false,width:750,windowWidth:750});
-    document.body.removeChild(briefEl);
+    // Render inside an iframe with exact viewport so html2canvas sees full width
+    const iframe=document.createElement('iframe');
+    iframe.style.cssText='position:fixed;left:-9999px;top:0;width:700px;height:2000px;border:none;';
+    document.body.appendChild(iframe);
+    const iDoc=iframe.contentDocument||iframe.contentWindow.document;
+    iDoc.open();
+    iDoc.write('<!DOCTYPE html><html><head><meta charset="utf-8">'
+      +'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">'
+      +'<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#fff;width:700px;overflow:hidden}</style>'
+      +'</head><body>'
+      +buildBriefHTML(result)
+      +'</body></html>');
+    iDoc.close();
+    // Wait for fonts to load
+    await new Promise(r=>setTimeout(r,600));
+    const briefEl=iDoc.body.firstElementChild;
+    const canvas=await html2canvas(iDoc.body,{
+      backgroundColor:'#fff',scale:2,useCORS:true,logging:false,
+      width:700,windowWidth:700,
+      scrollX:0,scrollY:0
+    });
+    document.body.removeChild(iframe);
     const imgData=canvas.toDataURL('image/png');
     const{jsPDF}=window.jspdf;
     const pxW=canvas.width,pxH=canvas.height;
-    const pdfW=210,pdfH=(pxH*pdfW)/pxW;
+    const pdfW=210,pdfH=Math.round((pxH*pdfW)/pxW);
     const pdf=new jsPDF('p','mm',[pdfW,pdfH]);
     pdf.addImage(imgData,'PNG',0,0,pdfW,pdfH);
     pdf.save('Brief_ALTO_'+new Date().toISOString().slice(0,10)+'.pdf');
     flash('✓ Executive Brief descargado');
-  }catch(err){showError('Error Brief: '+err.message);}
+  }catch(err){
+    showError('Error Brief: '+err.message);
+  }
 }
 
 </script>
