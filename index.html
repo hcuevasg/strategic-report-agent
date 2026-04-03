@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO v3.10</title>
+<title>Strategic Report Agent — ALTO</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -1253,7 +1253,7 @@ function buildBriefHTML(r){
   const s=[];
 
   // ── Outer wrapper — fixed width, overflow hidden ──────────
-  s.push('<div style="width:700px;background:#fff;overflow:hidden;box-sizing:border-box;">');
+  s.push('<div style="width:660px;background:#fff;overflow:hidden;box-sizing:border-box;">');
 
   // ── Header navy ───────────────────────────────────────────
   s.push('<div style="background:#041627;padding:24px '+P+' 18px;box-sizing:border-box;">');
@@ -1327,13 +1327,13 @@ async function downloadBrief(){
   try{
     // Render inside an iframe with exact viewport so html2canvas sees full width
     const iframe=document.createElement('iframe');
-    iframe.style.cssText='position:fixed;left:-9999px;top:0;width:700px;height:2000px;border:none;';
+    iframe.style.cssText='position:fixed;left:-9999px;top:0;width:660px;height:2000px;border:none;';
     document.body.appendChild(iframe);
     const iDoc=iframe.contentDocument||iframe.contentWindow.document;
     iDoc.open();
     iDoc.write('<!DOCTYPE html><html><head><meta charset="utf-8">'
       +'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">'
-      +'<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#fff;width:700px;overflow:hidden}</style>'
+      +'<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#fff;width:660px;overflow:hidden}</style>'
       +'</head><body>'
       +buildBriefHTML(result)
       +'</body></html>');
@@ -1343,10 +1343,10 @@ async function downloadBrief(){
     // Measure real content height and resize iframe to fit exactly
     const contentH=iDoc.body.firstElementChild.offsetHeight;
     iframe.style.height=(contentH+2)+'px';
-    iDoc.body.style.height=(contentH+2)+'px';
+    iDoc.body.style.height=(contentH+2)+'px';iDoc.body.style.width='660px';
     const canvas=await html2canvas(iDoc.body,{
       backgroundColor:'#fff',scale:2,useCORS:true,logging:false,
-      width:700,height:contentH+2,windowWidth:700,
+      width:660,height:contentH+2,windowWidth:660,
       scrollX:0,scrollY:0
     });
     document.body.removeChild(iframe);
