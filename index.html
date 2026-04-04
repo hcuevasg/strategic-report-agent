@@ -1111,9 +1111,9 @@ async function downloadPptx(){if(!result)return;
           reportJSON:JSON.stringify(result),
           pptxInstructions:`VISUAL LAYOUTS DISPONIBLES — elige el más adecuado para cada slide:
 - "stat_callouts": KPIs y cifras clave. USA data_points:[{value,label,trend?}] donde trend es "up"/"down"/"neutral". Mínimo 3, máximo 4 puntos.
-- "bar_chart": evolución temporal o comparativo cuantitativo vertical. USA chart_data:{categories,series}.
-- "line_chart": tendencias y series temporales con múltiples líneas. USA chart_data:{categories,series}.
-- "horizontal_bar": rankings de entidades (tiendas, regiones, productos). USA chart_data con categorías como nombres. Ordena de mayor a menor.
+- "bar_chart": evolución temporal o comparativo cuantitativo vertical. USA chart_data:{categories:["Ene","Feb",...],series:[{name:"Métrica",values:[10,20,...]}]}. Para una sola métrica usa SIEMPRE 1 serie con todos los valores — NUNCA una serie por categoría.
+- "line_chart": tendencias y series temporales con múltiples líneas. USA chart_data:{categories,series}. Múltiples series OK aquí.
+- "horizontal_bar": rankings de entidades (tiendas, regiones, productos). USA chart_data con 1 sola serie: {categories:["Entidad A","Entidad B",...],series:[{name:"Valor",values:[85,72,...]}]}. NUNCA uses una serie por entidad. Ordena categorías de mayor a menor valor.
 - "donut_chart": composición o distribución porcentual. USA data_points:[{value:"35%",label:"Nombre"}]. Máximo 6 segmentos.
 - "comparison": comparar 2-3 opciones/escenarios. USA columns:[{title,items}].
 - "pillars": 3-4 pilares estratégicos paralelos. USA columns:[{title,items}].
@@ -1168,15 +1168,28 @@ REGLAS OBLIGATORIAS:
       }
       addLogo(sl);
     }
-    // ── Helper: normalize chart series so categories.length === values.length ──
+    // ── Helper: normalize chart series ──────────────────────────
+    // 1. Pads/trims values to match category count
+    // 2. Collapses "N series × 1 value" (Claude anti-pattern) into "1 series × N values"
+    //    so bar/horizontal_bar renders as a clean single-color ranking
     function normalizeChartData(cd){
       const cats=(cd.categories||[]).map(String);
-      const series=(cd.series||[]).map(ser=>{
+      let series=(cd.series||[]).map(ser=>{
         const vals=(ser.values||[]).map(Number);
-        // pad or trim values to match category count
         while(vals.length<cats.length)vals.push(0);
         return {name:ser.name||'',labels:cats,values:vals.slice(0,cats.length)};
       });
+      // Detect: each series has exactly 1 non-zero value (Claude encoded each category as a series)
+      const isAntiPattern = series.length>1 && cats.length>1 &&
+        series.every(ser=>ser.values.filter(v=>v!==0).length<=1);
+      if(isAntiPattern){
+        // Collapse: pick the non-zero value (or first) from each series
+        const collapsed=series.map(ser=>{
+          const nz=ser.values.find(v=>v!==0);
+          return nz!==undefined?nz:ser.values[0]||0;
+        });
+        series=[{name:'',labels:cats,values:collapsed}];
+      }
       return{cats,series};
     }
     // SO WHAT panel constants
