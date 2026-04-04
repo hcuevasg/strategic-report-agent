@@ -1038,9 +1038,7 @@ async function downloadPptx(){if(!result)return;
         sl.addShape('rect',{x:rX,y:0,w:0.08,h:7.5,fill:{color:A.RED}});
         sl.addShape('rect',{x:rX+0.2,y:5.8,w:1.8,h:0.04,fill:{color:A.RED}});
         sl.addShape('rect',{x:rX+0.2,y:5.95,w:1.2,h:0.04,fill:{color:A.TBLUE}});
-        sl.addText('ALTO · Strategic Insights',{x:rX+0.25,y:6.2,w:rW-0.4,h:0.25,fontSize:7,fontFace:'Calibri',color:'FFFFFF50',letterSpacing:3,bold:false});
-        // White logo on right
-        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:rX+0.3,y:0.35,w:1.4,h:0.55});
+        sl.addText('ALTO · Strategic Insights',{x:rX+0.25,y:6.2,w:rW-0.4,h:0.25,fontSize:7,fontFace:'Calibri',color:'8192A7',letterSpacing:3,bold:false});
         return;
       }
       // =================== CLOSING ===================
