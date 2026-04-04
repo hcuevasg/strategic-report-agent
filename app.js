@@ -1,4 +1,137 @@
 // ============================================================
+// i18n — Multi-language labels
+// ============================================================
+const i18n = {
+  es: {
+    analysisLabel: 'Análisis Estratégico',
+    execSummary: 'Resumen Ejecutivo',
+    keyMessages: 'Mensajes Clave',
+    context: 'Contexto y Objetivo',
+    findings: 'Hallazgos Clave',
+    analysis: 'Análisis',
+    risks: 'Riesgos',
+    opportunities: 'Oportunidades',
+    recommendations: 'Recomendaciones',
+    infoGaps: 'Brechas de Información',
+    conclusion: 'Conclusión Ejecutiva',
+    evidence: 'Evidencia',
+    implication: 'Implicancia',
+    impact: 'Impacto',
+    soWhat: 'So what?',
+    shortTerm: 'Corto Plazo',
+    mediumTerm: 'Mediano Plazo',
+    longTerm: 'Largo Plazo',
+    regenerate: 'Regenerar',
+    confidential: 'Informe Ejecutivo Confidencial',
+    reportReady: 'Informe generado — edita y exporta',
+    reportLoaded: 'Informe cargado',
+    generating: 'Procesando...',
+    generateBtn: 'Generar Informe Ejecutivo',
+    thinkingStep: 'Analizando en profundidad...',
+    writingStep: 'Redactando informe...',
+    progressTitle: 'Redactando título...',
+    progressSummary: 'Redactando resumen ejecutivo...',
+    progressKeys: 'Estructurando mensajes clave...',
+    progressContext: 'Construyendo contexto...',
+    progressFindings: 'Identificando hallazgos clave...',
+    progressAnalysis: 'Construyendo bloques de análisis...',
+    progressRisks: 'Evaluando riesgos...',
+    progressOpps: 'Identificando oportunidades...',
+    progressRecs: 'Redactando recomendaciones...',
+    progressConclusion: 'Redactando conclusión ejecutiva...',
+    progressKpis: 'Calculando KPIs...',
+    imagesDetected: 'imágenes detectadas',
+    restored: 'Restaurado',
+  },
+  en: {
+    analysisLabel: 'Strategic Analysis',
+    execSummary: 'Executive Summary',
+    keyMessages: 'Key Messages',
+    context: 'Context & Objective',
+    findings: 'Key Findings',
+    analysis: 'Analysis',
+    risks: 'Risks',
+    opportunities: 'Opportunities',
+    recommendations: 'Recommendations',
+    infoGaps: 'Information Gaps',
+    conclusion: 'Executive Conclusion',
+    evidence: 'Evidence',
+    implication: 'Implication',
+    impact: 'Impact',
+    soWhat: 'So what?',
+    shortTerm: 'Short Term',
+    mediumTerm: 'Medium Term',
+    longTerm: 'Long Term',
+    regenerate: 'Regenerate',
+    confidential: 'Confidential Executive Report',
+    reportReady: 'Report generated — edit and export',
+    reportLoaded: 'Report loaded',
+    generating: 'Processing...',
+    generateBtn: 'Generate Executive Report',
+    thinkingStep: 'Deep analysis in progress...',
+    writingStep: 'Writing report...',
+    progressTitle: 'Writing title...',
+    progressSummary: 'Writing executive summary...',
+    progressKeys: 'Structuring key messages...',
+    progressContext: 'Building context...',
+    progressFindings: 'Identifying key findings...',
+    progressAnalysis: 'Building analysis blocks...',
+    progressRisks: 'Evaluating risks...',
+    progressOpps: 'Identifying opportunities...',
+    progressRecs: 'Writing recommendations...',
+    progressConclusion: 'Writing executive conclusion...',
+    progressKpis: 'Calculating KPIs...',
+    imagesDetected: 'images detected',
+    restored: 'Restored',
+  },
+  pt: {
+    analysisLabel: 'Análise Estratégica',
+    execSummary: 'Resumo Executivo',
+    keyMessages: 'Mensagens-Chave',
+    context: 'Contexto e Objetivo',
+    findings: 'Descobertas Principais',
+    analysis: 'Análise',
+    risks: 'Riscos',
+    opportunities: 'Oportunidades',
+    recommendations: 'Recomendações',
+    infoGaps: 'Lacunas de Informação',
+    conclusion: 'Conclusão Executiva',
+    evidence: 'Evidência',
+    implication: 'Implicação',
+    impact: 'Impacto',
+    soWhat: 'So what?',
+    shortTerm: 'Curto Prazo',
+    mediumTerm: 'Médio Prazo',
+    longTerm: 'Longo Prazo',
+    regenerate: 'Regenerar',
+    confidential: 'Relatório Executivo Confidencial',
+    reportReady: 'Relatório gerado — edite e exporte',
+    reportLoaded: 'Relatório carregado',
+    generating: 'Processando...',
+    generateBtn: 'Gerar Relatório Executivo',
+    thinkingStep: 'Análise aprofundada em andamento...',
+    writingStep: 'Redigindo relatório...',
+    progressTitle: 'Redigindo título...',
+    progressSummary: 'Redigindo resumo executivo...',
+    progressKeys: 'Estruturando mensagens-chave...',
+    progressContext: 'Construindo contexto...',
+    progressFindings: 'Identificando descobertas...',
+    progressAnalysis: 'Construindo blocos de análise...',
+    progressRisks: 'Avaliando riscos...',
+    progressOpps: 'Identificando oportunidades...',
+    progressRecs: 'Redigindo recomendações...',
+    progressConclusion: 'Redigindo conclusão executiva...',
+    progressKpis: 'Calculando KPIs...',
+    imagesDetected: 'imagens detectadas',
+    restored: 'Restaurado',
+  },
+};
+
+// Current language — defaults to Spanish, updated when report is generated
+let currentLang = 'es';
+function t(key) { return (i18n[currentLang] || i18n.es)[key] || (i18n.es)[key] || key; }
+
+// ============================================================
 // ALTO CORPORATE COLORS
 // ============================================================
 const ALTO = {
@@ -48,7 +181,58 @@ const dz=document.getElementById('dropZone');
 ['dragleave','drop'].forEach(e=>{dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove('drag-over');});});
 dz.addEventListener('drop',ev=>{const f=ev.dataTransfer.files[0];if(f)processFile(f);});
 function handleFile(ev){const f=ev.target.files[0];if(f)processFile(f);}
-async function processFile(file){const ext=file.name.split('.').pop().toLowerCase();showStatus('Leyendo: '+file.name+'...');try{let t='';if(['txt','md','csv'].includes(ext)){t=await file.text();}else if(ext==='pdf'){const ab=await file.arrayBuffer();if(typeof pdfjsLib==='undefined')throw new Error('Librería PDF no cargada, recarga la página');const pdf=await pdfjsLib.getDocument({data:ab}).promise;const pp=[];for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const c=await pg.getTextContent();pp.push(c.items.map(x=>x.str).join(' '));}t=pp.join('\n\n');}else if(['docx','doc'].includes(ext)){const ab=await file.arrayBuffer();if(typeof mammoth==='undefined')throw new Error('Librería DOCX no cargada, recarga la página');const r=await mammoth.extractRawText({arrayBuffer:ab});t=r.value;}else{throw new Error('Formato no soportado');}document.getElementById('inputText').value=t;document.getElementById('fileInfo').classList.remove('hidden');document.getElementById('fileName').textContent=file.name+' ('+(t.length/1000).toFixed(1)+'K chars)';showStatus('Archivo cargado');}catch(e){showError('Error: '+e.message);}}
+async function processFile(file){const ext=file.name.split('.').pop().toLowerCase();showStatus('Leyendo: '+file.name+'...');try{let t='';window._pendingImages=null;
+  if(['txt','md','csv'].includes(ext)){
+    t=await file.text();
+  }else if(['png','jpg','jpeg','gif','webp'].includes(ext)){
+    // Direct image upload — send as vision input
+    const ab=await file.arrayBuffer();
+    const base64=btoa(String.fromCharCode(...new Uint8Array(ab)));
+    const mimeType=ext==='jpg'?'image/jpeg':ext==='png'?'image/png':ext==='gif'?'image/gif':'image/webp';
+    window._pendingImages=[{media_type:mimeType,data:base64}];
+    t='[Imagen subida: '+file.name+' — analizar visualmente]';
+  }else if(ext==='pdf'){
+    const ab=await file.arrayBuffer();
+    if(typeof pdfjsLib==='undefined')throw new Error('Librería PDF no cargada, recarga la página');
+    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    const pp=[];const images=[];
+    const maxImagePages=Math.min(pdf.numPages,5);
+    for(let i=1;i<=pdf.numPages;i++){
+      const pg=await pdf.getPage(i);
+      const c=await pg.getTextContent();
+      pp.push(c.items.map(x=>x.str).join(' '));
+      // Render first N pages as images for vision analysis
+      if(i<=maxImagePages){
+        try{
+          const scale=1.5;
+          const vp=pg.getViewport({scale});
+          const canvas=document.createElement('canvas');
+          canvas.width=Math.min(vp.width,1024);
+          canvas.height=Math.min(vp.height,1400);
+          const ctx=canvas.getContext('2d');
+          const renderScale=canvas.width/vp.width;
+          await pg.render({canvasContext:ctx,viewport:pg.getViewport({scale:scale*renderScale})}).promise;
+          const dataUrl=canvas.toDataURL('image/jpeg',0.7);
+          const base64=dataUrl.split(',')[1];
+          images.push({media_type:'image/jpeg',data:base64});
+        }catch(imgErr){console.warn('Page image extraction failed:',imgErr);}
+      }
+    }
+    t=pp.join('\n\n');
+    if(images.length>0) window._pendingImages=images;
+  }else if(['docx','doc'].includes(ext)){
+    const ab=await file.arrayBuffer();
+    if(typeof mammoth==='undefined')throw new Error('Librería DOCX no cargada, recarga la página');
+    const r=await mammoth.extractRawText({arrayBuffer:ab});
+    t=r.value;
+  }else{throw new Error('Formato no soportado');}
+  document.getElementById('inputText').value=t;
+  document.getElementById('fileInfo').classList.remove('hidden');
+  const imgCount=window._pendingImages?window._pendingImages.length:0;
+  const imgLabel=imgCount>0?' + '+imgCount+' '+t('imagesDetected'):'';
+  document.getElementById('fileName').textContent=file.name+' ('+(t.length/1000).toFixed(1)+'K chars'+imgLabel+')';
+  showStatus('Archivo cargado'+(imgCount?' — '+imgCount+' '+t('imagesDetected'):''));
+}catch(e){showError('Error: '+e.message);}}
 function clearFile(){document.getElementById('inputText').value='';document.getElementById('fileInfo').classList.add('hidden');document.getElementById('fileInput').value='';updateCharCount({value:''});}
 function updateCharCount(el){const n=el.value.length;const c=document.getElementById('charCount');if(!c)return;if(n===0){c.textContent='';return;}const k=(n/1000).toFixed(1);if(n>60000){c.textContent=k+'K caracteres — ⚠ muy largo, puede afectar calidad';c.style.color='#BB0014';c.style.fontWeight='600';}else{c.textContent=k+'K caracteres';c.style.color=n>30000?'#44474C':'#94a3b8';c.style.fontWeight='400';}}
 
@@ -154,9 +338,10 @@ function loadFromHistory(id){
     result = JSON.parse(entry.data);
     originalResult = JSON.parse(entry.data);
     currentHistoryId = id;
+    if(result.language && i18n[result.language]) currentLang=result.language; else currentLang='es';
     renderPreview(result);
     showExportBtns();
-    showStatus('Informe cargado — '+entry.title);
+    showStatus(t('reportLoaded')+' — '+entry.title);
     window.scrollTo({top:0,behavior:'smooth'});
   }catch(e){showError('Error al cargar historial');}
 }
@@ -229,7 +414,7 @@ async function handleMagicLink(){
 // ============================================================
 // WORKER FETCH — soporta streaming SSE y JSON legado
 // ============================================================
-async function fetchFromWorker(url, body, onChunk){
+async function fetchFromWorker(url, body, onChunk, onPhase){
   const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
   if(!res.ok){
     const errText = await res.text();
@@ -253,7 +438,11 @@ async function fetchFromWorker(url, body, onChunk){
         if(!line.startsWith('data: ')) continue;
         const data = line.slice(6).trim();
         if(data==='[DONE]') break;
-        try{const p=JSON.parse(data);if(p.text){fullText+=p.text;if(onChunk)onChunk(fullText,p.text);}}catch{}
+        try{
+          const p=JSON.parse(data);
+          if(p.phase && onPhase) onPhase(p.phase);
+          if(p.text){fullText+=p.text;if(onChunk)onChunk(fullText,p.text);}
+        }catch{}
       }
     }
   } else {
@@ -290,8 +479,18 @@ async function analyze(){
       '"kpis"':'Calculando KPIs...',
     };
     let chunks=0;
-    const txt=await fetchFromWorker(wUrl,{userContent:input,reportType:currentReportType},(full,chunk)=>{
+    let thinkingPhase=true;
+    const requestBody={userContent:input,reportType:currentReportType};
+    // Attach images if available (vision support)
+    if(window._pendingImages && window._pendingImages.length>0){
+      requestBody.images=window._pendingImages;
+    }
+    const txt=await fetchFromWorker(wUrl,requestBody,(full,chunk)=>{
       chunks++;
+      if(thinkingPhase){
+        thinkingPhase=false;
+        clearInterval(progressTimer);
+      }
       clearInterval(progressTimer);
       const pct=Math.min(93,10+chunks*4);
       document.getElementById('progressFill').style.width=pct+'%';
@@ -299,14 +498,28 @@ async function analyze(){
       const keys=Object.keys(SECTION_PROGRESS);let lastKey=null;let lastPos=-1;
       for(const k of keys){const p=full.lastIndexOf(k);if(p>lastPos){lastPos=p;lastKey=k;}}
       if(lastKey) document.getElementById('progressStep').textContent=SECTION_PROGRESS[lastKey];
+    },(phase)=>{
+      if(phase==='thinking'){
+        document.getElementById('progressStep').textContent=t('thinkingStep');
+        document.getElementById('progressFill').style.width='5%';
+        document.getElementById('progressPct').textContent='5%';
+      } else if(phase==='writing'){
+        document.getElementById('progressStep').textContent=t('writingStep');
+        document.getElementById('progressFill').style.width='12%';
+        document.getElementById('progressPct').textContent='12%';
+      }
     });
     const clean=txt.replace(/```json|```/g,'').trim();
     try{result=JSON.parse(clean);}catch(e){throw new Error('IA no devolvió JSON válido');}
+    // Set language from report
+    if(result.language && i18n[result.language]) currentLang=result.language;
+    else currentLang='es';
     originalResult=JSON.parse(JSON.stringify(result));
     const missing=validateReport(result);
     if(missing.length) showValidationWarning(missing);
+    window._pendingImages=null;
     stopProgress(true);renderPreview(result);showExportBtns();
-    showStatus('Informe generado — edita y exporta');setDot('ok');saveToHistory(result);
+    showStatus(t('reportReady'));setDot('ok');saveToHistory(result);
   }catch(err){
     stopProgress(false);showError(err.message);setDot('no');
   }finally{setLoading(false);}
@@ -333,14 +546,14 @@ function renderPreview(r){
     <div class="flex items-center gap-3">
       <span class="font-['Manrope'] font-black text-white text-xs tracking-widest uppercase">ALTO</span>
       <div class="w-px h-4 bg-white/20"></div>
-      <span class="font-['Inter'] text-[10px] text-slate-400 tracking-wide uppercase">Informe Ejecutivo Confidencial</span>
+      <span class="font-['Inter'] text-[10px] text-slate-400 tracking-wide uppercase">${t('confidential')}</span>
     </div>
     <span class="font-['Inter'] italic text-[10px] text-slate-500">${new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'})}</span>
   </div>`;
 
   // ── Title block ────────────────────────────────────────────
   h+=`<div class="px-10 pt-10 pb-8 border-b border-[#E0E3E5]">
-    <span class="font-['Inter'] text-[#BB0014] font-bold tracking-[0.25em] uppercase text-[10px] mb-3 block">Análisis Estratégico</span>
+    <span class="font-['Inter'] text-[#BB0014] font-bold tracking-[0.25em] uppercase text-[10px] mb-3 block">${t('analysisLabel')}</span>
     <h1 class="font-['Manrope'] text-3xl font-extrabold text-[#041627] leading-tight tracking-tight editable" contenteditable="true" data-path="title" onblur="updateField(this)">${esc(r.title)}</h1>`;
   if(r.subtitle)h+=`<p class="font-['Inter'] text-sm text-slate-500 italic mt-2 editable" contenteditable="true" data-path="subtitle" onblur="updateField(this)">${esc(r.subtitle)}</p>`;
   h+=`<div class="w-16 h-0.5 bg-[#BB0014] mt-5"></div></div>`;
@@ -350,7 +563,7 @@ function renderPreview(r){
     <div class="flex gap-0">
       <div class="accent-bar self-stretch"></div>
       <div class="bg-[#F2F4F6] flex-1 p-6">
-        <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold block mb-3">Resumen Ejecutivo</span>
+        <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold block mb-3">${t('execSummary')}</span>
         <p class="font-['Inter'] italic text-base leading-relaxed text-[#041627] editable" contenteditable="true" data-path="executive_summary" onblur="updateField(this)">${esc(r.executive_summary)}</p>
       </div>
     </div>
@@ -359,7 +572,7 @@ function renderPreview(r){
   // ── Key Messages ───────────────────────────────────────────
   if(r.key_messages?.length){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-5">Mensajes Clave</h2>
+      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-5">${t('keyMessages')}</h2>
       <div class="space-y-3">`;
     r.key_messages.forEach((m,i)=>{
       h+=`<div class="flex gap-3 items-start">
@@ -373,7 +586,7 @@ function renderPreview(r){
   // ── Context ────────────────────────────────────────────────
   if(r.context){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-4">Contexto y Objetivo</h2>
+      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-4">${t('context')}</h2>
       <p class="font-['Inter'] text-sm text-[#44474C] leading-relaxed editable" contenteditable="true" data-path="context" onblur="updateField(this)">${esc(r.context)}</p>
     </div>`;
   }
@@ -383,10 +596,10 @@ function renderPreview(r){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5] section-collapsible">
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3 cursor-pointer select-none flex-1" onclick="this.closest('.section-collapsible').classList.toggle('collapsed')">
-          <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">Hallazgos Clave</h2>
+          <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('findings')}</h2>
           <span class="collapse-icon material-symbols-outlined text-sm text-slate-400">expand_more</span>
         </div>
-        <button class="regen-btn" onclick="event.stopPropagation();regenSection('findings',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>Regenerar</button>
+        <button class="regen-btn" onclick="event.stopPropagation();regenSection('findings',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
       </div>
       <div class="section-body" style="max-height:2000px">
       <div class="space-y-5">`;
@@ -397,8 +610,8 @@ function renderPreview(r){
         </div>
         <div class="col-span-11 bg-[#F8F9FB] p-5 border-b-2 border-[#BB0014]">
           <p class="font-['Manrope'] font-bold text-sm text-[#041627] mb-2 editable" contenteditable="true" data-path="findings[${i}].finding" onblur="updateField(this)">${esc(f.finding)}</p>
-          <p class="font-['Inter'] text-xs text-slate-500 mb-1.5"><strong>Evidencia:</strong> <span class="editable" contenteditable="true" data-path="findings[${i}].evidence" onblur="updateField(this)">${esc(f.evidence)}</span></p>
-          <p class="font-['Inter'] text-xs text-[#BB0014] font-medium"><strong>Implicancia:</strong> <span class="editable" contenteditable="true" data-path="findings[${i}].business_implication" onblur="updateField(this)">${esc(f.business_implication)}</span></p>
+          <p class="font-['Inter'] text-xs text-slate-500 mb-1.5"><strong>${t('evidence')}:</strong> <span class="editable" contenteditable="true" data-path="findings[${i}].evidence" onblur="updateField(this)">${esc(f.evidence)}</span></p>
+          <p class="font-['Inter'] text-xs text-[#BB0014] font-medium"><strong>${t('implication')}:</strong> <span class="editable" contenteditable="true" data-path="findings[${i}].business_implication" onblur="updateField(this)">${esc(f.business_implication)}</span></p>
         </div>
       </div>`;
     });
@@ -413,11 +626,11 @@ function renderPreview(r){
           <div class="flex items-start gap-0 flex-1">
             <div class="accent-bar self-stretch mr-5"></div>
             <div>
-              <span class="font-['Inter'] text-[#BB0014] text-[10px] uppercase tracking-widest font-bold">${i+1}. Análisis</span>
+              <span class="font-['Inter'] text-[#BB0014] text-[10px] uppercase tracking-widest font-bold">${i+1}. ${t('analysis')}</span>
               <h2 class="font-['Manrope'] text-lg font-bold text-[#041627] mt-1 editable" contenteditable="true" data-path="analysis_blocks[${i}].heading" onblur="updateField(this)">${esc(s.heading)}</h2>
             </div>
           </div>
-          <button class="regen-btn" onclick="regenSection('analysis_blocks',${i},this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>Regenerar</button>
+          <button class="regen-btn" onclick="regenSection('analysis_blocks',${i},this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
         </div>`;
       if(s.governing_thought){
         h+=`<div class="bg-[#041627] text-white p-5 mb-5">
@@ -448,7 +661,7 @@ function renderPreview(r){
   // ── Risks ──────────────────────────────────────────────────
   if(r.risks?.length){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold mb-5">Riesgos</h2>
+      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold mb-5">${t('risks')}</h2>
       <div class="space-y-3">`;
     r.risks.forEach((rk,i)=>{
       h+=`<div class="flex gap-0">
@@ -465,7 +678,7 @@ function renderPreview(r){
   // ── Opportunities ──────────────────────────────────────────
   if(r.opportunities?.length){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-5">Oportunidades</h2>
+      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-5">${t('opportunities')}</h2>
       <div class="space-y-2">`;
     r.opportunities.forEach((o,i)=>{
       h+=`<div class="flex gap-3 items-start"><span class="font-['Inter'] text-[#4279B0] font-black text-xs select-none mt-0.5">✦</span><span class="font-['Inter'] text-sm text-[#191C1E] editable" contenteditable="true" data-path="opportunities[${i}]" onblur="updateField(this)">${esc(o)}</span></div>`;
@@ -477,10 +690,10 @@ function renderPreview(r){
   if(r.recommendations){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">Recomendaciones</h2>
-        <button class="regen-btn" onclick="regenSection('recommendations',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>Regenerar</button>
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('recommendations')}</h2>
+        <button class="regen-btn" onclick="regenSection('recommendations',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
       </div>`;
-    [{key:'short_term',label:'Corto Plazo',color:'#BB0014'},{key:'medium_term',label:'Mediano Plazo',color:'#041627'},{key:'long_term',label:'Largo Plazo',color:'#1A2B3C'}].forEach(hz=>{
+    [{key:'short_term',label:t('shortTerm'),color:'#BB0014'},{key:'medium_term',label:t('mediumTerm'),color:'#041627'},{key:'long_term',label:t('longTerm'),color:'#1A2B3C'}].forEach(hz=>{
       const items=r.recommendations[hz.key];
       if(!items?.length)return;
       h+=`<div class="mb-6">
@@ -491,7 +704,7 @@ function renderPreview(r){
           <div class="bg-[#F8F9FB] flex-1 px-5 py-3">
             <p class="font-['Manrope'] font-bold text-sm text-[#041627] editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].action" onblur="updateField(this)">${esc(rec.action)}</p>
             <p class="font-['Inter'] text-xs text-slate-500 italic mt-1 editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].rationale" onblur="updateField(this)">${esc(rec.rationale)}</p>
-            <p class="font-['Inter'] text-xs font-medium mt-1" style="color:${hz.color}">Impacto: <span class="editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].impact" onblur="updateField(this)">${esc(rec.impact)}</span></p>
+            <p class="font-['Inter'] text-xs font-medium mt-1" style="color:${hz.color}">${t('impact')}: <span class="editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].impact" onblur="updateField(this)">${esc(rec.impact)}</span></p>
           </div>
         </div>`;
       });
@@ -506,7 +719,7 @@ function renderPreview(r){
       <div class="flex gap-0">
         <div style="width:4px;background:#4279B0;flex-shrink:0"></div>
         <div class="flex-1 pl-6">
-          <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#4279B0] font-bold block mb-4">Brechas de Información</span>
+          <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#4279B0] font-bold block mb-4">${t('infoGaps')}</span>
           <div class="space-y-2.5">`;
     r.information_gaps.forEach((g,i)=>{
       h+=`<div class="flex gap-3 items-start"><span class="material-symbols-outlined text-[14px] text-[#4279B0] select-none mt-0.5" style="font-variation-settings:'FILL' 0">info</span><span class="font-['Inter'] text-sm text-[#44474C] editable" contenteditable="true" data-path="information_gaps[${i}]" onblur="updateField(this)">${esc(g)}</span></div>`;
@@ -520,7 +733,7 @@ function renderPreview(r){
       <div class="flex gap-0">
         <div style="width:4px;background:#041627;flex-shrink:0"></div>
         <div class="bg-[#F2F4F6] flex-1 p-6">
-          <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#041627] font-bold block mb-3">Conclusión Ejecutiva</span>
+          <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#041627] font-bold block mb-3">${t('conclusion')}</span>
           <p class="font-['Manrope'] italic text-base leading-relaxed text-[#041627] font-semibold editable" contenteditable="true" data-path="conclusion" onblur="updateField(this)">${esc(r.conclusion)}</p>
         </div>
       </div>

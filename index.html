@@ -158,9 +158,16 @@ tailwind.config={theme:{extend:{colors:{
     <div class="w-px h-5 bg-white/20"></div>
     <span class="font-['Inter'] text-xs text-slate-400 tracking-wide">Strategic Report Agent</span>
   </div>
-  <div class="flex items-center gap-3">
-    <div class="w-2 h-2" id="statusDot" style="background:#64748b"></div>
-    <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400" id="statusDotLabel">Sin conexión</span>
+  <div class="flex items-center gap-4">
+    <button onclick="openDashboard()" class="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors" title="Analytics Dashboard">
+      <span class="material-symbols-outlined" style="font-size:18px">bar_chart</span>
+      <span class="font-['Inter'] text-[9px] uppercase tracking-widest hidden sm:inline">Stats</span>
+    </button>
+    <div class="w-px h-4 bg-white/20"></div>
+    <div class="flex items-center gap-2">
+      <div class="w-2 h-2" id="statusDot" style="background:#64748b"></div>
+      <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400" id="statusDotLabel">Sin conexión</span>
+    </div>
   </div>
 </header>
 
@@ -218,7 +225,7 @@ tailwind.config={theme:{extend:{colors:{
               </button>
             </div>
           </div>
-          <input type="file" id="fileInput" accept=".txt,.md,.csv,.pdf,.docx,.doc" class="hidden" onchange="handleFile(event)"/>
+          <input type="file" id="fileInput" accept=".txt,.md,.csv,.pdf,.docx,.doc,.png,.jpg,.jpeg,.gif,.webp" class="hidden" onchange="handleFile(event)"/>
           <div id="dropZone" class="drop-zone relative">
             <textarea id="inputText" class="w-full bg-[#F8F9FB] border-0 border-b border-outline-variant p-4 text-[#191C1E] placeholder:text-slate-400 transition-all resize-none text-sm leading-relaxed focus:border-[#041627]" placeholder="Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí..." rows="8" oninput="updateCharCount(this)"></textarea>
           </div>
@@ -373,5 +380,6 @@ tailwind.config={theme:{extend:{colors:{
 <script src="app.js"></script>
 <script src="pptx-gen.js"></script>
 <script src="exports.js"></script>
+<script src="dashboard.js"></script>
 </body>
 </html>

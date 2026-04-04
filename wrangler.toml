@@ -23,3 +23,5 @@ APP_URL = "https://hcuevasg.github.io/strategic-report-agent"
 TWILIO_WHATSAPP_NUMBER = "+14155238886"
 RATE_LIMIT_PER_HOUR = "30"
 WA_RATE_LIMIT_PER_HOUR = "20"
+# STATS_TOKEN — set via: npx wrangler secret put STATS_TOKEN
+# If not set, defaults to first 20 chars of ANTHROPIC_API_KEY

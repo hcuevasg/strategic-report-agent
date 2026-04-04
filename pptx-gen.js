@@ -10,6 +10,14 @@
 // - Calibri typography throughout
 // ============================================================
 
+// ── i18n labels for PPTX (reads from global currentLang/i18n) ──
+const pptxI18n = {
+  es: { confidential:'CONFIDENCIAL', source:'Fuente', keyConclusion:'CONCLUSIÓN CLAVE' },
+  en: { confidential:'CONFIDENTIAL', source:'Source', keyConclusion:'KEY CONCLUSION' },
+  pt: { confidential:'CONFIDENCIAL', source:'Fonte', keyConclusion:'CONCLUSÃO-CHAVE' },
+};
+function tp(k){ return (pptxI18n[typeof currentLang!=='undefined'?currentLang:'es']||pptxI18n.es)[k]||pptxI18n.es[k]||k; }
+
 // ── PPTX Progress helpers ──────────────────────────────────
 const PPTX_STEPS = [
   {pct:8,  msg:'Analizando estructura del informe...'},
@@ -97,7 +105,9 @@ async function downloadPptx(){if(!result)return;
   startPptxProgress('Diseñando estructura de slides...');
   hideError();
   try{
-    const res=await fetch(wUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    // Stream PPTX generation with real-time slide detection
+    let slidesDetected=0;
+    const txt=await fetchFromWorker(wUrl,{
           userContent:'__PPTX_MODE__',
           reportJSON:JSON.stringify(result),
           pptxInstructions:`VISUAL LAYOUTS DISPONIBLES — elige el más adecuado para cada slide:
@@ -128,12 +138,22 @@ REGLAS OBLIGATORIAS:
 - Si hay proceso o metodología → process.
 - Sin emojis ni símbolos decorativos en ningún campo de texto.
 - Mínimo 10 slides, máximo 16 (sin contar cover y closing).`
-        })});
-    const raw=await res.text();
-    if(raw.trim().startsWith('<'))throw new Error('Worker devolvió HTML. Status: '+res.status);
-    let data;try{data=JSON.parse(raw);}catch(e){throw new Error('Respuesta no es JSON');}
-    if(data.error)throw new Error(data.error.message||data.error);
-    const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+        },(fullText,chunk)=>{
+          // Detect slides as they stream in by counting "action_title" occurrences
+          const matches=fullText.match(/"action_title"/g);
+          const count=matches?matches.length:0;
+          if(count>slidesDetected){
+            slidesDetected=count;
+            // Extract the latest action_title
+            const titleMatch=fullText.match(/"action_title"\s*:\s*"([^"]{1,80})"/g);
+            const lastTitle=titleMatch?titleMatch[titleMatch.length-1].replace(/"action_title"\s*:\s*"/,'').replace(/"$/,''):'';
+            const pct=Math.min(92,20+Math.round(slidesDetected*5));
+            updatePptxProgress(pct, `Slide ${slidesDetected}: ${lastTitle.substring(0,50)}...`);
+          }
+        },(phase)=>{
+          if(phase==='thinking') updatePptxProgress(5, 'Pensando estructura narrativa...');
+          else if(phase==='writing') updatePptxProgress(15, 'Diseñando slides...');
+        });
     const clean=txt.replace(/```json|```/g,'').trim();
     let slideData;try{slideData=JSON.parse(clean);}catch(e){throw new Error('IA no devolvió JSON de slides válido');}
 
@@ -144,7 +164,7 @@ REGLAS OBLIGATORIAS:
 
     // --- SLIDE MASTER ---
     pptx.defineSlideMaster({title:'ALTO_MASTER',background:{color:A.WHITE},objects:[
-      {text:{text:'CONFIDENCIAL · ALTO',options:{x:M,y:7.25,w:5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false}}},
+      {text:{text:tp('confidential')+' · ALTO',options:{x:M,y:7.25,w:5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false}}},
     ],slideNumber:{x:12.0,y:7.25,w:1.0,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,align:'right'}});
 
     // --- HELPER FUNCTIONS ---
@@ -204,7 +224,7 @@ REGLAS OBLIGATORIAS:
     function addNote(sl,text){if(text)sl.addNotes(text);}
 
     function soWhatBox(sl,text,y){ /* no-op */ }
-    function srcNote(sl,t){if(t)sl.addText('Fuente: '+t,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true});}
+    function srcNote(sl,t){if(t)sl.addText(tp('source')+': '+t,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true});}
 
     const slides=slideData.slides||[];
 
@@ -238,7 +258,7 @@ REGLAS OBLIGATORIAS:
         sl.addText('Fecha',{x:3.28,y:5.55,w:1.5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
         sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:3.28,y:5.75,w:3,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
         // CONFIDENCIAL small
-        sl.addText('CONFIDENCIAL',{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,letterSpacing:3});
+        sl.addText(tp('confidential'),{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,letterSpacing:3});
         // Right side — asymmetric navy shape (simulated with tall rect from 60% to right edge)
         const rX=leftW+0.1;
         const rW=W-rX;
@@ -264,7 +284,7 @@ REGLAS OBLIGATORIAS:
         sl.addText('Preparado por',{x:0.72,y:5.45,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
         sl.addText('ALTO Strategy',{x:0.72,y:5.65,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
         sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:0.72,y:6.0,w:3,h:0.3,fontSize:10,fontFace:'Calibri',color:A.SGRAY});
-        sl.addText('CONFIDENCIAL',{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,charSpacing:3});
+        sl.addText(tp('confidential'),{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,charSpacing:3});
         // Right side — navy block
         sl.addShape('rect',{x:cRX,y:0,w:cRW,h:7.5,fill:{color:A.NAVY}});
         sl.addShape('rect',{x:cRX,y:0,w:0.08,h:7.5,fill:{color:A.RED}});
@@ -650,7 +670,7 @@ REGLAS OBLIGATORIAS:
           // No distinct highlight — use the space for a key takeaway card
           sl.addShape('rect',{x:rightColX,y:contentTop,w:rightColW,h:contentH,fill:{color:A.LGRAY}});
           sl.addShape('rect',{x:rightColX,y:contentTop,w:0.05,h:contentH,fill:{color:A.NAVY}});
-          sl.addText('CONCLUSIÓN CLAVE',{x:rightColX+0.2,y:contentTop+0.3,w:rightColW-0.4,h:0.3,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,letterSpacing:2});
+          sl.addText(tp('keyConclusion'),{x:rightColX+0.2,y:contentTop+0.3,w:rightColW-0.4,h:0.3,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,letterSpacing:2});
           sl.addShape('rect',{x:rightColX+0.2,y:contentTop+0.65,w:rightColW*0.4,h:0.03,fill:{color:A.RED}});
           if(s.so_what){
             sl.addText(s.so_what,{x:rightColX+0.2,y:contentTop+0.85,w:rightColW-0.4,h:contentH-1.3,

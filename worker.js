@@ -1,6 +1,10 @@
 // ============================================================
-// Cloudflare Worker — ALTO Strategic Report Agent v8.3
+// Cloudflare Worker — ALTO Strategic Report Agent v9.0
 // ============================================================
+// v9.0: Extended thinking, vision, PPTX streaming, multi-lang
+//       + image support in analysis mode
+//       + streaming SSE for PPTX generation
+//       + phase signals (thinking/writing) for frontend UX
 // v8.3: Security hardening —
 //       Twilio signature validation, CORS fix, rate limit on
 //       /whatsapp, body size limit, error logging, UUID validation
@@ -30,8 +34,8 @@
 //   WA_KV                  — new KV for WhatsApp state + report cache
 // ============================================================
 
-// ── Max request body size: 500KB ─────────────────────────────
-const MAX_BODY_SIZE = 512_000;
+// ── Max request body size: 10MB (supports image attachments) ──
+const MAX_BODY_SIZE = 10_485_760;
 
 // ── UUID v4 format validation ────────────────────────────────
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -66,6 +70,7 @@ ESTÁNDAR DE FORMA:
 
 Responde SOLO con JSON válido (sin markdown, sin backticks):
 {
+  "language": "código ISO 639-1 del idioma del contenido (es, en, pt, fr, de, etc.)",
   "title": "Título ejecutivo (assertion, no descriptivo)",
   "subtitle": "Objeto del informe",
   "executive_summary": "Resumen conclusivo, no descriptivo. 2-4 oraciones con la conclusión principal primero.",
@@ -886,19 +891,21 @@ export default {
         const data = await resp.json();
         return jsonResponse(resp.status, data, env, requestOrigin);
 
-      // ── PPTX MODE ──────────────────────────────────────
+      // ── PPTX MODE — streaming SSE with extended thinking ──
       } else if (body.userContent === '__PPTX_MODE__' && body.reportJSON) {
         ctx.waitUntil(trackEvent(env, 'pptx'));
-        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        const pptxResponse = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'x-api-key': env.ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01',
+            'anthropic-version': '2025-04-15',
           },
           body: JSON.stringify({
             model,
-            max_tokens: 8000,
+            max_tokens: 16000,
+            thinking: { type: 'enabled', budget_tokens: 5000 },
+            stream: true,
             system: PPTX_SYSTEM_PROMPT,
             messages: [{
               role: 'user',
@@ -908,27 +915,105 @@ export default {
             }],
           }),
         });
-        const data = await resp.json();
-        return jsonResponse(resp.status, data, env, requestOrigin);
 
-      // ── ANÁLISIS MODE — streaming SSE ───────────────────
+        if (!pptxResponse.ok) {
+          const err = await pptxResponse.json();
+          return jsonResponse(pptxResponse.status, { error: err.error?.message || 'API error' }, env, requestOrigin);
+        }
+
+        const { readable: pptxReadable, writable: pptxWritable } = new TransformStream();
+        const pptxWriter = pptxWritable.getWriter();
+        const pptxEncoder = new TextEncoder();
+
+        (async () => {
+          const reader = pptxResponse.body.getReader();
+          const decoder = new TextDecoder();
+          let buf = '';
+          let isThinking = true;
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buf += decoder.decode(value, { stream: true });
+              const lines = buf.split('\n');
+              buf = lines.pop();
+              for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const raw = line.slice(6).trim();
+                if (raw === '[DONE]') continue;
+                try {
+                  const evt = JSON.parse(raw);
+                  // Signal thinking→writing transition
+                  if (evt.type === 'content_block_start' && evt.content_block?.type === 'text') {
+                    isThinking = false;
+                    await pptxWriter.write(pptxEncoder.encode(`data: ${JSON.stringify({ phase: 'writing' })}\n\n`));
+                  }
+                  if (evt.type === 'content_block_start' && evt.content_block?.type === 'thinking') {
+                    await pptxWriter.write(pptxEncoder.encode(`data: ${JSON.stringify({ phase: 'thinking' })}\n\n`));
+                  }
+                  // Forward only text deltas
+                  if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+                    await pptxWriter.write(pptxEncoder.encode(`data: ${JSON.stringify({ text: evt.delta.text })}\n\n`));
+                  }
+                } catch {}
+              }
+            }
+          } finally {
+            await pptxWriter.write(pptxEncoder.encode('data: [DONE]\n\n'));
+            await pptxWriter.close();
+          }
+        })();
+
+        return new Response(pptxReadable, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            ...corsHeaders(env, requestOrigin),
+          },
+        });
+
+      // ── ANÁLISIS MODE — streaming SSE with extended thinking ──
       } else {
         ctx.waitUntil(trackEvent(env, 'analysis'));
+
+        // Build messages — support vision (images array)
+        const userBlocks = [];
+        if (body.images && Array.isArray(body.images) && body.images.length > 0) {
+          body.images.forEach(img => {
+            userBlocks.push({
+              type: 'image',
+              source: { type: 'base64', media_type: img.media_type, data: img.data },
+            });
+          });
+          userBlocks.push({
+            type: 'text',
+            text: 'Transforma el siguiente documento fuente (incluye imágenes del documento) en el informe ejecutivo solicitado. Analiza las imágenes para extraer datos, gráficos y tablas relevantes. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
+          });
+        } else {
+          userBlocks.push({
+            type: 'text',
+            text: 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
+          });
+        }
+
         const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'x-api-key': env.ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01',
+            'anthropic-version': '2025-04-15',
           },
           body: JSON.stringify({
             model,
-            max_tokens: 8000,
+            max_tokens: 16000,
+            thinking: { type: 'enabled', budget_tokens: 10000 },
             stream: true,
             system: SYSTEM_PROMPT,
             messages: [{
               role: 'user',
-              content: 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
+              content: userBlocks,
             }],
           }),
         });
@@ -959,6 +1044,14 @@ export default {
                 if (raw === '[DONE]') continue;
                 try {
                   const evt = JSON.parse(raw);
+                  // Signal thinking→writing transition to frontend
+                  if (evt.type === 'content_block_start' && evt.content_block?.type === 'text') {
+                    await writer.write(encoder.encode(`data: ${JSON.stringify({ phase: 'writing' })}\n\n`));
+                  }
+                  if (evt.type === 'content_block_start' && evt.content_block?.type === 'thinking') {
+                    await writer.write(encoder.encode(`data: ${JSON.stringify({ phase: 'thinking' })}\n\n`));
+                  }
+                  // Forward only text deltas (not thinking deltas)
                   if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
                     await writer.write(encoder.encode(`data: ${JSON.stringify({ text: evt.delta.text })}\n\n`));
                   }
