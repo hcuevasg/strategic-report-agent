@@ -1016,7 +1016,7 @@ export default {
           body: JSON.stringify({
             model,
             max_tokens: 16000,
-            thinking: { type: 'enabled', budget_tokens: 10000 },
+            thinking: { type: 'enabled', budget_tokens: 4000 },
             stream: true,
             system: SYSTEM_PROMPT,
             messages: [{
