@@ -513,11 +513,14 @@ REGLAS OBLIGATORIAS:
           sl.addShape('rect',{x:bx,y:boxY,w:boxW,h:0.1,fill:{color:sc}});
           // Step title
           sl.addText(step.title||'',{x:bx+0.1,y:boxY+0.18,w:boxW-0.2,h:0.7,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle',lineSpacingMultiple:1.15,shrinkText:true});
-          // Items
-          let iy=boxY+1.0;
-          (step.items||[]).slice(0,5).forEach(item=>{
-            sl.addText([{text:'▸ ',options:{fontSize:9,color:sc,bold:true}},{text:item,options:{fontSize:9,color:A.BODY}}],{x:bx+0.12,y:iy,w:boxW-0.24,h:0.38,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.2});
-            iy+=0.4;
+          // Items — distribute evenly in available box space
+          const items=(step.items||[]).slice(0,5);
+          const itemAreaTop=boxY+1.0;
+          const itemAreaH=boxH-(itemAreaTop-boxY)-0.15;
+          const itemH=Math.max(0.36,itemAreaH/Math.max(items.length,1));
+          items.forEach((item,j)=>{
+            const iy=itemAreaTop+j*itemH;
+            sl.addText([{text:'▸ ',options:{fontSize:9,color:sc,bold:true}},{text:item,options:{fontSize:9,color:A.BODY}}],{x:bx+0.12,y:iy,w:boxW-0.24,h:itemH-0.04,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.2,shrinkText:true});
           });
           // Arrow to next step
           if(i<n-1){
@@ -578,7 +581,7 @@ REGLAS OBLIGATORIAS:
           const itemH=Math.min(0.6, (cardH-0.3)/Math.max(items.length,1));
           let iy=cardTop+0.18;
           items.forEach(item=>{
-            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:itemH,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'top',lineSpacingMultiple:1.3});
+            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:itemH,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'top',lineSpacingMultiple:1.3,shrinkText:true});
             iy+=itemH+0.05;
           });
         });
@@ -647,15 +650,19 @@ REGLAS OBLIGATORIAS:
         sl.addShape('rect',{x:0,y:contentTop,w:M+leftColW+splitGap*0.5,h:7.5-contentTop,fill:{color:'F8F9FB'}});
         // Body text
         let bcy=contentTop;
+        const bulletCount=(s.bullets&&s.bullets.length)||0;
         if(s.body_text){
-          const textH=Math.min(contentH*0.45, Math.max(1.4,s.body_text.length/90*0.35));
-          sl.addText(s.body_text,{x:M,y:bcy,w:leftColW,h:textH,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top'});
+          const bulletSpace=bulletCount*0.48+0.15;
+          const textH=Math.max(1.4,contentH-bulletSpace);
+          sl.addText(s.body_text,{x:M,y:bcy,w:leftColW,h:textH,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top',shrinkText:true});
           bcy+=textH+0.15;
         }
-        if(s.bullets&&s.bullets.length){
+        if(bulletCount){
+          const remainH=Math.max(bulletCount*0.38,7.5-0.6-bcy);
+          const bH=remainH/bulletCount;
           s.bullets.forEach(b=>{
-            sl.addText([{text:'\u25B8 ',options:{fontSize:12,color:accentColor,bold:true}},{text:b,options:{fontSize:12,color:A.BODY}}],{x:M+0.1,y:bcy,w:leftColW-0.2,h:0.4,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.3});
-            bcy+=0.48;
+            sl.addText([{text:'\u25B8 ',options:{fontSize:12,color:accentColor,bold:true}},{text:b,options:{fontSize:12,color:A.BODY}}],{x:M+0.1,y:bcy,w:leftColW-0.2,h:bH-0.04,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.3,shrinkText:true});
+            bcy+=bH;
           });
         }
         // Right column — navy highlight block (only if distinct from so_what)
