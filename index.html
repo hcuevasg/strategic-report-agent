@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO v3.15</title>
+<title>Strategic Report Agent — ALTO v3.16</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -1247,7 +1247,7 @@ async function downloadPptx(){if(!result)return;
       } else if(vis==='split'){
         const leftW=LW*0.88,rightW=SW-0.3;
         // Left side: subtle surface background
-        sl.addShape('rect',{x:0,y:0,w:rX,h:7.5,fill:{color:'F8F9FB'}});
+        sl.addShape('rect',{x:0,y:0,w:SX,h:7.5,fill:{color:'F8F9FB'}});
         // Body text — larger
         if(s.body_text){
           sl.addText(s.body_text,{x:M,y:cy,w:leftW,h:1.8,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top'});
