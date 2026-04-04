@@ -1014,11 +1014,8 @@ async function downloadPptx(){if(!result)return;
         const leftW=7.8;
         // Logo color (top left)
         if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
-        // Badge label
-        sl.addShape('rect',{x:0.55,y:1.45,w:1.8,h:0.28,fill:{color:A.NAVY}});
-        sl.addText('Informe Estratégico',{x:0.55,y:1.45,w:1.8,h:0.28,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle',letterSpacing:2});
         // Main title — large extrabold
-        sl.addText(s.action_title||result.title,{x:0.55,y:1.95,w:leftW-0.8,h:2.8,fontSize:32,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top'});
+        sl.addText(s.action_title||result.title,{x:0.55,y:1.45,w:leftW-0.8,h:3.2,fontSize:32,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top'});
         // Subtitle italic
         if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.85,w:leftW-1.0,h:0.5,fontSize:12,fontFace:'Calibri',color:A.SGRAY,italic:true});
         // Presented by / date row
@@ -1259,8 +1256,8 @@ async function downloadPptx(){if(!result)return;
         const rightColX=M+leftColW+splitGap;
         const contentTop=cy;
         const contentH=7.5-contentTop-0.6;
-        // Left column background
-        sl.addShape('rect',{x:0,y:0.85,w:M+leftColW+splitGap*0.5,h:7.5-0.85,fill:{color:'F8F9FB'}});
+        // Left column background — starts below subheading to avoid covering it
+        sl.addShape('rect',{x:0,y:contentTop,w:M+leftColW+splitGap*0.5,h:7.5-contentTop,fill:{color:'F8F9FB'}});
         // Body text
         let bcy=contentTop;
         if(s.body_text){
