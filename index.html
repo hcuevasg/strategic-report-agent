@@ -1261,15 +1261,26 @@ REGLAS OBLIGATORIAS:
       }
       // =================== CLOSING ===================
       if(s.type==='closing'){
-        const sl=pptx.addSlide();sl.background={color:A.DNAVY};
-        sl.addShape('rect',{x:0,y:0,w:0.12,h:7.5,fill:{color:A.RED}});
-        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:5.0,y:1.4,w:3.3,h:1.3});
-        sl.addShape('rect',{x:5.5,y:2.75,w:2.33,h:0.04,fill:{color:A.RED}});
-        sl.addText(s.action_title||'Gracias',{x:0,y:3.0,w:'100%',h:0.8,fontSize:32,fontFace:'Calibri',color:A.WHITE,align:'center',bold:true});
-        if(s.subheading)sl.addText(s.subheading,{x:1,y:3.85,w:11,h:0.5,fontSize:12,fontFace:'Calibri',color:'8192A7',align:'center',italic:true});
-        sl.addShape('rect',{x:2,y:5.2,w:9.33,h:0.01,fill:{color:A.RED}});
-        sl.addText('CONFIDENCIAL · USO INTERNO',{x:0,y:5.5,w:'100%',h:0.3,fontSize:9,fontFace:'Calibri',color:A.SGRAY,align:'center',bold:true,letterSpacing:3});
-        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'}),{x:0,y:5.85,w:'100%',h:0.3,fontSize:9,fontFace:'Calibri',color:A.SGRAY,align:'center'});
+        // Closing — same split layout as cover
+        const sl=pptx.addSlide();sl.background={color:'F8F9FB'};
+        const cRX=7.8;const cRW=W-cRX;
+        // Left side
+        if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
+        sl.addText(s.action_title||'Gracias',{x:0.55,y:1.6,w:cRX-0.8,h:2.2,fontSize:40,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
+        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.0,w:cRX-1.0,h:0.5,fontSize:12,fontFace:'Calibri',color:A.SGRAY,italic:true});
+        sl.addShape('rect',{x:0.55,y:5.0,w:2.2,h:0.05,fill:{color:A.RED}});
+        sl.addShape('rect',{x:0.55,y:5.15,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
+        sl.addText('Preparado por',{x:0.72,y:5.45,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
+        sl.addText('ALTO Strategy',{x:0.72,y:5.65,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:0.72,y:6.0,w:3,h:0.3,fontSize:10,fontFace:'Calibri',color:A.SGRAY});
+        sl.addText('CONFIDENCIAL',{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,charSpacing:3});
+        // Right side — navy block
+        sl.addShape('rect',{x:cRX,y:0,w:cRW,h:7.5,fill:{color:A.NAVY}});
+        sl.addShape('rect',{x:cRX,y:0,w:0.08,h:7.5,fill:{color:A.RED}});
+        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:cRX+0.5,y:2.8,w:2.8,h:1.1});
+        sl.addShape('rect',{x:cRX+0.2,y:5.8,w:1.8,h:0.04,fill:{color:A.RED}});
+        sl.addShape('rect',{x:cRX+0.2,y:5.95,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
+        sl.addText('ALTO · Strategic Insights',{x:cRX+0.25,y:6.2,w:cRW-0.4,h:0.25,fontSize:7,fontFace:'Calibri',color:'8192A7',charSpacing:3});
         return;
       }
 
@@ -1350,20 +1361,24 @@ REGLAS OBLIGATORIAS:
       // FIXED: Use only ALTO corporate colors for accents
       const accentColor=s.type==='risks'?A.RED:s.type==='opportunities'?A.TBLUE:A.RED;
       actionTitle(sl,s.action_title,accentColor);
-      // soWhatPanel is called inside each layout branch — do NOT call it here
       let cy=1.02;
-      const LW=SX-M-0.25; // left content width // content width left of SO WHAT panel
-      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:LW,h:0.35,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'middle'});cy+=0.42;}
+      const LW=SX-M-0.25; // left content width (when SO WHAT panel present)
+      const eLW=s.so_what?LW:CW; // effective content width — full when no SO WHAT
+      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:eLW,h:0.35,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'middle'});cy+=0.42;}
 
       // ========== LAYOUT: STAT CALLOUTS ==========
       if(vis==='stat_callouts' && s.data_points&&s.data_points.length){
         const dp=s.data_points.slice(0,4);
-        const cols=dp.length;const colW=LW/cols;
+        const cols=dp.length;
+        // For 2 cards: cap width so they don't stretch to fill full LW
+        const maxColW=cols<=2?3.2:eLW/cols;
+        const totalW=maxColW*cols;
+        const startX=M+(eLW-totalW)/2; // center if narrower than eLW
+        const colW=maxColW;
         const cardColors=[A.NAVY,A.RED,A.NAVY,A.RED];
-        // Dynamic card height: taller number zone + generous label area
         const cardH=4.5;
         dp.forEach((d,i)=>{
-          const cx=M+(i*colW);
+          const cx=startX+(i*colW);
           const val=String(d.value);
           // Auto-size: shorter values get bigger font, long values scale down
           const numFontSize=val.length<=3?52:val.length<=5?40:val.length<=8?32:24;
@@ -1385,6 +1400,7 @@ REGLAS OBLIGATORIAS:
         const normBar=barSeries.slice(0,3);
         const chartH=5.0;const chartW=LW*0.95;
         if(normBar.length&&cats.length){
+          const singleSeries=normBar.length===1;
           sl.addChart(pptx.charts.BAR,normBar,{
             x:M,y:cy,w:chartW,h:chartH,
             barDir:'col',barGapWidthPct:80,
@@ -1397,8 +1413,9 @@ REGLAS OBLIGATORIAS:
             catGridLine:{style:'none'},valGridLine:{color:A.MGRAY,style:'dash',size:0.5},
             valAxisHidden:false,valAxisMajorUnit:null,
             plotAreaBorderColor:A.WHITE,
-            chartColors:[A.NAVY,A.RED,A.TBLUE],
-            showLegend:normBar.length>1,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
+            chartColors:singleSeries?[A.NAVY,A.RED,A.NAVY,A.RED,A.NAVY,A.RED,A.NAVY,A.RED]:[A.NAVY,A.RED,A.TBLUE],
+            varyColors:singleSeries,
+            showLegend:!singleSeries,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
             showTitle:false
           });
         }
@@ -1431,6 +1448,7 @@ REGLAS OBLIGATORIAS:
         const normH=hSeries.slice(0,3);
         const chartH=Math.min(5.4,7.5-cy-0.8);const chartW=LW*0.95;
         if(normH.length&&hCats.length){
+          const singleH=normH.length===1;
           sl.addChart(pptx.charts.BAR,normH,{
             x:M,y:cy,w:chartW,h:chartH,
             barDir:'bar',barGapWidthPct:55,
@@ -1441,8 +1459,9 @@ REGLAS OBLIGATORIAS:
             showDataLabel:true,dataLabelPosition:'inEnd',
             catGridLine:{style:'none'},valGridLine:{color:A.MGRAY,style:'dash',size:0.5},
             plotAreaBorderColor:A.WHITE,
-            chartColors:[A.NAVY,A.RED,A.TBLUE],
-            showLegend:normH.length>1,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
+            chartColors:singleH?[A.NAVY,A.RED,A.NAVY,A.RED,A.NAVY,A.RED,A.NAVY,A.RED]:[A.NAVY,A.RED,A.TBLUE],
+            varyColors:singleH,
+            showLegend:!singleH,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
             showTitle:false
           });
         }
@@ -1456,7 +1475,7 @@ REGLAS OBLIGATORIAS:
         const lbls=dp.map(d=>d.label||'');
         const donutColors=[A.NAVY,A.RED,A.TBLUE,'74777D','1A2B3C','C4C6CD'];
         sl.addChart(pptx.charts.DOUGHNUT,[{name:'',labels:lbls,values:vals}],{
-          x:M,y:cy,w:LW*0.58,h:4.6,
+          x:M,y:cy,w:eLW*0.58,h:4.6,
           holeSize:55,
           showLabel:false,showValue:false,showPercent:true,
           dataLabelFontSize:10,dataLabelFontBold:true,dataLabelColor:A.WHITE,
@@ -1468,9 +1487,9 @@ REGLAS OBLIGATORIAS:
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: PROCESS FLOW ==========
-      } else if(vis==='process' && s.columns&&s.columns.length){
+      } else if(vis==='process' && s.columns&&s.columns.length>=2){
         const steps=s.columns.slice(0,5);const n=steps.length;
-        const arrowW=0.3;const boxW=(LW-(arrowW*(n-1)))/n;
+        const arrowW=0.3;const boxW=(eLW-(arrowW*(n-1)))/n;
         const boxH=Math.min(3.8,7.5-cy-1.2);const boxY=cy+0.5;
         const stepColors=[A.NAVY,A.RED,A.TBLUE,A.NAVY,A.RED];
         steps.forEach((step,i)=>{
@@ -1526,11 +1545,10 @@ REGLAS OBLIGATORIAS:
       // ========== LAYOUT: TIMELINE ==========
       } else if(vis==='timeline' && s.columns&&s.columns.length){
         const phases=s.columns.slice(0,4);
-        const phW=LW/phases.length;
+        const phW=eLW/phases.length;
         // Available height: from cy to near bottom of slide
         const availH=7.5-cy-0.6;
-        // Timeline connector line
-        sl.addShape('rect',{x:M,y:cy+0.2,w:LW,h:0.05,fill:{color:A.MGRAY}});
+        sl.addShape('rect',{x:M,y:cy+0.2,w:eLW,h:0.05,fill:{color:A.MGRAY}});
         // Card area starts after circle+title header (~1.05 from cy)
         const cardTop=cy+1.05;
         const cardH=availH-1.05; // fill remaining space
@@ -1582,7 +1600,7 @@ REGLAS OBLIGATORIAS:
       // ========== LAYOUT: MATRIX 2x2 ==========
       } else if(vis==='matrix' && s.columns&&s.columns.length>=4){
         const q=s.columns.slice(0,4);
-        const matH=7.5-cy-0.55;const matW=LW;
+        const matH=7.5-cy-0.55;const matW=eLW;
         const halfW=matW/2-0.06;const halfH=matH/2-0.06;
         const qColors=[A.TBLUE,A.RED,A.NAVY,A.NAVY];
         const qFills=['EBF2FA','FFF0F0',A.LGRAY,A.LGRAY];
@@ -1655,30 +1673,30 @@ REGLAS OBLIGATORIAS:
       } else {
         if(s.type==='executive_summary' && s.body_text){
           const exH=Math.min(4.0,Math.max(1.5,s.body_text.length/130+1.0));
-          sl.addShape('rect',{x:M,y:cy,w:LW,h:exH,fill:{color:A.LGRAY}});
+          sl.addShape('rect',{x:M,y:cy,w:eLW,h:exH,fill:{color:A.LGRAY}});
           sl.addShape('rect',{x:M,y:cy,w:0.06,h:exH,fill:{color:A.NAVY}});
-          sl.addText(s.body_text,{x:M+0.25,y:cy+0.15,w:LW-0.4,h:exH-0.25,fontSize:12,fontFace:'Calibri',color:A.DGRAY,italic:true,lineSpacingMultiple:1.5,valign:'top'});
+          sl.addText(s.body_text,{x:M+0.25,y:cy+0.15,w:eLW-0.4,h:exH-0.25,fontSize:12,fontFace:'Calibri',color:A.DGRAY,italic:true,lineSpacingMultiple:1.5,valign:'top',shrinkText:true});
           cy+=exH+0.2;
         } else if(s.body_text){
-          sl.addText(s.body_text,{x:M,y:cy,w:LW,h:2.2,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top'});
+          sl.addText(s.body_text,{x:M,y:cy,w:eLW,h:2.2,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top',shrinkText:true});
           cy+=2.35;
         }
         if(s.bullets&&s.bullets.length){
           s.bullets.forEach(b=>{
-            sl.addText([{text:'\u25B8 ',options:{fontSize:13,fontFace:'Calibri',color:accentColor,bold:true}},{text:b,options:{fontSize:12,fontFace:'Calibri',color:A.BODY}}],{x:M+0.15,y:cy,w:LW-0.2,h:0.44,valign:'top',lineSpacingMultiple:1.3});
+            sl.addText([{text:'\u25B8 ',options:{fontSize:13,fontFace:'Calibri',color:accentColor,bold:true}},{text:b,options:{fontSize:12,fontFace:'Calibri',color:A.BODY}}],{x:M+0.15,y:cy,w:eLW-0.2,h:0.44,valign:'top',lineSpacingMultiple:1.3,shrinkText:true});
             cy+=0.5;
           });
           cy+=0.1;
         }
         if(s.data_points&&s.data_points.length){
           const dp=s.data_points.slice(0,4);
-          const dpW=CW/dp.length;
+          const dpW=eLW/dp.length;
           dp.forEach((d,i)=>{
             const dx=M+(i*dpW);
             sl.addShape('rect',{x:dx+0.05,y:cy,w:dpW-0.1,h:1.4,fill:{color:A.LGRAY}});
             sl.addShape('rect',{x:dx+0.05,y:cy,w:dpW-0.1,h:0.05,fill:{color:i%2===0?A.NAVY:A.RED}});
-            sl.addText(String(d.value),{x:dx+0.05,y:cy+0.15,w:dpW-0.1,h:0.6,fontSize:28,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle'});
-            sl.addText(d.label,{x:dx+0.1,y:cy+0.8,w:dpW-0.2,h:0.5,fontSize:8,fontFace:'Calibri',color:A.SGRAY,align:'center',valign:'top'});
+            sl.addText(String(d.value),{x:dx+0.05,y:cy+0.15,w:dpW-0.1,h:0.6,fontSize:28,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle',shrinkText:true});
+            sl.addText(d.label,{x:dx+0.1,y:cy+0.8,w:dpW-0.2,h:0.5,fontSize:8,fontFace:'Calibri',color:A.SGRAY,align:'center',valign:'top',shrinkText:true});
           });
           cy+=1.6;
         }
