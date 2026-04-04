@@ -644,7 +644,7 @@ REGLAS OBLIGATORIAS:
           sl.addShape('rect',{x:rightColX,y:contentTop,w:rightColW,h:contentH,fill:{color:'EBF2FA'},line:{color:'C8DFF2',width:0.5}});
           sl.addShape('rect',{x:rightColX,y:contentTop,w:0.06,h:contentH,fill:{color:A.RED}});
           sl.addText(hText,{x:rightColX+0.25,y:contentTop+0.5,w:rightColW-0.45,h:contentH-1.0,
-            fontSize:14,fontFace:'Calibri',color:A.NAVY,italic:true,
+            fontSize:16,fontFace:'Calibri',color:A.NAVY,italic:false,
             lineSpacingMultiple:1.6,valign:'middle',bold:false,shrinkText:true});
         } else {
           // No distinct highlight — use the space for a key takeaway card
