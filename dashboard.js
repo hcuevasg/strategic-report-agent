@@ -3,8 +3,7 @@
 // ============================================================
 
 async function openDashboard(){
-  const wUrl=document.getElementById('workerUrl').value.trim();
-  if(!wUrl){showError('Configura la URL del Worker primero.');return;}
+  const wUrl=WORKER_URL;
 
   // Prompt for stats token if not saved
   let token=localStorage.getItem('alto_stats_token')||'';

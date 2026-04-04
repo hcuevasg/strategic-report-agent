@@ -98,8 +98,7 @@ function wrapText(ctx, text, x, y, maxW, lineH, align){
 
 // ── downloadPptx v4 ─────────────────────────────────────────
 async function downloadPptx(){if(!result)return;
-  const wUrl=document.getElementById('workerUrl').value.trim();
-  if(!wUrl){showError('Configura el Worker URL para generar PPTX.');return;}
+  const wUrl=WORKER_URL;
   const btn=document.getElementById('btnPptx');
   btn.disabled=true;
   startPptxProgress('Diseñando estructura de slides...');

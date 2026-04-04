@@ -1,4 +1,9 @@
 // ============================================================
+// Worker URL — hardcoded, no user input needed
+// ============================================================
+const WORKER_URL = 'https://strategic-report-proxy.hcuevas.workers.dev';
+
+// ============================================================
 // i18n — Multi-language labels
 // ============================================================
 const i18n = {
@@ -280,7 +285,7 @@ function showValidationWarning(fields){
 // REGENERAR SECCIÓN
 // ============================================================
 async function regenSection(sectionKey,idx,btn){
-  const wUrl=document.getElementById('workerUrl').value.trim();
+  const wUrl=WORKER_URL;
   if(!wUrl||!result)return;
   if(btn){btn.disabled=true;const ic=btn.querySelector('.material-symbols-outlined');if(ic)ic.textContent='hourglass_empty';}
   const labels={findings:'hallazgos',analysis_blocks:'bloque de análisis '+(idx!==undefined?idx+1:''),recommendations:'recomendaciones',risks:'riesgos',opportunities:'oportunidades'};
@@ -385,20 +390,15 @@ document.addEventListener('DOMContentLoaded', () => {
 async function handleMagicLink(){
   const params = new URLSearchParams(window.location.search);
   const uuid   = params.get('wa');
-  const wUrl   = params.get('worker');
   const format = params.get('format'); // pptx | pdf | docx | brief
-  if(!uuid || !wUrl) return;
+  if(!uuid) return;
 
   // Clean URL so user doesn't accidentally share the magic link
   history.replaceState(null,'',window.location.pathname);
 
-  // Save worker URL if not already set
-  if(!localStorage.getItem('workerUrl')) localStorage.setItem('workerUrl', wUrl);
-  document.getElementById('workerUrl').value = wUrl;
-
   showStatus('Cargando informe desde enlace…');
   try{
-    const res = await fetch(`${wUrl}/report/${uuid}`);
+    const res = await fetch(`${WORKER_URL}/report/${uuid}`);
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if(!data || !data.title) throw new Error('Informe inválido o expirado');
@@ -489,9 +489,8 @@ async function fetchFromWorker(url, body, onChunk, onPhase){
 
 async function analyze(){
   const input=document.getElementById('inputText').value.trim();
-  const wUrl=document.getElementById('workerUrl').value.trim();
+  const wUrl=WORKER_URL;
   if(!input)return;
-  if(!wUrl){showError('Configura la URL del Worker.');return;}
   document.getElementById('validationWarn').classList.add('hidden');
   setLoading(true);startProgress();hideError();hidePreview();result=null;originalResult=null;
   try{
@@ -835,7 +834,7 @@ let chatHistory = [];
 async function sendChat() {
   const input = document.getElementById('chatInput');
   const msg = input.value.trim();
-  const wUrl = document.getElementById('workerUrl').value.trim();
+  const wUrl = WORKER_URL;
   if (!msg || !result || !wUrl) return;
 
   input.value = '';
@@ -904,7 +903,6 @@ function setDot(s){
 }
 function flash(m){showStatus(m);setTimeout(()=>{if(result)showStatus('Informe listo — edita y exporta');},2500);}
 function loadSample(){document.getElementById('inputText').value=`Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar.\n\nLas tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.\n\nEl área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.\n\nNecesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.\n\nNota: la data de modus operandi tiene un 30% de registros sin clasificar. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;}
-const saved=localStorage.getItem('worker_url');if(saved)document.getElementById('workerUrl').value=saved;document.getElementById('workerUrl').addEventListener('change',function(){localStorage.setItem('worker_url',this.value);});
 // Prevent accidental navigation when report is loaded
 window.addEventListener('beforeunload',e=>{if(result){e.preventDefault();}});
 
