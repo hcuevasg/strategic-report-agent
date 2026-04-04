@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO</title>
+<title>Strategic Report Agent — ALTO v3.11</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -957,13 +957,26 @@ async function downloadPptx(){if(!result)return;
     }
     function soWhatBox(sl,text,y){
       if(!text)return;
-      const bY=Math.min(y,6.3);
-      sl.addShape('rect',{x:M,y:bY,w:CW,h:0.65,fill:{color:'FFF5F5'}});
-      sl.addShape('rect',{x:M,y:bY,w:0.06,h:0.65,fill:{color:A.RED}});
-      sl.addText([
-        {text:'\u25B6 SO WHAT  ',options:{bold:true,color:A.RED,fontSize:9,fontFace:'Calibri'}},
-        {text:text,options:{italic:true,color:A.DGRAY,fontSize:9,fontFace:'Calibri'}}
-      ],{x:M+0.2,y:bY+0.08,w:CW-0.3,h:0.5,valign:'middle'});
+      const bY=Math.min(y,5.9);
+      const boxH=0.88;
+      // Background surface (not white, not pink — off-white surface)
+      sl.addShape('rect',{x:M,y:bY,w:CW,h:boxH,fill:{color:'F2F4F6'}});
+      // Left red bar — taller, more prominent
+      sl.addShape('rect',{x:M,y:bY,w:0.06,h:boxH,fill:{color:A.RED}});
+      // "SO WHAT?" label — Manrope-style: large, red, bold, tracking
+      sl.addText('SO WHAT?',{
+        x:M+0.2,y:bY+0.06,w:1.6,h:0.35,
+        fontSize:11,fontFace:'Calibri',color:A.RED,bold:true,
+        charSpacing:2,valign:'middle'
+      });
+      // Vertical divider
+      sl.addShape('rect',{x:M+1.85,y:bY+0.12,w:0.02,h:boxH-0.24,fill:{color:A.MGRAY}});
+      // The actual insight text — navy, bold, larger
+      sl.addText(text,{
+        x:M+2.05,y:bY+0.08,w:CW-2.2,h:boxH-0.16,
+        fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true,
+        lineSpacingMultiple:1.3,valign:'middle'
+      });
     }
     function srcNote(sl,t){if(t)sl.addText('Fuente: '+t,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true});}
 
@@ -972,16 +985,40 @@ async function downloadPptx(){if(!result)return;
     slides.forEach((s)=>{
       const vis=s.visual_suggestion||'none';
 
-      // =================== COVER ===================
+      // =================== COVER — Strategic Insights style ===================
       if(s.type==='cover'){
-        const sl=pptx.addSlide();sl.background={color:A.DNAVY};
-        sl.addShape('rect',{x:0,y:0,w:0.12,h:7.5,fill:{color:A.RED}});
-        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:0.6,y:0.5,w:2.2,h:0.87});
-        sl.addShape('rect',{x:0.6,y:2.9,w:3,h:0.04,fill:{color:A.RED}});
-        sl.addText(s.action_title||result.title,{x:0.6,y:3.1,w:11.5,h:1.6,fontSize:28,fontFace:'Calibri',color:A.WHITE,bold:true,lineSpacingMultiple:1.15});
-        if(s.subheading)sl.addText(s.subheading,{x:0.6,y:4.7,w:10,h:0.6,fontSize:13,fontFace:'Calibri',color:'8192A7',italic:true});
-        sl.addText('CONFIDENCIAL',{x:0.6,y:6.2,w:3,h:0.3,fontSize:9,fontFace:'Calibri',color:A.RED,bold:true,letterSpacing:3});
-        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'}),{x:0.6,y:6.5,w:4,h:0.3,fontSize:10,fontFace:'Calibri',color:'8192A7'});
+        const sl=pptx.addSlide();sl.background={color:'F8F9FB'};
+        // Left side — light surface, large bold title
+        const leftW=7.8;
+        // Logo color (top left)
+        if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
+        // Badge label
+        sl.addShape('rect',{x:0.55,y:1.45,w:1.8,h:0.28,fill:{color:A.NAVY}});
+        sl.addText('Informe Estratégico',{x:0.55,y:1.45,w:1.8,h:0.28,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle',letterSpacing:2});
+        // Main title — large extrabold
+        sl.addText(s.action_title||result.title,{x:0.55,y:1.95,w:leftW-0.8,h:2.8,fontSize:32,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top'});
+        // Subtitle italic
+        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.85,w:leftW-1.0,h:0.5,fontSize:12,fontFace:'Calibri',color:A.SGRAY,italic:true});
+        // Presented by / date row
+        sl.addShape('rect',{x:0.55,y:5.55,w:0.03,h:0.7,fill:{color:A.MGRAY}});
+        sl.addText('Preparado por',{x:0.72,y:5.55,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
+        sl.addText('ALTO Strategy',{x:0.72,y:5.75,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addShape('rect',{x:3.1,y:5.55,w:0.03,h:0.7,fill:{color:A.MGRAY}});
+        sl.addText('Fecha',{x:3.28,y:5.55,w:1.5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
+        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:3.28,y:5.75,w:3,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        // CONFIDENCIAL small
+        sl.addText('CONFIDENCIAL',{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,letterSpacing:3});
+        // Right side — asymmetric navy shape (simulated with tall rect from 60% to right edge)
+        const rX=leftW+0.1;
+        const rW=W-rX;
+        sl.addShape('rect',{x:rX,y:0,w:rW,h:7.5,fill:{color:A.NAVY}});
+        // Accent shapes on right side
+        sl.addShape('rect',{x:rX,y:0,w:0.08,h:7.5,fill:{color:A.RED}});
+        sl.addShape('rect',{x:rX+0.2,y:5.8,w:1.8,h:0.04,fill:{color:A.RED}});
+        sl.addShape('rect',{x:rX+0.2,y:5.95,w:1.2,h:0.04,fill:{color:A.TBLUE}});
+        sl.addText('ALTO · Strategic Insights',{x:rX+0.25,y:6.2,w:rW-0.4,h:0.25,fontSize:7,fontFace:'Calibri',color:'FFFFFF50',letterSpacing:3,bold:false});
+        // White logo on right
+        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:rX+0.3,y:0.35,w:1.4,h:0.55});
         return;
       }
       // =================== CLOSING ===================
@@ -1000,38 +1037,40 @@ async function downloadPptx(){if(!result)return;
 
       // =================== TABLE OF CONTENTS ===================
       if(s.type==='toc'){
-        const sl=pptx.addSlide();sl.background={color:A.WHITE};
+        const sl=pptx.addSlide();sl.background={color:'F8F9FB'};
         addLogo(sl);
-        // Left navy bar
-        sl.addShape('rect',{x:0,y:0,w:0.12,h:7.5,fill:{color:A.NAVY}});
-        // Title
-        sl.addText('Contenido',{x:M,y:0.3,w:5,h:0.55,fontSize:22,fontFace:'Calibri',color:A.NAVY,bold:true});
-        sl.addShape('rect',{x:M,y:0.88,w:1.2,h:0.04,fill:{color:A.RED}});
-        // TOC items
+        sl.addShape('rect',{x:0,y:0,w:0.08,h:7.5,fill:{color:A.NAVY}});
+        sl.addText('Contenido',{x:M,y:0.25,w:6,h:0.6,fontSize:24,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addShape('rect',{x:M,y:0.88,w:1.0,h:0.04,fill:{color:A.RED}});
         const items=s.items||[];
-        const startY=1.1;
         const rowH=0.62;
+        const startY=1.1;
+        const listW=CW*0.68;
         items.forEach((item,i)=>{
           const iy=startY+(i*rowH);
-          // Number badge
-          sl.addShape('rect',{x:M,y:iy,w:0.4,h:0.4,fill:{color:i===0?A.RED:A.NAVY}});
-          sl.addText(String(i+1),{x:M,y:iy,w:0.4,h:0.4,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
-          // Item title
-          sl.addText(item.title||item,{x:M+0.55,y:iy+0.02,w:CW*0.55,h:0.36,fontSize:12,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle'});
-          // Item description if present
+          // Number — elegant: small circle outline style
+          sl.addShape('ellipse',{x:M,y:iy+0.04,w:0.32,h:0.32,fill:{color:i===0?A.RED:A.NAVY},line:{color:i===0?A.RED:A.NAVY,width:0}});
+          sl.addText(String(i+1),{x:M,y:iy+0.04,w:0.32,h:0.32,fontSize:10,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          // Title bold navy
+          sl.addText(item.title||item,{x:M+0.45,y:iy,w:listW-0.55,h:0.35,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle'});
+          // Description
           if(item.description){
-            sl.addText(item.description,{x:M+0.55,y:iy+0.26,w:CW*0.55,h:0.25,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'top'});
+            sl.addText(item.description,{x:M+0.45,y:iy+0.33,w:listW-0.55,h:0.22,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'top'});
           }
-          // Dotted separator line
           if(i<items.length-1){
-            sl.addShape('rect',{x:M,y:iy+rowH-0.06,w:CW*0.75,h:0.01,fill:{color:A.MGRAY}});
+            sl.addShape('rect',{x:M,y:iy+rowH-0.04,w:listW,h:0.008,fill:{color:A.MGRAY}});
           }
         });
-        // Right accent block
-        sl.addShape('rect',{x:CW*0.75,y:1.0,w:CW*0.27,h:items.length*rowH+0.1,fill:{color:A.LGRAY}});
-        sl.addShape('rect',{x:CW*0.75,y:1.0,w:0.05,h:items.length*rowH+0.1,fill:{color:A.RED}});
+        // Right panel — navy background, tagline legible in white
+        const panelX=M+listW+0.15;
+        const panelW=CW-listW-0.15;
+        const panelH=items.length*rowH+0.2;
+        sl.addShape('rect',{x:panelX,y:1.0,w:panelW,h:panelH,fill:{color:A.NAVY}});
+        sl.addShape('rect',{x:panelX,y:1.0,w:0.06,h:panelH,fill:{color:A.RED}});
         if(s.tagline){
-          sl.addText(s.tagline,{x:CW*0.75+0.15,y:1.2,w:CW*0.25,h:items.length*rowH-0.3,fontSize:10,fontFace:'Calibri',color:A.SGRAY,italic:true,lineSpacingMultiple:1.6,valign:'middle'});
+          sl.addText(s.tagline,{x:panelX+0.18,y:1.2,w:panelW-0.28,h:panelH-0.4,
+            fontSize:13,fontFace:'Calibri',color:A.WHITE,italic:true,
+            lineSpacingMultiple:1.7,valign:'middle',bold:false});
         }
         return;
       }
@@ -1056,12 +1095,12 @@ async function downloadPptx(){if(!result)return;
           sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:cardH,fill:{color:A.LGRAY}});
           sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:0.08,fill:{color:cardColors[i%4]}});
           // Big number centred in top 55% of card
-          sl.addText(String(d.value),{x:cx+0.08,y:cy+0.5,w:colW-0.16,h:cardH*0.55,fontSize:54,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle'});
+          sl.addText(String(d.value),{x:cx+0.08,y:cy+0.5,w:colW-0.16,h:cardH*0.55,fontSize:58,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle'});
           // Label below divider line
           sl.addShape('rect',{x:cx+0.25,y:cy+cardH*0.58,w:colW-0.5,h:0.03,fill:{color:A.MGRAY}});
-          sl.addText(d.label,{x:cx+0.15,y:cy+cardH*0.62,w:colW-0.3,h:cardH*0.34,fontSize:12,fontFace:'Calibri',color:A.BODY,align:'center',valign:'top',lineSpacingMultiple:1.5});
+          sl.addText(d.label,{x:cx+0.15,y:cy+cardH*0.62,w:colW-0.3,h:cardH*0.34,fontSize:14,fontFace:'Calibri',color:A.BODY,align:'center',valign:'top',lineSpacingMultiple:1.4,bold:false});
         });
-        soWhatBox(sl,s.so_what,cy+cardH+0.2);
+        soWhatBox(sl,s.so_what,cy+cardH+0.1);
 
       // ========== LAYOUT: BAR CHART ==========
       } else if(vis==='bar_chart' && s.chart_data){
@@ -1106,12 +1145,12 @@ async function downloadPptx(){if(!result)return;
         cols.forEach((col,i)=>{
           const cx=M+(i*colW);
           sl.addShape('rect',{x:cx+0.06,y:cy,w:colW-0.12,h:0.5,fill:{color:colColors[i%3]}});
-          sl.addText(col.title||'',{x:cx+0.06,y:cy,w:colW-0.12,h:0.5,fontSize:11,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
-          sl.addShape('rect',{x:cx+0.06,y:cy+0.5,w:colW-0.12,h:4.5,fill:{color:A.LGRAY}});
+          sl.addText(col.title||'',{x:cx+0.06,y:cy,w:colW-0.12,h:0.5,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          const compH=Math.min(5.0,Math.max(2.8,(col.items||[]).length*0.52+0.8));sl.addShape('rect',{x:cx+0.06,y:cy+0.5,w:colW-0.12,h:compH,fill:{color:A.LGRAY}});
           let iy=cy+0.65;
           (col.items||[]).forEach(item=>{
-            sl.addText([{text:'\u25B8 ',options:{fontSize:10,color:colColors[i%3],bold:true}},{text:item,options:{fontSize:9,color:A.BODY}}],{x:cx+0.2,y:iy,w:colW-0.35,h:0.32,fontFace:'Calibri',valign:'top'});
-            iy+=0.38;
+            sl.addText([{text:'\u25B8 ',options:{fontSize:12,color:colColors[i%3],bold:true}},{text:item,options:{fontSize:11,color:A.BODY}}],{x:cx+0.2,y:iy,w:colW-0.35,h:0.4,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.2});
+            iy+=0.46;
           });
         });
         soWhatBox(sl,s.so_what,cy+5.2);
@@ -1125,12 +1164,12 @@ async function downloadPptx(){if(!result)return;
           const px=M+(i*phW);
           sl.addShape('ellipse',{x:px+phW/2-0.18,y:cy+0.05,w:0.36,h:0.36,fill:{color:i===0?A.RED:A.NAVY},line:{color:A.WHITE,width:2}});
           sl.addText(String(i+1),{x:px+phW/2-0.18,y:cy+0.05,w:0.36,h:0.36,fontSize:11,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
-          sl.addText(ph.title||'',{x:px+0.05,y:cy+0.55,w:phW-0.1,h:0.4,fontSize:10,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'top'});
+          sl.addText(ph.title||'',{x:px+0.05,y:cy+0.55,w:phW-0.1,h:0.45,fontSize:12,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'top'});
           sl.addShape('rect',{x:px+0.05,y:cy+1.0,w:phW-0.1,h:3.8,fill:{color:A.LGRAY}});
           let iy=cy+1.1;
           (ph.items||[]).forEach(item=>{
-            sl.addText('\u2022 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:0.3,fontSize:8,fontFace:'Calibri',color:A.BODY,valign:'top'});
-            iy+=0.35;
+            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:0.4,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'top',lineSpacingMultiple:1.2});
+            iy+=0.46;
           });
         });
         soWhatBox(sl,s.so_what,cy+5.1);
@@ -1144,11 +1183,11 @@ async function downloadPptx(){if(!result)return;
           const px=M+(i*pW);
           sl.addShape('rect',{x:px+0.06,y:cy,w:pW-0.12,h:4.8,fill:{color:A.LGRAY}});
           sl.addShape('rect',{x:px+0.06,y:cy,w:pW-0.12,h:0.55,fill:{color:pilColors[i%4]}});
-          sl.addText(p.title||'',{x:px+0.06,y:cy,w:pW-0.12,h:0.55,fontSize:10,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          sl.addText(p.title||'',{x:px+0.06,y:cy,w:pW-0.12,h:0.55,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
           let iy=cy+0.7;
           (p.items||[]).forEach(item=>{
-            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:pW-0.3,h:0.35,fontSize:8.5,fontFace:'Calibri',color:A.BODY,valign:'top',lineSpacingMultiple:1.1});
-            iy+=0.4;
+            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:pW-0.3,h:0.42,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'top',lineSpacingMultiple:1.2});
+            iy+=0.48;
           });
         });
         soWhatBox(sl,s.so_what,cy+5.0);
@@ -1174,24 +1213,32 @@ async function downloadPptx(){if(!result)return;
 
       // ========== LAYOUT: SPLIT ==========
       } else if(vis==='split'){
-        const leftW=CW*0.58,rightW=CW*0.38;
+        const leftW=CW*0.56,rightW=CW*0.40;
+        const rX=M+leftW+CW*0.04;
+        const rY=cy;
+        // Left side: subtle surface background
+        sl.addShape('rect',{x:0,y:0,w:rX,h:7.5,fill:{color:'F8F9FB'}});
+        // Body text — larger
         if(s.body_text){
-          sl.addText(s.body_text,{x:M,y:cy,w:leftW,h:2.0,fontSize:10,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.4,valign:'top'});
+          sl.addText(s.body_text,{x:M,y:cy,w:leftW,h:1.8,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top'});
         }
-        let bcy=cy+(s.body_text?2.1:0);
+        let bcy=cy+(s.body_text?1.95:0);
         if(s.bullets&&s.bullets.length){
           s.bullets.forEach(b=>{
-            sl.addText([{text:'\u25B8 ',options:{fontSize:10,color:accentColor,bold:true}},{text:b,options:{fontSize:9,color:A.BODY}}],{x:M+0.1,y:bcy,w:leftW-0.2,h:0.32,fontFace:'Calibri',valign:'top'});
-            bcy+=0.35;
+            sl.addText([{text:'\u25B8 ',options:{fontSize:12,color:accentColor,bold:true}},{text:b,options:{fontSize:12,color:A.BODY}}],{x:M+0.1,y:bcy,w:leftW-0.2,h:0.4,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.3});
+            bcy+=0.48;
           });
         }
-        const rX=M+leftW+CW*0.04;
-        const rY=0.85+(s.subheading?0.32:0);
-        sl.addShape('rect',{x:rX,y:rY,w:rightW,h:5.0,fill:{color:A.NAVY}});
-        sl.addShape('rect',{x:rX,y:rY,w:0.06,h:5.0,fill:{color:A.RED}});
+        // Right navy block — full height
+        const navyH=7.5-rY;
+        sl.addShape('rect',{x:rX,y:0,w:W-rX,h:7.5,fill:{color:A.NAVY}});
+        sl.addShape('rect',{x:rX,y:0,w:0.06,h:7.5,fill:{color:A.RED}});
         const hText=s.highlight_box||s.so_what||'';
-        sl.addText(hText,{x:rX+0.2,y:rY+0.3,w:rightW-0.4,h:4.2,fontSize:12,fontFace:'Calibri',color:A.WHITE,italic:true,lineSpacingMultiple:1.5,valign:'top'});
-        soWhatBox(sl,s.so_what,6.1);
+        // Big quote text — centered, large, impactful
+        sl.addText(hText,{x:rX+0.25,y:1.5,w:rightW-0.1,h:4.5,
+          fontSize:16,fontFace:'Calibri',color:A.WHITE,italic:true,
+          lineSpacingMultiple:1.6,valign:'middle',bold:false});
+        soWhatBox(sl,s.so_what,6.0);
 
       // ========== LAYOUT: DEFAULT ==========
       } else {
@@ -1201,13 +1248,13 @@ async function downloadPptx(){if(!result)return;
           sl.addText(s.body_text,{x:M+0.25,y:cy+0.15,w:CW-0.4,h:1.7,fontSize:11,fontFace:'Calibri',color:A.DGRAY,italic:true,lineSpacingMultiple:1.4,valign:'top'});
           cy+=2.2;
         } else if(s.body_text){
-          sl.addText(s.body_text,{x:M,y:cy,w:CW,h:2.0,fontSize:10,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.4,valign:'top'});
-          cy+=2.1;
+          sl.addText(s.body_text,{x:M,y:cy,w:CW,h:2.2,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top'});
+          cy+=2.35;
         }
         if(s.bullets&&s.bullets.length){
           s.bullets.forEach(b=>{
-            sl.addText([{text:'\u25B8 ',options:{fontSize:11,fontFace:'Calibri',color:accentColor,bold:true}},{text:b,options:{fontSize:10,fontFace:'Calibri',color:A.BODY}}],{x:M+0.15,y:cy,w:CW-0.2,h:0.38,valign:'top'});
-            cy+=0.42;
+            sl.addText([{text:'\u25B8 ',options:{fontSize:13,fontFace:'Calibri',color:accentColor,bold:true}},{text:b,options:{fontSize:12,fontFace:'Calibri',color:A.BODY}}],{x:M+0.15,y:cy,w:CW-0.2,h:0.44,valign:'top',lineSpacingMultiple:1.3});
+            cy+=0.5;
           });
           cy+=0.1;
         }
