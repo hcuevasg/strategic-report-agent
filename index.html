@@ -991,15 +991,34 @@ async function downloadPptx(){if(!result)return;
     const res=await fetch(wUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
           userContent:'__PPTX_MODE__',
           reportJSON:JSON.stringify(result),
-          pptxInstructions:`VARIEDAD VISUAL OBLIGATORIA:
-- Slide 2 SIEMPRE debe ser type:"toc" con items: lista de títulos de slides del deck (sin cover ni closing). Incluye campo "tagline" con la tesis central en 1 frase.
-- OBLIGATORIO incluir al menos: 1x stat_callouts, 1x comparison, 1x split, 1x timeline o pillars.
-- NO repitas el mismo visual_suggestion más de 2 veces seguidas.
-- Slides de riesgos → visual_suggestion:"comparison" con type:"risks".
-- Slides de oportunidades → visual_suggestion:"pillars" o "matrix" con type:"opportunities".
-- Si hay datos numéricos → visual_suggestion:"stat_callouts" OBLIGATORIO.
-- Si hay series de datos con evolución temporal (trimestres, meses, años, comparativos antes/después) → usa visual_suggestion:"bar_chart" con chart_data:{categories:["Q1","Q2",...], series:[{name:"Serie",values:[10,20,...]}]}.
-- Mínimo 8 slides, máximo 14 (sin contar cover y closing).`
+          pptxInstructions:`VISUAL LAYOUTS DISPONIBLES — elige el más adecuado para cada slide:
+- "stat_callouts": KPIs y cifras clave. USA data_points:[{value,label,trend?}] donde trend es "up"/"down"/"neutral". Mínimo 3, máximo 4 puntos.
+- "bar_chart": evolución temporal o comparativo cuantitativo vertical. USA chart_data:{categories,series}.
+- "line_chart": tendencias y series temporales con múltiples líneas. USA chart_data:{categories,series}.
+- "horizontal_bar": rankings de entidades (tiendas, regiones, productos). USA chart_data con categorías como nombres. Ordena de mayor a menor.
+- "donut_chart": composición o distribución porcentual. USA data_points:[{value:"35%",label:"Nombre"}]. Máximo 6 segmentos.
+- "comparison": comparar 2-3 opciones/escenarios. USA columns:[{title,items}].
+- "pillars": 3-4 pilares estratégicos paralelos. USA columns:[{title,items}].
+- "process": flujo de pasos secuenciales (3-5 pasos). USA columns:[{title,items}] — cada columna es un paso.
+- "timeline": roadmap o fases temporales. USA columns:[{title,items}] — cada columna es una fase.
+- "matrix": clasificar 4 conceptos en cuadrantes 2x2. USA columns:[{title,items}] — TL, TR, BL, BR. Incluye etiquetas de ejes en subheading.
+- "split": texto izquierda + bloque destacado derecha. USA body_text + highlight_box.
+- "none": slide estándar con body_text + bullets.
+
+REGLAS OBLIGATORIAS:
+- Slide 2 SIEMPRE type:"toc" con items:[{title,description}] y campo "tagline".
+- USA type:"divider" (sin visual_suggestion) para separar secciones principales — slide navy oscuro con solo el título de la sección. Incluye el número de sección en subheading ("Sección 1", "Sección 2", etc).
+- INCLUYE AL MENOS: 1x stat_callouts, 1x line_chart o bar_chart, 1x process o timeline, 1x comparison o pillars.
+- NO repitas el mismo visual_suggestion más de 2 slides seguidos.
+- Slides riesgos → type:"risks", visual:"comparison" con acento rojo.
+- Slides oportunidades → type:"opportunities", visual:"pillars" o "matrix".
+- Si hay KPIs o métricas → stat_callouts con trend arrows.
+- Si hay evolución temporal → line_chart (múltiples series) o bar_chart (una serie).
+- Si hay rankings o comparativos entre entidades → horizontal_bar.
+- Si hay distribución porcentual → donut_chart.
+- Si hay proceso o metodología → process.
+- Sin emojis ni símbolos decorativos en ningún campo de texto.
+- Mínimo 10 slides, máximo 16 (sin contar cover y closing).`
         })});
     const raw=await res.text();
     if(raw.trim().startsWith('<'))throw new Error('Worker devolvió HTML. Status: '+res.status);
@@ -1173,6 +1192,20 @@ async function downloadPptx(){if(!result)return;
         return;
       }
 
+      // =================== DIVIDER SLIDE ===================
+      if(s.type==='divider'){
+        const sl=pptx.addSlide();sl.background={color:A.NAVY};
+        sl.addShape('rect',{x:0,y:0,w:0.12,h:7.5,fill:{color:A.RED}});
+        sl.addShape('rect',{x:0.12,y:0,w:W-0.12,h:0.06,fill:{color:'1A2B3C'}});
+        if(logoWhiteBase64)sl.addImage({data:'image/png;base64,'+logoWhiteBase64,x:W-1.8,y:0.25,w:1.3,h:0.51});
+        if(s.subheading)sl.addText(s.subheading.toUpperCase(),{x:0.55,y:2.6,w:10,h:0.35,fontSize:10,fontFace:'Calibri',color:A.TBLUE,bold:true,charSpacing:4});
+        sl.addText(s.action_title||'',{x:0.55,y:3.0,w:10.5,h:2.0,fontSize:34,fontFace:'Calibri',color:A.WHITE,bold:true,lineSpacingMultiple:1.1,valign:'middle',shrinkText:true});
+        sl.addShape('rect',{x:0.55,y:5.15,w:2.2,h:0.05,fill:{color:A.RED}});
+        sl.addShape('rect',{x:0.55,y:5.3,w:1.2,h:0.05,fill:{color:A.TBLUE}});
+        if(s.body_text)sl.addText(s.body_text,{x:0.55,y:5.55,w:9,h:0.5,fontSize:11,fontFace:'Calibri',color:'8192A7',italic:true});
+        return;
+      }
+
       // =================== CONTENT SLIDES ===================
       const sl=pptx.addSlide({masterName:'ALTO_MASTER'});
       // FIXED: Use only ALTO corporate colors for accents
@@ -1197,8 +1230,10 @@ async function downloadPptx(){if(!result)return;
           const numFontSize=val.length<=3?52:val.length<=5?40:val.length<=8?32:24;
           sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:cardH,fill:{color:A.LGRAY}});
           sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:0.08,fill:{color:cardColors[i%4]}});
-          // Big number centred in top 50% of card
-          sl.addText(val,{x:cx+0.12,y:cy+0.35,w:colW-0.24,h:cardH*0.48,fontSize:numFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle',shrinkText:true});
+          // Big number centred in top ~45% of card
+          sl.addText(val,{x:cx+0.12,y:cy+0.25,w:colW-0.24,h:cardH*0.44,fontSize:numFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle',shrinkText:true});
+          // Trend arrow (if present)
+          if(d.trend){const tChar=d.trend==='up'?'▲':d.trend==='down'?'▼':'—';const tColor=d.trend==='up'?A.TBLUE:d.trend==='down'?A.RED:A.SGRAY;sl.addText(tChar,{x:cx+0.12,y:cy+cardH*0.46,w:colW-0.24,h:0.32,fontSize:13,fontFace:'Calibri',color:tColor,bold:true,align:'center',valign:'middle'});}
           // Label below divider line
           sl.addShape('rect',{x:cx+0.25,y:cy+cardH*0.52,w:colW-0.5,h:0.03,fill:{color:A.MGRAY}});
           sl.addText(d.label,{x:cx+0.15,y:cy+cardH*0.56,w:colW-0.3,h:cardH*0.40,fontSize:13,fontFace:'Calibri',color:A.BODY,align:'center',valign:'top',lineSpacingMultiple:1.4,bold:false});
@@ -1233,6 +1268,100 @@ async function downloadPptx(){if(!result)return;
             showTitle:false
           });
         }
+        soWhatPanel(sl,s.so_what);
+
+      // ========== LAYOUT: LINE CHART ==========
+      } else if(vis==='line_chart' && s.chart_data){
+        const cd=s.chart_data;
+        const chartH=4.8;const chartW=LW*0.95;
+        const series=(cd.series||[]).slice(0,4).map((ser,i)=>({name:ser.name||('Serie '+(i+1)),labels:cd.categories||[],values:(ser.values||[]).map(Number)}));
+        if(series.length&&(cd.categories||[]).length){
+          sl.addChart(pptx.charts.LINE,series,{
+            x:M,y:cy,w:chartW,h:chartH,
+            lineSize:2.5,lineDataSymbol:'circle',lineDataSymbolSize:6,
+            catAxisLabelColor:A.BODY,valAxisLabelColor:A.BODY,
+            catAxisLabelFontFace:'Calibri',valAxisLabelFontFace:'Calibri',
+            catAxisLabelFontSize:9,valAxisLabelFontSize:9,
+            catGridLine:{style:'none'},valGridLine:{color:A.MGRAY,style:'dash',size:0.5},
+            plotAreaBorderColor:A.WHITE,
+            chartColors:[A.NAVY,A.RED,A.TBLUE,'74777D'],
+            showLegend:series.length>1,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
+            showTitle:false,dataLabelFontSize:8,showDataLabel:false
+          });
+        }
+        soWhatPanel(sl,s.so_what);
+
+      // ========== LAYOUT: HORIZONTAL BAR ==========
+      } else if(vis==='horizontal_bar' && s.chart_data){
+        const cd=s.chart_data;
+        const nCats=(cd.categories||[]).length;
+        const chartH=Math.min(5.2,Math.max(2.0,0.45+nCats*0.52));
+        const chartW=LW*0.95;
+        const series=(cd.series||[]).slice(0,3).map((ser,i)=>({name:ser.name||('Serie '+(i+1)),labels:cd.categories||[],values:(ser.values||[]).map(Number)}));
+        if(series.length&&nCats){
+          sl.addChart(pptx.charts.BAR,series,{
+            x:M,y:cy,w:chartW,h:chartH,
+            barDir:'bar',barGapWidthPct:55,
+            catAxisLabelColor:A.NAVY,valAxisLabelColor:A.BODY,
+            catAxisLabelFontFace:'Calibri',valAxisLabelFontFace:'Calibri',
+            catAxisLabelFontSize:10,valAxisLabelFontSize:9,
+            dataLabelFontSize:9,dataLabelFontBold:true,dataLabelColor:A.WHITE,
+            showDataLabel:true,dataLabelPosition:'inEnd',
+            catGridLine:{style:'none'},valGridLine:{color:A.MGRAY,style:'dash',size:0.5},
+            plotAreaBorderColor:A.WHITE,
+            chartColors:[A.NAVY,A.RED,A.TBLUE],
+            showLegend:series.length>1,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
+            showTitle:false
+          });
+        }
+        soWhatPanel(sl,s.so_what);
+
+      // ========== LAYOUT: DONUT CHART ==========
+      } else if(vis==='donut_chart' && s.data_points&&s.data_points.length){
+        const dp=s.data_points.slice(0,6);
+        const vals=dp.map(d=>parseFloat(String(d.value).replace(/[^0-9.]/g,''))||1);
+        const lbls=dp.map(d=>d.label||'');
+        const donutColors=[A.NAVY,A.RED,A.TBLUE,'74777D','1A2B3C','C4C6CD'];
+        sl.addChart(pptx.charts.DOUGHNUT,[{name:'',labels:lbls,values:vals}],{
+          x:M,y:cy,w:LW*0.58,h:4.6,
+          holeSize:55,
+          showLabel:false,showValue:false,showPercent:true,
+          dataLabelFontSize:10,dataLabelFontBold:true,dataLabelColor:A.WHITE,
+          chartColors:donutColors,
+          showLegend:true,legendPos:'r',legendFontSize:9,legendFontFace:'Calibri',
+          legendColor:A.BODY,
+          showTitle:false,plotAreaBorderColor:A.WHITE
+        });
+        soWhatPanel(sl,s.so_what);
+
+      // ========== LAYOUT: PROCESS FLOW ==========
+      } else if(vis==='process' && s.columns&&s.columns.length){
+        const steps=s.columns.slice(0,5);const n=steps.length;
+        const arrowW=0.3;const boxW=(LW-(arrowW*(n-1)))/n;
+        const boxH=Math.min(3.8,7.5-cy-1.2);const boxY=cy+0.15;
+        const stepColors=[A.NAVY,A.RED,A.TBLUE,A.NAVY,A.RED];
+        steps.forEach((step,i)=>{
+          const bx=M+i*(boxW+arrowW);const sc=stepColors[i%3];
+          // Number badge
+          sl.addShape('roundRect',{x:bx+boxW*0.35,y:boxY-0.26,w:boxW*0.3,h:0.28,fill:{color:sc},rectRadius:0.06});
+          sl.addText(String(i+1),{x:bx+boxW*0.35,y:boxY-0.26,w:boxW*0.3,h:0.28,fontSize:10,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          // Box body
+          sl.addShape('rect',{x:bx,y:boxY,w:boxW,h:boxH,fill:{color:A.LGRAY},line:{color:sc,width:1}});
+          sl.addShape('rect',{x:bx,y:boxY,w:boxW,h:0.1,fill:{color:sc}});
+          // Step title
+          sl.addText(step.title||'',{x:bx+0.1,y:boxY+0.18,w:boxW-0.2,h:0.7,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle',lineSpacingMultiple:1.15,shrinkText:true});
+          // Items
+          let iy=boxY+1.0;
+          (step.items||[]).slice(0,5).forEach(item=>{
+            sl.addText([{text:'▸ ',options:{fontSize:9,color:sc,bold:true}},{text:item,options:{fontSize:9,color:A.BODY}}],{x:bx+0.12,y:iy,w:boxW-0.24,h:0.38,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.2});
+            iy+=0.4;
+          });
+          // Arrow to next step
+          if(i<n-1){
+            const ax=bx+boxW+0.02;const ay=boxY+boxH/2;
+            sl.addText('→',{x:ax,y:ay-0.18,w:arrowW,h:0.36,fontSize:18,fontFace:'Calibri',color:A.MGRAY,align:'center',valign:'middle',bold:true});
+          }
+        });
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: COMPARISON COLUMNS ==========
@@ -1316,18 +1445,25 @@ async function downloadPptx(){if(!result)return;
       // ========== LAYOUT: MATRIX 2x2 ==========
       } else if(vis==='matrix' && s.columns&&s.columns.length>=4){
         const q=s.columns.slice(0,4);
-        const halfW=LW/2,halfH=2.8;
-        const qColors=[A.NAVY,A.RED,A.TBLUE,A.NAVY];
+        const matH=7.5-cy-0.55;const matW=LW;
+        const halfW=matW/2-0.06;const halfH=matH/2-0.06;
+        const qColors=[A.TBLUE,A.RED,A.NAVY,A.NAVY];
+        const qFills=['EBF2FA','FFF0F0',A.LGRAY,A.LGRAY];
+        // Axis center lines
+        const midX=M+matW/2;const midY=cy+matH/2;
+        sl.addShape('rect',{x:M,y:midY-0.015,w:matW,h:0.03,fill:{color:A.MGRAY}});
+        sl.addShape('rect',{x:midX-0.015,y:cy,w:0.03,h:matH,fill:{color:A.MGRAY}});
+        // 4 quadrants: TL=0, TR=1, BL=2, BR=3
+        const qPos=[{qx:M,qy:cy},{qx:midX+0.03,qy:cy},{qx:M,qy:midY+0.03},{qx:midX+0.03,qy:midY+0.03}];
         q.forEach((qd,i)=>{
-          const qx=M+(i%2)*halfW;
-          const qy=cy+(Math.floor(i/2))*halfH;
-          sl.addShape('rect',{x:qx+0.05,y:qy,w:halfW-0.1,h:halfH-0.08,fill:{color:A.LGRAY}});
-          sl.addShape('rect',{x:qx+0.05,y:qy,w:halfW-0.1,h:0.05,fill:{color:qColors[i]}});
-          sl.addText(qd.title||'',{x:qx+0.15,y:qy+0.12,w:halfW-0.3,h:0.3,fontSize:10,fontFace:'Calibri',color:qColors[i],bold:true});
-          let iy=qy+0.5;
-          (qd.items||[]).forEach(item=>{
-            sl.addText('\u2022 '+item,{x:qx+0.2,y:iy,w:halfW-0.4,h:0.28,fontSize:8,fontFace:'Calibri',color:A.BODY,valign:'top'});
-            iy+=0.32;
+          const {qx,qy}=qPos[i];
+          sl.addShape('rect',{x:qx,y:qy,w:halfW,h:halfH,fill:{color:qFills[i]},line:{color:A.MGRAY,width:0.25}});
+          sl.addShape('rect',{x:qx,y:qy,w:halfW,h:0.07,fill:{color:qColors[i]}});
+          sl.addText(qd.title||'',{x:qx+0.12,y:qy+0.15,w:halfW-0.24,h:0.38,fontSize:10,fontFace:'Calibri',color:qColors[i],bold:true,lineSpacingMultiple:1.15,shrinkText:true});
+          let iy=qy+0.6;
+          (qd.items||[]).slice(0,4).forEach(item=>{
+            sl.addText([{text:'▸ ',options:{fontSize:9,color:qColors[i],bold:true}},{text:item,options:{fontSize:9,color:A.BODY}}],{x:qx+0.15,y:iy,w:halfW-0.3,h:0.34,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.15});
+            iy+=0.36;
           });
         });
         soWhatPanel(sl,s.so_what);
