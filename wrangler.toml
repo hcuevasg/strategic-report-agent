@@ -16,7 +16,7 @@ kv_namespaces = [
 
 # Plain-text env vars
 [vars]
-CLAUDE_MODEL = "claude-sonnet-4-20250514"
+CLAUDE_MODEL = "claude-sonnet-4-6"
 WA_MODEL = "claude-haiku-4-5-20251001"
 ALLOWED_ORIGIN = "https://hcuevasg.github.io"
 APP_URL = "https://hcuevasg.github.io/strategic-report-agent"

@@ -19,7 +19,7 @@
 // ============================================================
 // Env vars required:
 //   ANTHROPIC_API_KEY      — Anthropic API key
-//   CLAUDE_MODEL           — e.g. "claude-sonnet-4-20250514"
+//   CLAUDE_MODEL           — e.g. "claude-sonnet-4-6"
 //   WA_MODEL               — e.g. "claude-haiku-4-5-20251001" (WhatsApp, faster/cheaper)
 //   ALLOWED_ORIGIN         — comma-separated allowed origins or "*"
 //   RATE_LIMIT_PER_HOUR    — default 30
@@ -869,7 +869,7 @@ export default {
         return jsonResponse(413, { error: 'Request body too large. Max 500KB.' }, env, requestOrigin);
       }
       const body = JSON.parse(rawBody);
-      const model = env.CLAUDE_MODEL || 'claude-sonnet-4-20250514';
+      const model = env.CLAUDE_MODEL || 'claude-sonnet-4-6';
 
       // ── CHAT MODE ──────────────────────────────────────
       if (body.userContent === '__CHAT_MODE__' && body.chatMessages) {
