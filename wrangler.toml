@@ -1,0 +1,25 @@
+name = "strategic-report-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# KV Namespace Bindings
+kv_namespaces = [
+  { binding = "WA_KV", id = "649b22e2b92a4101bbf82f7f7c593e6f" },
+  { binding = "RATE_LIMIT_KV", id = "b217ea96b7af467f8e1ef54b022f15e6" },
+]
+
+# Secrets (set via: npx wrangler secret put <NAME>)
+# ANTHROPIC_API_KEY
+# OPENAI_API_KEY
+# TWILIO_ACCOUNT_SID
+# TWILIO_AUTH_TOKEN
+
+# Plain-text env vars
+[vars]
+CLAUDE_MODEL = "claude-sonnet-4-20250514"
+WA_MODEL = "claude-haiku-4-5-20251001"
+ALLOWED_ORIGIN = "https://hcuevasg.github.io"
+APP_URL = "https://hcuevasg.github.io/strategic-report-agent"
+TWILIO_WHATSAPP_NUMBER = "+14155238886"
+RATE_LIMIT_PER_HOUR = "30"
+WA_RATE_LIMIT_PER_HOUR = "20"
