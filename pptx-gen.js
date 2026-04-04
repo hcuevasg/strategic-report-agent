@@ -414,13 +414,13 @@ REGLAS OBLIGATORIAS:
           const singleSeries=normBar.length===1;
           sl.addChart(pptx.charts.BAR,normBar,{
             x:M,y:cy,w:chartW,h:chartH,
-            barDir:'col',barGapWidthPct:80,
+            barDir:'col',barGapWidthPct:60,
             catAxisLabelColor:A.BODY,valAxisLabelColor:A.BODY,
             catAxisLabelFontFace:'Calibri',valAxisLabelFontFace:'Calibri',
             catAxisLabelFontSize:9,valAxisLabelFontSize:9,
             catAxisOrientation:'minMax',
             dataLabelFontSize:8,dataLabelFontBold:true,dataLabelColor:A.NAVY,
-            showDataLabel:true,dataLabelPosition:'outEnd',
+            showDataLabel:true,dataLabelPosition:'outEnd',catAxisTruncate:false,
             catGridLine:{style:'none'},valGridLine:{color:A.MGRAY,style:'dash',size:0.5},
             valAxisHidden:false,valAxisMajorUnit:null,
             plotAreaBorderColor:A.WHITE,
@@ -462,10 +462,10 @@ REGLAS OBLIGATORIAS:
           const singleH=normH.length===1;
           sl.addChart(pptx.charts.BAR,normH,{
             x:M,y:cy,w:chartW,h:chartH,
-            barDir:'bar',barGapWidthPct:55,
+            barDir:'bar',barGapWidthPct:40,
             catAxisLabelColor:A.NAVY,valAxisLabelColor:A.BODY,
             catAxisLabelFontFace:'Calibri',valAxisLabelFontFace:'Calibri',
-            catAxisLabelFontSize:10,valAxisLabelFontSize:9,
+            catAxisLabelFontSize:11,valAxisLabelFontSize:9,
             dataLabelFontSize:9,dataLabelFontBold:true,dataLabelColor:A.WHITE,
             showDataLabel:true,dataLabelPosition:'inEnd',
             catGridLine:{style:'none'},valGridLine:{color:A.MGRAY,style:'dash',size:0.5},
@@ -486,12 +486,12 @@ REGLAS OBLIGATORIAS:
         const lbls=dp.map(d=>d.label||'');
         const donutColors=[A.NAVY,A.RED,A.TBLUE,'74777D','1A2B3C','C4C6CD'];
         sl.addChart(pptx.charts.DOUGHNUT,[{name:'',labels:lbls,values:vals}],{
-          x:M,y:cy,w:eLW*0.58,h:4.6,
+          x:M,y:cy,w:eLW*0.75,h:4.6,
           holeSize:55,
-          showLabel:false,showValue:false,showPercent:true,
+          showLabel:true,showValue:false,showPercent:true,dataLabelPosition:'bestFit',
           dataLabelFontSize:10,dataLabelFontBold:true,dataLabelColor:A.WHITE,
           chartColors:donutColors,
-          showLegend:true,legendPos:'r',legendFontSize:9,legendFontFace:'Calibri',
+          showLegend:true,legendPos:'b',legendFontSize:9,legendFontFace:'Calibri',
           legendColor:A.BODY,
           showTitle:false,plotAreaBorderColor:A.WHITE
         });

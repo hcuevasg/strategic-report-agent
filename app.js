@@ -241,9 +241,20 @@ function updateCharCount(el){const n=el.value.length;const c=document.getElement
 // ============================================================
 let currentReportType='market_analysis';
 function setReportType(el){
-  document.querySelectorAll('.rtype-chip').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#reportTypeChips .rtype-chip').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
   currentReportType=el.dataset.type;
+}
+
+// ============================================================
+// OUTPUT LANGUAGE SELECTOR
+// ============================================================
+let outputLanguage='auto';
+function setOutputLang(el){
+  document.querySelectorAll('#langChips .rtype-chip').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  outputLanguage=el.dataset.lang;
+  if(outputLanguage!=='auto' && i18n[outputLanguage]) currentLang=outputLanguage;
 }
 
 // ============================================================
@@ -466,21 +477,21 @@ async function analyze(){
   setLoading(true);startProgress();hideError();hidePreview();result=null;originalResult=null;
   try{
     const SECTION_PROGRESS={
-      '"title"':'Redactando título...',
-      '"executive_summary"':'Redactando resumen ejecutivo...',
-      '"key_messages"':'Estructurando mensajes clave...',
-      '"context"':'Construyendo contexto...',
-      '"findings"':'Identificando hallazgos clave...',
-      '"analysis_blocks"':'Construyendo bloques de análisis...',
-      '"risks"':'Evaluando riesgos...',
-      '"opportunities"':'Identificando oportunidades...',
-      '"recommendations"':'Redactando recomendaciones...',
-      '"conclusion"':'Redactando conclusión ejecutiva...',
-      '"kpis"':'Calculando KPIs...',
+      '"title"':t('progressTitle'),
+      '"executive_summary"':t('progressSummary'),
+      '"key_messages"':t('progressKeys'),
+      '"context"':t('progressContext'),
+      '"findings"':t('progressFindings'),
+      '"analysis_blocks"':t('progressAnalysis'),
+      '"risks"':t('progressRisks'),
+      '"opportunities"':t('progressOpps'),
+      '"recommendations"':t('progressRecs'),
+      '"conclusion"':t('progressConclusion'),
+      '"kpis"':t('progressKpis'),
     };
     let chunks=0;
     let thinkingPhase=true;
-    const requestBody={userContent:input,reportType:currentReportType};
+    const requestBody={userContent:input,reportType:currentReportType,outputLanguage};
     // Attach images if available (vision support)
     if(window._pendingImages && window._pendingImages.length>0){
       requestBody.images=window._pendingImages;

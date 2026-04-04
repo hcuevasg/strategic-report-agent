@@ -53,7 +53,7 @@ INSTRUCCIONES:
 6. Tono institucional, estratégico y sobrio. Sin marketing vacío.
 7. Toda afirmación debe tener fundamento en el material fuente.
 8. Si detectas vacíos, identifícalos explícitamente.
-9. Responde en el MISMO IDIOMA del contenido original.
+9. Responde en el idioma que se indique en las instrucciones del usuario. Si no se indica idioma, responde en el MISMO IDIOMA del contenido original.
 
 ESTÁNDAR MECE: sin solapamientos, cobertura suficiente. Diferencia síntomas, causas, impactos y recomendaciones. Traduce observaciones operativas en implicancias estratégicas.
 
@@ -979,6 +979,12 @@ export default {
       } else {
         ctx.waitUntil(trackEvent(env, 'analysis'));
 
+        // Language instruction based on user selection
+        const LANG_NAMES = { es: 'español', en: 'English', pt: 'português', fr: 'français', de: 'Deutsch' };
+        const langPref = body.outputLanguage && body.outputLanguage !== 'auto' && LANG_NAMES[body.outputLanguage]
+          ? `\nIMPORTANTE: Redacta TODO el informe en ${LANG_NAMES[body.outputLanguage]}, independientemente del idioma del contenido fuente.\n\n`
+          : '\n\n';
+
         // Build messages — support vision (images array)
         const userBlocks = [];
         if (body.images && Array.isArray(body.images) && body.images.length > 0) {
@@ -990,12 +996,12 @@ export default {
           });
           userBlocks.push({
             type: 'text',
-            text: 'Transforma el siguiente documento fuente (incluye imágenes del documento) en el informe ejecutivo solicitado. Analiza las imágenes para extraer datos, gráficos y tablas relevantes. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
+            text: 'Transforma el siguiente documento fuente (incluye imágenes del documento) en el informe ejecutivo solicitado. Analiza las imágenes para extraer datos, gráficos y tablas relevantes.' + langPref + 'Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
           });
         } else {
           userBlocks.push({
             type: 'text',
-            text: 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
+            text: 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado.' + langPref + 'Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
           });
         }
 
