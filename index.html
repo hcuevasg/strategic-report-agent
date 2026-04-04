@@ -1632,10 +1632,10 @@ REGLAS OBLIGATORIAS:
         // Right column — navy highlight block (only if distinct from so_what)
         const hText=s.highlight_box||'';
         if(hText && hText!==s.so_what){
-          sl.addShape('rect',{x:rightColX,y:contentTop,w:rightColW,h:contentH,fill:{color:A.NAVY}});
+          sl.addShape('rect',{x:rightColX,y:contentTop,w:rightColW,h:contentH,fill:{color:'EBF2FA'},line:{color:'C8DFF2',width:0.5}});
           sl.addShape('rect',{x:rightColX,y:contentTop,w:0.06,h:contentH,fill:{color:A.RED}});
           sl.addText(hText,{x:rightColX+0.25,y:contentTop+0.5,w:rightColW-0.45,h:contentH-1.0,
-            fontSize:14,fontFace:'Calibri',color:A.WHITE,italic:true,
+            fontSize:14,fontFace:'Calibri',color:A.NAVY,italic:true,
             lineSpacingMultiple:1.6,valign:'middle',bold:false,shrinkText:true});
         } else {
           // No distinct highlight — use the space for a key takeaway card
