@@ -654,23 +654,20 @@ REGLAS OBLIGATORIAS:
         const contentH=7.5-contentTop-0.6;
         // Left column background — starts below subheading to avoid covering it
         sl.addShape('rect',{x:0,y:contentTop,w:M+leftColW+splitGap*0.5,h:7.5-contentTop,fill:{color:'F8F9FB'}});
-        // Body text
-        let bcy=contentTop;
-        const bulletCount=(s.bullets&&s.bullets.length)||0;
+        // Body text + bullets — single text block to prevent overlap
+        const leftParts=[];
         if(s.body_text){
-          const bulletSpace=bulletCount*0.48+0.15;
-          const textH=Math.max(1.4,contentH-bulletSpace);
-          sl.addText(s.body_text,{x:M,y:bcy,w:leftColW,h:textH,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top',shrinkText:true});
-          bcy+=textH+0.15;
+          leftParts.push({text:s.body_text,options:{fontSize:12,color:A.BODY}});
         }
-        if(bulletCount){
-          const remainH=Math.max(bulletCount*0.38,7.5-0.6-bcy);
-          const bH=remainH/bulletCount;
-          s.bullets.forEach(b=>{
-            sl.addText([{text:'\u25B8 ',options:{fontSize:12,color:accentColor,bold:true}},{text:b,options:{fontSize:12,color:A.BODY}}],{x:M+0.1,y:bcy,w:leftColW-0.2,h:bH-0.04,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.3,shrinkText:true});
-            bcy+=bH;
+        if(s.bullets&&s.bullets.length){
+          if(leftParts.length) leftParts.push({text:'\n\n',options:{fontSize:6}});
+          s.bullets.forEach((b,j)=>{
+            if(j>0) leftParts.push({text:'\n',options:{fontSize:4}});
+            leftParts.push({text:'\u25B8 ',options:{fontSize:11,color:accentColor,bold:true}});
+            leftParts.push({text:b,options:{fontSize:11,color:A.BODY}});
           });
         }
+        if(leftParts.length) sl.addText(leftParts,{x:M,y:contentTop,w:leftColW,h:contentH,fontFace:'Calibri',lineSpacingMultiple:1.5,valign:'top',shrinkText:true});
         // Right column — navy highlight block (only if distinct from so_what)
         const hText=s.highlight_box||'';
         if(hText && hText!==s.so_what){
