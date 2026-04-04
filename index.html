@@ -198,12 +198,15 @@ tailwind.config={theme:{extend:{colors:{
           </div>
           <input type="file" id="fileInput" accept=".txt,.md,.csv,.pdf,.docx,.doc" class="hidden" onchange="handleFile(event)"/>
           <div id="dropZone" class="drop-zone relative">
-            <textarea id="inputText" class="w-full bg-[#F8F9FB] border-0 border-b border-outline-variant p-4 text-[#191C1E] placeholder:text-slate-400 transition-all resize-none text-sm leading-relaxed focus:border-[#041627]" placeholder="Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí..." rows="8"></textarea>
+            <textarea id="inputText" class="w-full bg-[#F8F9FB] border-0 border-b border-outline-variant p-4 text-[#191C1E] placeholder:text-slate-400 transition-all resize-none text-sm leading-relaxed focus:border-[#041627]" placeholder="Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí..." rows="8" oninput="updateCharCount(this)"></textarea>
           </div>
           <div id="fileInfo" class="hidden font-['Inter'] text-[10px] text-slate-500 flex items-center gap-2">
-            <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
+            <span class="material-symbols-outlined text-sm text-[#4279B0]">check_circle</span>
             <span id="fileName"></span>
             <button onclick="clearFile()" class="text-[#BB0014] hover:text-red-700 ml-2">✕</button>
+          </div>
+          <div class="flex justify-end pt-1">
+            <span id="charCount" class="font-['Inter'] text-[10px] text-slate-400"></span>
           </div>
         </div>
         <!-- Progress bar -->
@@ -229,7 +232,7 @@ tailwind.config={theme:{extend:{colors:{
           <div class="tooltip-wrap"><span class="tooltip">Generar PPTX</span><button id="btnPptx" onclick="downloadPptx()" class="hidden bg-[#041627] hover:bg-[#1A2B3C] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex disabled:opacity-40 disabled:cursor-not-allowed">
             <span class="material-symbols-outlined text-base">slideshow</span> PPTX
           </button></div>
-          <div class="tooltip-wrap"><span class="tooltip">Exportar Word</span><button id="btnDocx" onclick="downloadDocx()" class="hidden bg-emerald-700 hover:bg-emerald-800 text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+          <div class="tooltip-wrap"><span class="tooltip">Exportar Word</span><button id="btnDocx" onclick="downloadDocx()" class="hidden bg-[#4279B0] hover:bg-[#3568A0] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
             <span class="material-symbols-outlined text-base">download</span> DOCX
           </button></div>
           <div class="tooltip-wrap"><span class="tooltip">Brief 1 página</span><button id="btnBrief" onclick="downloadBrief()" class="hidden bg-[#F2F4F6] hover:bg-[#E0E3E5] text-[#041627] border border-[#C4C6CD] font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex" title="">
@@ -385,7 +388,8 @@ const dz=document.getElementById('dropZone');
 dz.addEventListener('drop',ev=>{const f=ev.dataTransfer.files[0];if(f)processFile(f);});
 function handleFile(ev){const f=ev.target.files[0];if(f)processFile(f);}
 async function processFile(file){const ext=file.name.split('.').pop().toLowerCase();showStatus('Leyendo: '+file.name+'...');try{let t='';if(['txt','md','csv'].includes(ext)){t=await file.text();}else if(ext==='pdf'){const ab=await file.arrayBuffer();if(typeof pdfjsLib==='undefined')throw new Error('Librería PDF no cargada, recarga la página');const pdf=await pdfjsLib.getDocument({data:ab}).promise;const pp=[];for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const c=await pg.getTextContent();pp.push(c.items.map(x=>x.str).join(' '));}t=pp.join('\n\n');}else if(['docx','doc'].includes(ext)){const ab=await file.arrayBuffer();if(typeof mammoth==='undefined')throw new Error('Librería DOCX no cargada, recarga la página');const r=await mammoth.extractRawText({arrayBuffer:ab});t=r.value;}else{throw new Error('Formato no soportado');}document.getElementById('inputText').value=t;document.getElementById('fileInfo').classList.remove('hidden');document.getElementById('fileName').textContent=file.name+' ('+(t.length/1000).toFixed(1)+'K chars)';showStatus('Archivo cargado');}catch(e){showError('Error: '+e.message);}}
-function clearFile(){document.getElementById('inputText').value='';document.getElementById('fileInfo').classList.add('hidden');document.getElementById('fileInput').value='';}
+function clearFile(){document.getElementById('inputText').value='';document.getElementById('fileInfo').classList.add('hidden');document.getElementById('fileInput').value='';updateCharCount({value:''});}
+function updateCharCount(el){const n=el.value.length;const c=document.getElementById('charCount');if(!c)return;if(n===0){c.textContent='';return;}const k=(n/1000).toFixed(1);if(n>60000){c.textContent=k+'K caracteres — ⚠ muy largo, puede afectar calidad';c.className='font-['Inter'] text-[10px] text-[#BB0014] font-medium';}else if(n>30000){c.textContent=k+'K caracteres';c.className='font-['Inter'] text-[10px] text-slate-500';}else{c.textContent=k+'K caracteres';c.className='font-['Inter'] text-[10px] text-slate-400';}}
 
 // ============================================================
 // API CALL
@@ -394,6 +398,8 @@ function clearFile(){document.getElementById('inputText').value='';document.getE
 // HISTORIAL DE INFORMES — localStorage (últimos 5)
 // ============================================================
 const HISTORY_KEY = 'alto_report_history';
+let currentHistoryId = null;
+let _autoSaveTimer = null;
 
 function saveToHistory(r){
   try{
@@ -408,6 +414,7 @@ function saveToHistory(r){
     history.unshift(entry);
     const trimmed = history.slice(0,5);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+    currentHistoryId = entry.id;
     renderHistory();
   }catch(e){console.warn('History save error:',e);}
 }
@@ -424,6 +431,7 @@ function loadFromHistory(id){
   try{
     result = JSON.parse(entry.data);
     originalResult = JSON.parse(entry.data);
+    currentHistoryId = id;
     renderPreview(result);
     showExportBtns();
     showStatus('Informe cargado — '+entry.title);
@@ -451,7 +459,75 @@ function renderHistory(){
 document.addEventListener('DOMContentLoaded', renderHistory);
 
 
-async function analyze(){const input=document.getElementById('inputText').value.trim();const wUrl=document.getElementById('workerUrl').value.trim();if(!input)return;if(!wUrl){showError('Configura la URL del Worker.');return;}setLoading(true);startProgress();hideError();hidePreview();result=null;originalResult=null;try{const res=await fetch(wUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userContent:input})});const raw=await res.text();if(raw.trim().startsWith('<'))throw new Error('Worker devolvió HTML. Status: '+res.status);let data;try{data=JSON.parse(raw);}catch(e){throw new Error('No es JSON: '+raw.substring(0,200));}if(data.error)throw new Error(data.error.message||data.error);if(!data.content||!Array.isArray(data.content))throw new Error('Respuesta inesperada');const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');const clean=txt.replace(/```json|```/g,'').trim();try{result=JSON.parse(clean);}catch(e){throw new Error('IA no devolvió JSON válido');}originalResult=JSON.parse(JSON.stringify(result));stopProgress(true);renderPreview(result);showExportBtns();showStatus('Informe generado — edita y exporta');setDot('ok');saveToHistory(result);}catch(err){stopProgress(false);showError(err.message);setDot('no');}finally{setLoading(false);}}
+// ============================================================
+// WORKER FETCH — soporta streaming SSE y JSON legado
+// ============================================================
+async function fetchFromWorker(url, body, onChunk){
+  const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(!res.ok){
+    const errText = await res.text();
+    if(errText.trim().startsWith('<')) throw new Error('Worker devolvió HTML. Status: '+res.status);
+    try{const d=JSON.parse(errText);throw new Error(d.error?.message||d.error||'Error del servidor');}
+    catch(e2){if(e2.message.startsWith('Worker')||e2.message.startsWith('Error del')) throw e2;throw new Error('Error: '+errText.substring(0,200));}
+  }
+  const ct = res.headers.get('content-type')||'';
+  let fullText = '';
+  if(ct.includes('text/event-stream')){
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    while(true){
+      const {done, value} = await reader.read();
+      if(done) break;
+      buf += decoder.decode(value, {stream:true});
+      const lines = buf.split('\n\n');
+      buf = lines.pop();
+      for(const line of lines){
+        if(!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if(data==='[DONE]') break;
+        try{const p=JSON.parse(data);if(p.text){fullText+=p.text;if(onChunk)onChunk(fullText,p.text);}}catch{}
+      }
+    }
+  } else {
+    const raw = await res.text();
+    if(raw.trim().startsWith('<')) throw new Error('Worker devolvió HTML. Status: '+res.status);
+    let data;
+    try{data=JSON.parse(raw);}catch(e){throw new Error('No es JSON: '+raw.substring(0,200));}
+    if(data.error) throw new Error(data.error.message||data.error);
+    if(!data.content||!Array.isArray(data.content)) throw new Error('Respuesta inesperada');
+    fullText = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+  }
+  return fullText;
+}
+
+async function analyze(){
+  const input=document.getElementById('inputText').value.trim();
+  const wUrl=document.getElementById('workerUrl').value.trim();
+  if(!input)return;
+  if(!wUrl){showError('Configura la URL del Worker.');return;}
+  setLoading(true);startProgress();hideError();hidePreview();result=null;originalResult=null;
+  try{
+    const STREAM_MSGS=['Recibiendo respuesta...','Procesando hallazgos...','Estructurando análisis...','Redactando recomendaciones...','Finalizando informe...'];
+    let chunks=0;
+    const txt=await fetchFromWorker(wUrl,{userContent:input},(full,chunk)=>{
+      chunks++;
+      clearInterval(progressTimer);
+      const pct=Math.min(93,10+chunks*4);
+      document.getElementById('progressFill').style.width=pct+'%';
+      document.getElementById('progressPct').textContent=pct+'%';
+      const msgIdx=Math.min(Math.floor(chunks/6),STREAM_MSGS.length-1);
+      document.getElementById('progressStep').textContent=STREAM_MSGS[msgIdx];
+    });
+    const clean=txt.replace(/```json|```/g,'').trim();
+    try{result=JSON.parse(clean);}catch(e){throw new Error('IA no devolvió JSON válido');}
+    originalResult=JSON.parse(JSON.stringify(result));
+    stopProgress(true);renderPreview(result);showExportBtns();
+    showStatus('Informe generado — edita y exporta');setDot('ok');saveToHistory(result);
+  }catch(err){
+    stopProgress(false);showError(err.message);setDot('no');
+  }finally{setLoading(false);}
+}
 
 // ============================================================
 // EDITABLE PREVIEW (ALTO branded)
@@ -459,7 +535,8 @@ async function analyze(){const input=document.getElementById('inputText').value.
 function ed(path){const val=getPath(result,path)||'';return `<span class="editable" contenteditable="true" data-path="${path}" onblur="updateField(this)">${esc(val)}</span>`;}
 function getPath(o,p){return p.split('.').reduce((c,k)=>{if(c==null)return undefined;const m=k.match(/^(.+)\[(\d+)\]$/);return m?(c[m[1]]||[])[parseInt(m[2])]:c[k];},o);}
 function setPath(o,p,v){const parts=p.split('.');let c=o;for(let i=0;i<parts.length-1;i++){const m=parts[i].match(/^(.+)\[(\d+)\]$/);c=m?c[m[1]][parseInt(m[2])]:c[parts[i]];}const l=parts[parts.length-1];const lm=l.match(/^(.+)\[(\d+)\]$/);if(lm)c[lm[1]][parseInt(lm[2])]=v;else c[l]=v;}
-function updateField(el){setPath(result,el.dataset.path,el.textContent.trim());}
+function updateField(el){setPath(result,el.dataset.path,el.textContent.trim());autoSaveEdit();}
+function autoSaveEdit(){if(!result||!currentHistoryId)return;clearTimeout(_autoSaveTimer);_autoSaveTimer=setTimeout(()=>{try{const h=loadHistory();const idx=h.findIndex(e=>e.id===currentHistoryId);if(idx>=0){h[idx].data=JSON.stringify(result);h[idx].title=result.title||'Sin título';localStorage.setItem(HISTORY_KEY,JSON.stringify(h));renderHistory();}}catch(e){}},800);}
 function resetEdits(){if(originalResult){result=JSON.parse(JSON.stringify(originalResult));renderPreview(result);flash('Restaurado');}}
 
 function renderPreview(r){
@@ -602,7 +679,7 @@ function renderPreview(r){
       <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-5">Oportunidades</h2>
       <div class="space-y-2">`;
     r.opportunities.forEach((o,i)=>{
-      h+=`<div class="flex gap-3 items-start"><span class="font-['Inter'] text-emerald-600 font-black text-xs select-none mt-0.5">✦</span><span class="font-['Inter'] text-sm text-[#191C1E] editable" contenteditable="true" data-path="opportunities[${i}]" onblur="updateField(this)">${esc(o)}</span></div>`;
+      h+=`<div class="flex gap-3 items-start"><span class="font-['Inter'] text-[#4279B0] font-black text-xs select-none mt-0.5">✦</span><span class="font-['Inter'] text-sm text-[#191C1E] editable" contenteditable="true" data-path="opportunities[${i}]" onblur="updateField(this)">${esc(o)}</span></div>`;
     });
     h+=`</div></div>`;
   }
@@ -633,12 +710,16 @@ function renderPreview(r){
 
   // ── Info gaps ──────────────────────────────────────────────
   if(r.information_gaps?.length){
-    h+=`<div class="px-10 py-6 border-b border-[#E0E3E5] bg-[#F8F9FB]">
-      <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-3">Información Faltante</span>`;
+    h+=`<div class="px-10 py-7 border-b border-[#E0E3E5]">
+      <div class="flex gap-0">
+        <div style="width:4px;background:#4279B0;flex-shrink:0"></div>
+        <div class="flex-1 pl-6">
+          <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#4279B0] font-bold block mb-4">Brechas de Información</span>
+          <div class="space-y-2.5">`;
     r.information_gaps.forEach((g,i)=>{
-      h+=`<div class="flex gap-3 mb-1.5"><span class="text-slate-400 text-xs select-none">○</span><span class="font-['Inter'] text-xs text-slate-500 editable" contenteditable="true" data-path="information_gaps[${i}]" onblur="updateField(this)">${esc(g)}</span></div>`;
+      h+=`<div class="flex gap-3 items-start"><span class="material-symbols-outlined text-[14px] text-[#4279B0] select-none mt-0.5" style="font-variation-settings:'FILL' 0">info</span><span class="font-['Inter'] text-sm text-[#44474C] editable" contenteditable="true" data-path="information_gaps[${i}]" onblur="updateField(this)">${esc(g)}</span></div>`;
     });
-    h+=`</div>`;
+    h+=`</div></div></div></div>`;
   }
 
   // ── Conclusion ─────────────────────────────────────────────
@@ -710,23 +791,12 @@ async function sendChat() {
   chatHistory.push({ role: 'user', content: msg });
 
   try {
-    const res = await fetch(wUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userContent: '__CHAT_MODE__',
-        chatMessages: [
-          { role: 'user', content: `Este es el informe ejecutivo actual en JSON:\n\n${JSON.stringify(result, null, 2)}\n\nEl usuario tiene una consulta sobre este informe. Responde de forma concisa y profesional. Si el usuario pide modificar el informe, responde con el JSON actualizado completo precedido de la etiqueta __JSON_UPDATE__ en una línea separada. Si solo pide información o aclaración, responde en texto normal.\n\nConsulta del usuario: ${msg}` },
-        ],
-      }),
-    });
-
-    const raw = await res.text();
-    let data;
-    try { data = JSON.parse(raw); } catch(e) { throw new Error('Respuesta no válida'); }
-    if (data.error) throw new Error(data.error.message || data.error);
-
-    const reply = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const reply = await fetchFromWorker(wUrl, {
+      userContent: '__CHAT_MODE__',
+      chatMessages: [
+        { role: 'user', content: `Este es el informe ejecutivo actual en JSON:\n\n${JSON.stringify(result, null, 2)}\n\nEl usuario tiene una consulta sobre este informe. Responde de forma concisa y profesional. Si el usuario pide modificar el informe, responde con el JSON actualizado completo precedido de la etiqueta __JSON_UPDATE__ en una línea separada. Si solo pide información o aclaración, responde en texto normal.\n\nConsulta del usuario: ${msg}` },
+      ],
+    }, null);
 
     // Check if response includes a JSON update
     if (reply.includes('__JSON_UPDATE__')) {
@@ -954,12 +1024,12 @@ async function downloadPptx(){if(!result)return;
     function actionTitle(sl,t,accent){
       const titleW=W-SW-M-0.25;
       // White title bar — full width, always on top
-      sl.addShape('rect',{x:0,y:0,w:W,h:0.85,fill:{color:A.WHITE}});
+      sl.addShape('rect',{x:0,y:0,w:W,h:1.0,fill:{color:A.WHITE}});
       // Use action_title, fall back to result.title if empty
       const titleText=t||result.title||'';
       if(titleText){
-        sl.addText(titleText,{x:M,y:0.1,w:titleW,h:0.6,fontSize:17,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.05,valign:'middle',shrinkText:true});
-        sl.addShape('rect',{x:M,y:0.75,w:1.2,h:0.04,fill:{color:accent||A.RED}});
+        sl.addText(titleText,{x:M,y:0.1,w:titleW,h:0.75,fontSize:20,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.05,valign:'middle',shrinkText:true});
+        sl.addShape('rect',{x:M,y:0.88,w:1.2,h:0.04,fill:{color:accent||A.RED}});
       }
       addLogo(sl);
     }
@@ -969,7 +1039,7 @@ async function downloadPptx(){if(!result)return;
 
     function soWhatPanel(sl,text){
       if(!text)return;
-      const panelY=0.85; // matches title bar height
+      const panelY=1.0; // matches title bar height
       const panelH=7.5-panelY;
       // WHITE panel background
       sl.addShape('rect',{x:SX,y:panelY,w:SW,h:panelH,fill:{color:A.WHITE}});
@@ -1074,7 +1144,7 @@ async function downloadPptx(){if(!result)return;
         items.forEach((item,i)=>{
           const iy=startY+(i*rowH);
           // Number circle
-          sl.addShape('ellipse',{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fill:{color:i===0?A.RED:A.NAVY}});
+          sl.addShape('roundRect',{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fill:{color:i===0?A.RED:A.TBLUE},rectRadius:0.12,shadow:{type:'outer',blur:5,offset:3,angle:315,color:'041627',transparency:75}});
           sl.addText(String(i+1),{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fontSize:circleSize>0.28?10:8,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
           // Title bold navy
           const titleH=showDesc?rowH*0.55:rowH-0.04;
@@ -1109,9 +1179,9 @@ async function downloadPptx(){if(!result)return;
       const accentColor=s.type==='risks'?A.RED:s.type==='opportunities'?A.TBLUE:A.RED;
       actionTitle(sl,s.action_title,accentColor);
       // soWhatPanel is called inside each layout branch — do NOT call it here
-      let cy=0.88;
+      let cy=1.02;
       const LW=SX-M-0.25; // left content width // content width left of SO WHAT panel
-      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:LW,h:0.28,fontSize:9,fontFace:'Calibri',color:A.SGRAY,italic:true});cy+=0.32;}
+      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:LW,h:0.35,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'middle'});cy+=0.42;}
 
       // ========== LAYOUT: STAT CALLOUTS ==========
       if(vis==='stat_callouts' && s.data_points&&s.data_points.length){
