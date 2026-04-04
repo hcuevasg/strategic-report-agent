@@ -1060,32 +1060,39 @@ async function downloadPptx(){if(!result)return;
         sl.addText('Contenido',{x:M,y:0.25,w:6,h:0.6,fontSize:24,fontFace:'Calibri',color:A.NAVY,bold:true});
         sl.addShape('rect',{x:M,y:0.88,w:1.0,h:0.04,fill:{color:A.RED}});
         const items=s.items||[];
-        const rowH=0.62;
         const startY=1.1;
+        const maxY=6.9; // leave room for footer
+        const availH=maxY-startY;
         const listW=CW*0.68;
+        // Dynamic row height: compact when many items
+        const showDesc=items.length<=8;
+        const rowH=Math.min(0.62, availH/items.length);
+        const circleSize=Math.min(0.32, rowH*0.5);
+        const titleFontSize=items.length<=8?11:items.length<=12?10:9;
         // Slide numbers: cover=1, toc=2, content starts at 3
         const slideNumStart=3;
         items.forEach((item,i)=>{
           const iy=startY+(i*rowH);
-          // Number — elegant: small circle outline style
-          sl.addShape('ellipse',{x:M,y:iy+0.04,w:0.32,h:0.32,fill:{color:i===0?A.RED:A.NAVY},line:{color:i===0?A.RED:A.NAVY,width:0}});
-          sl.addText(String(i+1),{x:M,y:iy+0.04,w:0.32,h:0.32,fontSize:10,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          // Number circle
+          sl.addShape('ellipse',{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fill:{color:i===0?A.RED:A.NAVY}});
+          sl.addText(String(i+1),{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fontSize:circleSize>0.28?10:8,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
           // Title bold navy
-          sl.addText(item.title||item,{x:M+0.45,y:iy,w:listW-1.2,h:0.35,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle'});
+          const titleH=showDesc?rowH*0.55:rowH-0.04;
+          sl.addText(item.title||item,{x:M+0.45,y:iy,w:listW-1.2,h:titleH,fontSize:titleFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle',shrinkText:true});
           // Slide number — right-aligned
-          sl.addText(String(slideNumStart+i),{x:M+listW-0.8,y:iy,w:0.7,h:0.35,fontSize:10,fontFace:'Calibri',color:A.SGRAY,bold:false,align:'right',valign:'middle'});
-          // Description
-          if(item.description){
-            sl.addText(item.description,{x:M+0.45,y:iy+0.33,w:listW-1.2,h:0.22,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'top'});
+          sl.addText(String(slideNumStart+i),{x:M+listW-0.8,y:iy,w:0.7,h:titleH,fontSize:titleFontSize-1,fontFace:'Calibri',color:A.SGRAY,bold:false,align:'right',valign:'middle'});
+          // Description — only when there's room
+          if(showDesc&&item.description){
+            sl.addText(item.description,{x:M+0.45,y:iy+titleH,w:listW-1.2,h:rowH*0.4,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'top'});
           }
           if(i<items.length-1){
-            sl.addShape('rect',{x:M,y:iy+rowH-0.04,w:listW,h:0.008,fill:{color:A.MGRAY}});
+            sl.addShape('rect',{x:M,y:iy+rowH-0.02,w:listW,h:0.008,fill:{color:A.MGRAY}});
           }
         });
-        // Right panel — navy background, tagline legible in white
+        // Right panel — navy background, tagline — fits content area
         const panelX=M+listW+0.15;
         const panelW=CW-listW-0.15;
-        const panelH=items.length*rowH+0.2;
+        const panelH=maxY-1.0;
         sl.addShape('rect',{x:panelX,y:1.0,w:panelW,h:panelH,fill:{color:A.NAVY}});
         sl.addShape('rect',{x:panelX,y:1.0,w:0.06,h:panelH,fill:{color:A.RED}});
         if(s.tagline){
