@@ -580,9 +580,7 @@ async function handleMagicLink(){
 
     result = data;
     renderPreview(result);
-    document.getElementById('validationWarn').classList.add('hidden');
-    document.getElementById('output').classList.remove('hidden');
-    document.getElementById('exportButtons').classList.remove('hidden');
+    showExportBtns();
 
     // Auto-trigger the requested download
     if(format==='pptx')       setTimeout(downloadPptx, 800);
