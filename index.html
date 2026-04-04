@@ -1024,12 +1024,12 @@ async function downloadPptx(){if(!result)return;
     function actionTitle(sl,t,accent){
       const titleW=W-SW-M-0.25;
       // White title bar — full width, always on top
-      sl.addShape('rect',{x:0,y:0,w:W,h:0.85,fill:{color:A.WHITE}});
+      sl.addShape('rect',{x:0,y:0,w:W,h:1.0,fill:{color:A.WHITE}});
       // Use action_title, fall back to result.title if empty
       const titleText=t||result.title||'';
       if(titleText){
-        sl.addText(titleText,{x:M,y:0.1,w:titleW,h:0.6,fontSize:17,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.05,valign:'middle',shrinkText:true});
-        sl.addShape('rect',{x:M,y:0.75,w:1.2,h:0.04,fill:{color:accent||A.RED}});
+        sl.addText(titleText,{x:M,y:0.1,w:titleW,h:0.75,fontSize:20,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.05,valign:'middle',shrinkText:true});
+        sl.addShape('rect',{x:M,y:0.88,w:1.2,h:0.04,fill:{color:accent||A.RED}});
       }
       addLogo(sl);
     }
@@ -1039,7 +1039,7 @@ async function downloadPptx(){if(!result)return;
 
     function soWhatPanel(sl,text){
       if(!text)return;
-      const panelY=0.85; // matches title bar height
+      const panelY=1.0; // matches title bar height
       const panelH=7.5-panelY;
       // WHITE panel background
       sl.addShape('rect',{x:SX,y:panelY,w:SW,h:panelH,fill:{color:A.WHITE}});
@@ -1144,7 +1144,7 @@ async function downloadPptx(){if(!result)return;
         items.forEach((item,i)=>{
           const iy=startY+(i*rowH);
           // Number circle
-          sl.addShape('ellipse',{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fill:{color:i===0?A.RED:A.NAVY}});
+          sl.addShape('roundRect',{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fill:{color:i===0?A.RED:A.TBLUE},rectRadius:0.12,shadow:{type:'outer',blur:5,offset:3,angle:315,color:'041627',transparency:75}});
           sl.addText(String(i+1),{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fontSize:circleSize>0.28?10:8,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
           // Title bold navy
           const titleH=showDesc?rowH*0.55:rowH-0.04;
@@ -1179,9 +1179,9 @@ async function downloadPptx(){if(!result)return;
       const accentColor=s.type==='risks'?A.RED:s.type==='opportunities'?A.TBLUE:A.RED;
       actionTitle(sl,s.action_title,accentColor);
       // soWhatPanel is called inside each layout branch — do NOT call it here
-      let cy=0.88;
+      let cy=1.02;
       const LW=SX-M-0.25; // left content width // content width left of SO WHAT panel
-      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:LW,h:0.28,fontSize:9,fontFace:'Calibri',color:A.SGRAY,italic:true});cy+=0.32;}
+      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:LW,h:0.35,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'middle'});cy+=0.42;}
 
       // ========== LAYOUT: STAT CALLOUTS ==========
       if(vis==='stat_callouts' && s.data_points&&s.data_points.length){
