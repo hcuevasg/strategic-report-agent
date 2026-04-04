@@ -426,7 +426,18 @@ async function handleMagicLink(){
 // WORKER FETCH — soporta streaming SSE y JSON legado
 // ============================================================
 async function fetchFromWorker(url, body, onChunk, onPhase){
-  const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const timeoutMs = body.userContent==='__PPTX_MODE__' ? 180000 : 120000;
+  const controller = new AbortController();
+  const timer = setTimeout(()=>controller.abort(), timeoutMs);
+  let res;
+  try{
+    res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body), signal:controller.signal});
+  }catch(e){
+    clearTimeout(timer);
+    if(e.name==='AbortError') throw new Error('Tiempo de espera agotado. Intenta con un documento más corto.');
+    throw e;
+  }
+  clearTimeout(timer);
   if(!res.ok){
     const errText = await res.text();
     if(errText.trim().startsWith('<')) throw new Error('Worker devolvió HTML. Status: '+res.status);
@@ -439,23 +450,31 @@ async function fetchFromWorker(url, body, onChunk, onPhase){
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buf = '';
-    while(true){
-      const {done, value} = await reader.read();
-      if(done) break;
-      buf += decoder.decode(value, {stream:true});
-      const lines = buf.split('\n\n');
-      buf = lines.pop();
-      for(const line of lines){
-        if(!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if(data==='[DONE]') break;
-        try{
-          const p=JSON.parse(data);
-          if(p.phase && onPhase) onPhase(p.phase);
-          if(p.text){fullText+=p.text;if(onChunk)onChunk(fullText,p.text);}
-        }catch{}
+    let streamError = null;
+    try{
+      while(true){
+        const {done, value} = await reader.read();
+        if(done) break;
+        buf += decoder.decode(value, {stream:true});
+        const lines = buf.split('\n\n');
+        buf = lines.pop();
+        for(const line of lines){
+          if(!line.startsWith('data: ')) continue;
+          const data = line.slice(6).trim();
+          if(data==='[DONE]') break;
+          try{
+            const p=JSON.parse(data);
+            if(p.phase && onPhase) onPhase(p.phase);
+            if(p.text){fullText+=p.text;if(onChunk)onChunk(fullText,p.text);}
+          }catch{}
+        }
       }
+    }catch(streamErr){
+      streamError = streamErr;
     }
+    // If stream broke but we have partial content, try to use it
+    if(streamError && !fullText) throw streamError;
+    if(streamError && fullText) console.warn('Stream interrupted, using partial response:', streamError.message);
   } else {
     const raw = await res.text();
     if(raw.trim().startsWith('<')) throw new Error('Worker devolvió HTML. Status: '+res.status);
@@ -521,7 +540,29 @@ async function analyze(){
       }
     });
     const clean=txt.replace(/```json|```/g,'').trim();
-    try{result=JSON.parse(clean);}catch(e){throw new Error('IA no devolvió JSON válido');}
+    try{result=JSON.parse(clean);}catch(e){
+      // Attempt to salvage truncated JSON by closing open braces/brackets
+      let salvaged=null;
+      try{
+        let fix=clean;
+        const opens=(fix.match(/\{/g)||[]).length;
+        const closes=(fix.match(/\}/g)||[]).length;
+        const arrOpens=(fix.match(/\[/g)||[]).length;
+        const arrCloses=(fix.match(/\]/g)||[]).length;
+        // Remove trailing comma or incomplete value
+        fix=fix.replace(/,\s*$/,'');
+        fix=fix.replace(/,\s*"[^"]*"?\s*$/,'');
+        for(let i=0;i<arrOpens-arrCloses;i++) fix+=']';
+        for(let i=0;i<opens-closes;i++) fix+='}';
+        salvaged=JSON.parse(fix);
+      }catch(e2){}
+      if(salvaged&&salvaged.title){
+        result=salvaged;
+        showValidationWarning(['El informe se recibió incompleto — algunas secciones pueden faltar']);
+      } else {
+        throw new Error('La IA no devolvió JSON válido. Intenta de nuevo o reduce el largo del documento.');
+      }
+    }
     // Set language from report
     if(result.language && i18n[result.language]) currentLang=result.language;
     else currentLang='es';
@@ -864,6 +905,8 @@ function setDot(s){
 function flash(m){showStatus(m);setTimeout(()=>{if(result)showStatus('Informe listo — edita y exporta');},2500);}
 function loadSample(){document.getElementById('inputText').value=`Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar.\n\nLas tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.\n\nEl área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.\n\nNecesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.\n\nNota: la data de modus operandi tiene un 30% de registros sin clasificar. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;}
 const saved=localStorage.getItem('worker_url');if(saved)document.getElementById('workerUrl').value=saved;document.getElementById('workerUrl').addEventListener('change',function(){localStorage.setItem('worker_url',this.value);});
+// Prevent accidental navigation when report is loaded
+window.addEventListener('beforeunload',e=>{if(result){e.preventDefault();}});
 
 // ── Chart Utilities ──
 function extractNumbers(r) {
