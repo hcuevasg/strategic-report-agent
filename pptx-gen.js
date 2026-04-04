@@ -294,7 +294,7 @@ REGLAS OBLIGATORIAS:
         const titleFontSize=items.length<=8?11:items.length<=12?10:9;
         items.forEach((item,i)=>{
           const iy=startY+(i*rowH);
-          sl.addShape('roundRect',{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fill:{color:i===0?A.RED:A.TBLUE},rectRadius:0.12,shadow:{type:'outer',blur:5,offset:3,angle:315,color:'041627',transparency:75}});
+          sl.addShape('roundRect',{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fill:{color:i===0?A.RED:A.TBLUE},rectRadius:0.12});
           sl.addText(String(i+1),{x:M,y:iy+(rowH-circleSize)/2,w:circleSize,h:circleSize,fontSize:circleSize>0.28?10:8,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
           const titleH=showDesc?rowH*0.55:rowH-0.04;
           sl.addText(item.title||item,{x:M+0.45,y:iy,w:listW-1.2,h:titleH,fontSize:titleFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle',shrinkText:true});
@@ -303,7 +303,7 @@ REGLAS OBLIGATORIAS:
           sl.addText(String(actualNum),{x:M+listW-0.8,y:iy,w:0.7,h:titleH,fontSize:titleFontSize-1,fontFace:'Calibri',color:A.SGRAY,bold:false,align:'right',valign:'middle'});
           // Description — only when there's room
           if(showDesc&&item.description){
-            sl.addText(item.description,{x:M+0.45,y:iy+titleH,w:listW-1.2,h:rowH*0.4,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'top'});
+            sl.addText(item.description,{x:M+0.45,y:iy+titleH,w:listW-1.2,h:rowH*0.4,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:false,valign:'top'});
           }
           if(i<items.length-1){
             sl.addShape('rect',{x:M,y:iy+rowH-0.02,w:listW,h:0.008,fill:{color:A.MGRAY}});
@@ -317,7 +317,7 @@ REGLAS OBLIGATORIAS:
         sl.addShape('rect',{x:panelX,y:1.0,w:0.06,h:panelH,fill:{color:A.RED}});
         if(s.tagline){
           sl.addText(s.tagline,{x:panelX+0.22,y:1.2,w:panelW-0.38,h:panelH-0.4,
-            fontSize:13,fontFace:'Calibri',color:A.NAVY,italic:true,
+            fontSize:13,fontFace:'Calibri',color:A.NAVY,italic:false,
             lineSpacingMultiple:1.7,valign:'middle',bold:false});
         }
         return;
