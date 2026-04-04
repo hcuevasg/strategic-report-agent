@@ -246,8 +246,8 @@ REGLAS OBLIGATORIAS:
         const leftW=7.8;
         // Logo color (top left)
         if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
-        // Main title — large extrabold
-        sl.addText(s.action_title||result.title,{x:0.55,y:1.45,w:leftW-0.8,h:3.2,fontSize:32,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top'});
+        // Main title — large extrabold (shrinkText prevents overlap with subtitle)
+        sl.addText(s.action_title||result.title,{x:0.55,y:1.45,w:leftW-0.8,h:3.2,fontSize:32,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
         // Subtitle italic
         if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.85,w:leftW-1.0,h:0.5,fontSize:12,fontFace:'Calibri',color:A.SGRAY,italic:true});
         // Presented by / date row
@@ -513,15 +513,17 @@ REGLAS OBLIGATORIAS:
           sl.addShape('rect',{x:bx,y:boxY,w:boxW,h:0.1,fill:{color:sc}});
           // Step title
           sl.addText(step.title||'',{x:bx+0.1,y:boxY+0.18,w:boxW-0.2,h:0.7,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle',lineSpacingMultiple:1.15,shrinkText:true});
-          // Items — distribute evenly in available box space
+          // Items — single text block to prevent overlap
           const items=(step.items||[]).slice(0,5);
-          const itemAreaTop=boxY+1.0;
-          const itemAreaH=boxH-(itemAreaTop-boxY)-0.15;
-          const itemH=Math.max(0.36,itemAreaH/Math.max(items.length,1));
+          const itemAreaTop=boxY+0.95;
+          const itemAreaH=boxH-(itemAreaTop-boxY)-0.1;
+          const itemTextParts=[];
           items.forEach((item,j)=>{
-            const iy=itemAreaTop+j*itemH;
-            sl.addText([{text:'▸ ',options:{fontSize:9,color:sc,bold:true}},{text:item,options:{fontSize:9,color:A.BODY}}],{x:bx+0.12,y:iy,w:boxW-0.24,h:itemH-0.04,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.2,shrinkText:true});
+            if(j>0) itemTextParts.push({text:'\n',options:{fontSize:5}});
+            itemTextParts.push({text:'▸ ',options:{fontSize:9,color:sc,bold:true}});
+            itemTextParts.push({text:item,options:{fontSize:9,color:A.BODY}});
           });
+          if(itemTextParts.length) sl.addText(itemTextParts,{x:bx+0.12,y:itemAreaTop,w:boxW-0.24,h:itemAreaH,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.25,shrinkText:true});
           // Arrow to next step
           if(i<n-1){
             const ax=bx+boxW+0.02;const ay=boxY+boxH/2;
@@ -545,14 +547,13 @@ REGLAS OBLIGATORIAS:
           sl.addText(col.title||'',{x:cx+0.06,y:cy,w:colW-0.12,h:headerH,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle',shrinkText:true});
           sl.addShape('rect',{x:cx+0.06,y:cy+headerH,w:colW-0.12,h:compH,fill:{color:A.LGRAY}});
           const items=col.items||[];
-          // Distribute items evenly across the full column height
-          const innerH=compH-0.25;
-          const itemH=Math.max(0.38,innerH/Math.max(items.length,1));
-          const startIy=cy+headerH+0.12;
+          const itemTextParts=[];
           items.forEach((item,j)=>{
-            const iy=startIy+j*itemH;
-            sl.addText([{text:'\u25B8 ',options:{fontSize:11,color:colColors[i%3],bold:true}},{text:item,options:{fontSize:11,color:A.BODY}}],{x:cx+0.18,y:iy,w:colW-0.32,h:itemH-0.04,fontFace:'Calibri',valign:'middle',lineSpacingMultiple:1.25,shrinkText:true});
+            if(j>0) itemTextParts.push({text:'\n',options:{fontSize:5}});
+            itemTextParts.push({text:'\u25B8 ',options:{fontSize:10,color:colColors[i%3],bold:true}});
+            itemTextParts.push({text:item,options:{fontSize:10,color:A.BODY}});
           });
+          if(itemTextParts.length) sl.addText(itemTextParts,{x:cx+0.18,y:cy+headerH+0.12,w:colW-0.32,h:compH-0.25,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.25,shrinkText:true});
         });
         soWhatPanel(sl,s.so_what);
 
@@ -576,14 +577,15 @@ REGLAS OBLIGATORIAS:
           // Card background — fills available space
           sl.addShape('rect',{x:px+0.05,y:cardTop,w:phW-0.1,h:cardH,fill:{color:A.LGRAY}});
           sl.addShape('rect',{x:px+0.05,y:cardTop,w:phW-0.1,h:0.05,fill:{color:i===0?A.RED:A.NAVY}});
-          // Items — spread evenly within the card
+          // Items — single text block to prevent overlap
           const items=ph.items||[];
-          const itemH=Math.min(0.6, (cardH-0.3)/Math.max(items.length,1));
-          let iy=cardTop+0.18;
-          items.forEach(item=>{
-            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:itemH,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'top',lineSpacingMultiple:1.3,shrinkText:true});
-            iy+=itemH+0.05;
+          const itemTextParts=[];
+          items.forEach((item,j)=>{
+            if(j>0) itemTextParts.push({text:'\n',options:{fontSize:5}});
+            itemTextParts.push({text:'\u25B8 ',options:{fontSize:10,color:i===0?A.RED:A.NAVY,bold:true}});
+            itemTextParts.push({text:item,options:{fontSize:10,color:A.BODY}});
           });
+          if(itemTextParts.length) sl.addText(itemTextParts,{x:px+0.15,y:cardTop+0.15,w:phW-0.3,h:cardH-0.3,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.3,shrinkText:true});
         });
         soWhatPanel(sl,s.so_what);
 
@@ -602,12 +604,13 @@ REGLAS OBLIGATORIAS:
           sl.addShape('rect',{x:px+0.06,y:cy,w:pW-0.12,h:pilHeaderH,fill:{color:pilColors[i%4]}});
           sl.addText(p.title||'',{x:px+0.06,y:cy,w:pW-0.12,h:pilHeaderH,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle',shrinkText:true});
           const items=p.items||[];
-          const innerH=pilBodyH-0.2;
-          const itemH=Math.max(0.38,innerH/Math.max(items.length,1));
+          const itemTextParts=[];
           items.forEach((item,j)=>{
-            const iy=cy+pilHeaderH+0.1+j*itemH;
-            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:pW-0.3,h:itemH-0.04,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'middle',lineSpacingMultiple:1.2,shrinkText:true});
+            if(j>0) itemTextParts.push({text:'\n',options:{fontSize:5}});
+            itemTextParts.push({text:'\u25B8 ',options:{fontSize:10,color:pilColors[i%4],bold:true}});
+            itemTextParts.push({text:item,options:{fontSize:10,color:A.BODY}});
           });
+          if(itemTextParts.length) sl.addText(itemTextParts,{x:px+0.15,y:cy+pilHeaderH+0.1,w:pW-0.3,h:pilBodyH-0.2,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.25,shrinkText:true});
         });
         soWhatPanel(sl,s.so_what);
 
@@ -629,11 +632,14 @@ REGLAS OBLIGATORIAS:
           sl.addShape('rect',{x:qx,y:qy,w:halfW,h:halfH,fill:{color:qFills[i]},line:{color:A.MGRAY,width:0.25}});
           sl.addShape('rect',{x:qx,y:qy,w:halfW,h:0.07,fill:{color:qColors[i]}});
           sl.addText(qd.title||'',{x:qx+0.12,y:qy+0.15,w:halfW-0.24,h:0.38,fontSize:10,fontFace:'Calibri',color:qColors[i],bold:true,lineSpacingMultiple:1.15,shrinkText:true});
-          let iy=qy+0.6;
-          (qd.items||[]).slice(0,4).forEach(item=>{
-            sl.addText([{text:'▸ ',options:{fontSize:9,color:qColors[i],bold:true}},{text:item,options:{fontSize:9,color:A.BODY}}],{x:qx+0.15,y:iy,w:halfW-0.3,h:0.34,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.15});
-            iy+=0.36;
+          const qItems=(qd.items||[]).slice(0,4);
+          const qItemParts=[];
+          qItems.forEach((item,j)=>{
+            if(j>0) qItemParts.push({text:'\n',options:{fontSize:4}});
+            qItemParts.push({text:'▸ ',options:{fontSize:9,color:qColors[i],bold:true}});
+            qItemParts.push({text:item,options:{fontSize:9,color:A.BODY}});
           });
+          if(qItemParts.length) sl.addText(qItemParts,{x:qx+0.15,y:qy+0.55,w:halfW-0.3,h:halfH-0.7,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.15,shrinkText:true});
         });
         soWhatPanel(sl,s.so_what);
 
