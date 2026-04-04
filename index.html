@@ -1295,7 +1295,7 @@ REGLAS OBLIGATORIAS:
       } else if(vis==='horizontal_bar' && s.chart_data){
         const cd=s.chart_data;
         const nCats=(cd.categories||[]).length;
-        const chartH=Math.min(5.2,Math.max(2.0,0.45+nCats*0.52));
+        const chartH=Math.min(5.4,7.5-cy-0.8);
         const chartW=LW*0.95;
         const series=(cd.series||[]).slice(0,3).map((ser,i)=>({name:ser.name||('Serie '+(i+1)),labels:cd.categories||[],values:(ser.values||[]).map(Number)}));
         if(series.length&&nCats){
@@ -1338,7 +1338,7 @@ REGLAS OBLIGATORIAS:
       } else if(vis==='process' && s.columns&&s.columns.length){
         const steps=s.columns.slice(0,5);const n=steps.length;
         const arrowW=0.3;const boxW=(LW-(arrowW*(n-1)))/n;
-        const boxH=Math.min(3.8,7.5-cy-1.2);const boxY=cy+0.15;
+        const boxH=Math.min(3.8,7.5-cy-1.2);const boxY=cy+0.5;
         const stepColors=[A.NAVY,A.RED,A.TBLUE,A.NAVY,A.RED];
         steps.forEach((step,i)=>{
           const bx=M+i*(boxW+arrowW);const sc=stepColors[i%3];
@@ -1367,7 +1367,8 @@ REGLAS OBLIGATORIAS:
       // ========== LAYOUT: COMPARISON COLUMNS ==========
       } else if(vis==='comparison' && s.columns&&s.columns.length){
         const cols=s.columns.slice(0,3);
-        const colW=LW/cols.length;
+        const effectiveLW=s.so_what?LW:CW;
+        const colW=effectiveLW/cols.length;
         const colColors=[A.NAVY,A.RED,A.TBLUE];
         // Fill available vertical space
         const availCompH=7.5-cy-0.6;
@@ -1425,7 +1426,8 @@ REGLAS OBLIGATORIAS:
       // ========== LAYOUT: PILLARS ==========
       } else if(vis==='pillars' && s.columns&&s.columns.length){
         const pils=s.columns.slice(0,4);
-        const pW=LW/pils.length;
+        const effectiveLW=s.so_what?LW:CW;
+        const pW=effectiveLW/pils.length;
         const pilColors=[A.NAVY,A.TBLUE,A.RED,A.NAVY];
         pils.forEach((p,i)=>{
           const px=M+(i*pW);
