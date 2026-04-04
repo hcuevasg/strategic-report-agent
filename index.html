@@ -1102,7 +1102,7 @@ async function downloadPptx(){if(!result)return;
       // FIXED: Use only ALTO corporate colors for accents
       const accentColor=s.type==='risks'?A.RED:s.type==='opportunities'?A.TBLUE:A.RED;
       actionTitle(sl,s.action_title,accentColor);
-      soWhatPanel(sl,s.so_what); // draw panel AFTER title so title is on top
+      // soWhatPanel is called inside each layout branch — do NOT call it here
       let cy=0.88;
       const LW=SX-M-0.25; // left content width // content width left of SO WHAT panel
       if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:LW,h:0.28,fontSize:9,fontFace:'Calibri',color:A.SGRAY,italic:true});cy+=0.32;}
@@ -1186,20 +1186,30 @@ async function downloadPptx(){if(!result)return;
       } else if(vis==='timeline' && s.columns&&s.columns.length){
         const phases=s.columns.slice(0,4);
         const phW=LW/phases.length;
-        const maxPhItems=Math.max(...phases.map(p=>(p.items||[]).length));
-        const phCardH=Math.min(4.0, Math.max(1.6, maxPhItems*0.52+0.4));
+        // Available height: from cy to near bottom of slide
+        const availH=7.5-cy-0.6;
+        // Timeline connector line
         sl.addShape('rect',{x:M,y:cy+0.2,w:LW,h:0.05,fill:{color:A.MGRAY}});
+        // Card area starts after circle+title header (~1.05 from cy)
+        const cardTop=cy+1.05;
+        const cardH=availH-1.05; // fill remaining space
         phases.forEach((ph,i)=>{
           const px=M+(i*phW);
+          // Step circle
           sl.addShape('ellipse',{x:px+phW/2-0.2,y:cy+0.02,w:0.4,h:0.4,fill:{color:i===0?A.RED:A.NAVY},line:{color:A.WHITE,width:2}});
           sl.addText(String(i+1),{x:px+phW/2-0.2,y:cy+0.02,w:0.4,h:0.4,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          // Phase title
           sl.addText(ph.title||'',{x:px+0.05,y:cy+0.55,w:phW-0.1,h:0.45,fontSize:12,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'top'});
-          sl.addShape('rect',{x:px+0.05,y:cy+1.05,w:phW-0.1,h:phCardH,fill:{color:A.LGRAY}});
-          sl.addShape('rect',{x:px+0.05,y:cy+1.05,w:phW-0.1,h:0.05,fill:{color:i===0?A.RED:A.NAVY}});
-          let iy=cy+1.18;
-          (ph.items||[]).forEach(item=>{
-            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:0.42,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'top',lineSpacingMultiple:1.2});
-            iy+=0.48;
+          // Card background — fills available space
+          sl.addShape('rect',{x:px+0.05,y:cardTop,w:phW-0.1,h:cardH,fill:{color:A.LGRAY}});
+          sl.addShape('rect',{x:px+0.05,y:cardTop,w:phW-0.1,h:0.05,fill:{color:i===0?A.RED:A.NAVY}});
+          // Items — spread evenly within the card
+          const items=ph.items||[];
+          const itemH=Math.min(0.6, (cardH-0.3)/Math.max(items.length,1));
+          let iy=cardTop+0.18;
+          items.forEach(item=>{
+            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:itemH,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'top',lineSpacingMultiple:1.3});
+            iy+=itemH+0.05;
           });
         });
         soWhatPanel(sl,s.so_what);
@@ -1245,30 +1255,35 @@ async function downloadPptx(){if(!result)return;
 
       // ========== LAYOUT: SPLIT ==========
       } else if(vis==='split'){
-        const leftW=LW*0.88,rightW=SW-0.3;
-        // Left side: subtle surface background
-        sl.addShape('rect',{x:0,y:0,w:SX,h:7.5,fill:{color:'F8F9FB'}});
-        // Body text — larger
+        // Two-column split: left text (60%) + right navy highlight (40%)
+        const splitGap=0.25;
+        const leftColW=LW*0.58;
+        const rightColW=LW-leftColW-splitGap;
+        const rightColX=M+leftColW+splitGap;
+        const contentTop=cy;
+        const contentH=7.5-contentTop-0.6;
+        // Left column background
+        sl.addShape('rect',{x:0,y:0.85,w:M+leftColW+splitGap*0.5,h:7.5-0.85,fill:{color:'F8F9FB'}});
+        // Body text
+        let bcy=contentTop;
         if(s.body_text){
-          sl.addText(s.body_text,{x:M,y:cy,w:leftW,h:1.8,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top'});
+          const textH=Math.min(contentH*0.45, Math.max(1.4,s.body_text.length/90*0.35));
+          sl.addText(s.body_text,{x:M,y:bcy,w:leftColW,h:textH,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top'});
+          bcy+=textH+0.15;
         }
-        let bcy=cy+(s.body_text?1.95:0);
         if(s.bullets&&s.bullets.length){
           s.bullets.forEach(b=>{
-            sl.addText([{text:'\u25B8 ',options:{fontSize:12,color:accentColor,bold:true}},{text:b,options:{fontSize:12,color:A.BODY}}],{x:M+0.1,y:bcy,w:leftW-0.2,h:0.4,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.3});
+            sl.addText([{text:'\u25B8 ',options:{fontSize:12,color:accentColor,bold:true}},{text:b,options:{fontSize:12,color:A.BODY}}],{x:M+0.1,y:bcy,w:leftColW-0.2,h:0.4,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.3});
             bcy+=0.48;
           });
         }
-        // Right content block — navy, between content and SO WHAT panel
-        // Use space between leftW and SX (the SO WHAT panel starts at SX)
-        const splitRX=M+leftW+0.15;
-        const splitBlockW=SX-splitRX-0.1;
-        sl.addShape('rect',{x:splitRX,y:0.85,w:splitBlockW,h:7.5-0.85,fill:{color:A.NAVY}});
-        sl.addShape('rect',{x:splitRX,y:0.85,w:0.06,h:7.5-0.85,fill:{color:A.RED}});
+        // Right column — navy highlight block
+        sl.addShape('rect',{x:rightColX,y:contentTop,w:rightColW,h:contentH,fill:{color:A.NAVY}});
+        sl.addShape('rect',{x:rightColX,y:contentTop,w:0.06,h:contentH,fill:{color:A.RED}});
         const hText=s.highlight_box||s.so_what||'';
         if(hText){
-          sl.addText(hText,{x:splitRX+0.2,y:1.5,w:splitBlockW-0.3,h:4.5,
-            fontSize:15,fontFace:'Calibri',color:A.WHITE,italic:true,
+          sl.addText(hText,{x:rightColX+0.25,y:contentTop+0.5,w:rightColW-0.45,h:contentH-1.0,
+            fontSize:14,fontFace:'Calibri',color:A.WHITE,italic:true,
             lineSpacingMultiple:1.6,valign:'middle',bold:false});
         }
         soWhatPanel(sl,s.so_what);
