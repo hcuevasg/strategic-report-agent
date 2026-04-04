@@ -66,6 +66,16 @@ tailwind.config={theme:{extend:{colors:{
   /* ── Accent bar ──────────────────────────────────────────── */
   .accent-bar{width:4px;background:#BB0014;flex-shrink:0}
 
+  /* ── Report type chips ───────────────────────────────────── */
+  .rtype-chip{padding:6px 12px;border:1px solid #C4C6CD;color:#44474C;cursor:pointer;transition:all .15s;background:#fff;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+  .rtype-chip:hover{border-color:#041627;color:#041627}
+  .rtype-chip.active{background:#041627;color:#fff;border-color:#041627}
+
+  /* ── Regen button ────────────────────────────────────────── */
+  .regen-btn{display:inline-flex;align-items:center;gap:3px;padding:4px 8px;font-family:'Inter',sans-serif;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;transition:all .15s;cursor:pointer;background:transparent;border:none;flex-shrink:0}
+  .regen-btn:hover{color:#041627;background:#F2F4F6}
+  .regen-btn:disabled{opacity:0.4;cursor:not-allowed}
+
   /* ── Input / textarea ────────────────────────────────────── */
   input,textarea{border-radius:0!important;transition:border-color .2s}
   input:focus,textarea:focus{outline:none;border-bottom:2px solid #041627!important;box-shadow:none!important}
@@ -185,6 +195,16 @@ tailwind.config={theme:{extend:{colors:{
           <input id="workerUrl" class="w-full bg-transparent border-0 border-b border-outline-variant h-11 px-0 text-[#041627] placeholder:text-slate-400 focus:border-[#041627] transition-all text-sm font-mono" placeholder="https://tu-worker.tu-cuenta.workers.dev" type="url"/>
         </div>
         <div class="space-y-1.5">
+          <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">Tipo de Informe</label>
+          <div class="flex flex-wrap gap-2" id="reportTypeChips">
+            <button data-type="market_analysis" onclick="setReportType(this)" class="rtype-chip active">Análisis de Mercado</button>
+            <button data-type="strategic_plan" onclick="setReportType(this)" class="rtype-chip">Plan Estratégico</button>
+            <button data-type="due_diligence" onclick="setReportType(this)" class="rtype-chip">Due Diligence</button>
+            <button data-type="competitive" onclick="setReportType(this)" class="rtype-chip">Análisis Competitivo</button>
+            <button data-type="general" onclick="setReportType(this)" class="rtype-chip">General</button>
+          </div>
+        </div>
+        <div class="space-y-1.5">
           <div class="flex justify-between items-end">
             <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">Documento Fuente</label>
             <div class="flex gap-4">
@@ -262,6 +282,18 @@ tailwind.config={theme:{extend:{colors:{
     </div>
 
 
+
+    <!-- Validation warning -->
+    <div id="validationWarn" class="hidden mt-6 border-l-4 p-4 flex items-start justify-between gap-3" style="background:#FFFBEB;border-color:#D97706">
+      <div class="flex gap-2 items-start">
+        <span class="material-symbols-outlined text-base mt-0.5" style="color:#D97706;font-size:16px">warning</span>
+        <p id="validationWarnText" class="font-['Inter'] text-xs leading-relaxed" style="color:#92400E"></p>
+      </div>
+      <div class="flex gap-2 shrink-0 items-center">
+        <button onclick="analyze()" class="font-['Inter'] text-[10px] uppercase tracking-wide px-3 py-1.5 transition-all" style="background:#FEF3C7;color:#92400E;border:1px solid #D97706">Reintentar</button>
+        <button onclick="document.getElementById('validationWarn').classList.add('hidden')" class="font-['Inter'] text-[10px] px-2" style="color:#D97706">✕</button>
+      </div>
+    </div>
 
     <!-- Report preview -->
     <div id="previewCard" class="hidden fade-in mt-10"></div>
@@ -392,6 +424,67 @@ function clearFile(){document.getElementById('inputText').value='';document.getE
 function updateCharCount(el){const n=el.value.length;const c=document.getElementById('charCount');if(!c)return;if(n===0){c.textContent='';return;}const k=(n/1000).toFixed(1);if(n>60000){c.textContent=k+'K caracteres — ⚠ muy largo, puede afectar calidad';c.style.color='#BB0014';c.style.fontWeight='600';}else{c.textContent=k+'K caracteres';c.style.color=n>30000?'#44474C':'#94a3b8';c.style.fontWeight='400';}}
 
 // ============================================================
+// REPORT TYPE SELECTOR
+// ============================================================
+let currentReportType='market_analysis';
+function setReportType(el){
+  document.querySelectorAll('.rtype-chip').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  currentReportType=el.dataset.type;
+}
+
+// ============================================================
+// JSON VALIDATION
+// ============================================================
+function validateReport(r){
+  const checks=[
+    {key:'title',label:'título'},
+    {key:'executive_summary',label:'resumen ejecutivo'},
+    {key:'key_messages',label:'mensajes clave'},
+    {key:'findings',label:'hallazgos'},
+    {key:'analysis_blocks',label:'bloques de análisis'},
+    {key:'recommendations',label:'recomendaciones'},
+  ];
+  return checks.filter(c=>!r[c.key]||(Array.isArray(r[c.key])&&!r[c.key].length)).map(c=>c.label);
+}
+function showValidationWarning(fields){
+  document.getElementById('validationWarnText').textContent='Campos incompletos: '+fields.join(', ')+'. El informe puede estar incompleto — puedes continuar o reintentar.';
+  document.getElementById('validationWarn').classList.remove('hidden');
+}
+
+// ============================================================
+// REGENERAR SECCIÓN
+// ============================================================
+async function regenSection(sectionKey,idx,btn){
+  const wUrl=document.getElementById('workerUrl').value.trim();
+  if(!wUrl||!result)return;
+  if(btn){btn.disabled=true;const ic=btn.querySelector('.material-symbols-outlined');if(ic)ic.textContent='hourglass_empty';}
+  const labels={findings:'hallazgos',analysis_blocks:'bloque de análisis '+(idx!==undefined?idx+1:''),recommendations:'recomendaciones',risks:'riesgos',opportunities:'oportunidades'};
+  const label=labels[sectionKey]||sectionKey;
+  try{
+    flash('Regenerando '+label+'...');
+    const prompt=`Este es el informe ejecutivo actual en JSON:\n\n${JSON.stringify(result,null,2)}\n\nPor favor regenera ${idx!==undefined?'el ítem '+idx+' de ':''}la sección "${sectionKey}" con contenido fresco y de mayor calidad. Responde con el JSON completo actualizado precedido de __JSON_UPDATE__ en línea separada.`;
+    const reply=await fetchFromWorker(wUrl,{userContent:'__CHAT_MODE__',chatMessages:[{role:'user',content:prompt}]},null);
+    if(reply.includes('__JSON_UPDATE__')){
+      const parts=reply.split('__JSON_UPDATE__');
+      const jsonPart=parts[1].replace(/```json|```/g,'').trim();
+      const updated=JSON.parse(jsonPart);
+      if(idx!==undefined&&Array.isArray(updated[sectionKey])&&updated[sectionKey][idx]!==undefined){
+        result[sectionKey][idx]=updated[sectionKey][idx];
+      } else if(updated[sectionKey]!==undefined){
+        result[sectionKey]=updated[sectionKey];
+      } else {
+        result=updated;
+      }
+    } else {
+      throw new Error('El Worker no devolvió JSON actualizado');
+    }
+    renderPreview(result);flash('✓ '+label+' regenerado');
+  }catch(e){showError('Error regenerando: '+e.message);}
+  finally{if(btn){btn.disabled=false;const ic=btn.querySelector('.material-symbols-outlined');if(ic)ic.textContent='refresh';}}
+}
+
+// ============================================================
 // API CALL
 // ============================================================
 // ============================================================
@@ -506,22 +599,38 @@ async function analyze(){
   const wUrl=document.getElementById('workerUrl').value.trim();
   if(!input)return;
   if(!wUrl){showError('Configura la URL del Worker.');return;}
+  document.getElementById('validationWarn').classList.add('hidden');
   setLoading(true);startProgress();hideError();hidePreview();result=null;originalResult=null;
   try{
-    const STREAM_MSGS=['Recibiendo respuesta...','Procesando hallazgos...','Estructurando análisis...','Redactando recomendaciones...','Finalizando informe...'];
+    const SECTION_PROGRESS={
+      '"title"':'Redactando título...',
+      '"executive_summary"':'Redactando resumen ejecutivo...',
+      '"key_messages"':'Estructurando mensajes clave...',
+      '"context"':'Construyendo contexto...',
+      '"findings"':'Identificando hallazgos clave...',
+      '"analysis_blocks"':'Construyendo bloques de análisis...',
+      '"risks"':'Evaluando riesgos...',
+      '"opportunities"':'Identificando oportunidades...',
+      '"recommendations"':'Redactando recomendaciones...',
+      '"conclusion"':'Redactando conclusión ejecutiva...',
+      '"kpis"':'Calculando KPIs...',
+    };
     let chunks=0;
-    const txt=await fetchFromWorker(wUrl,{userContent:input},(full,chunk)=>{
+    const txt=await fetchFromWorker(wUrl,{userContent:input,reportType:currentReportType},(full,chunk)=>{
       chunks++;
       clearInterval(progressTimer);
       const pct=Math.min(93,10+chunks*4);
       document.getElementById('progressFill').style.width=pct+'%';
       document.getElementById('progressPct').textContent=pct+'%';
-      const msgIdx=Math.min(Math.floor(chunks/6),STREAM_MSGS.length-1);
-      document.getElementById('progressStep').textContent=STREAM_MSGS[msgIdx];
+      const keys=Object.keys(SECTION_PROGRESS);let lastKey=null;let lastPos=-1;
+      for(const k of keys){const p=full.lastIndexOf(k);if(p>lastPos){lastPos=p;lastKey=k;}}
+      if(lastKey) document.getElementById('progressStep').textContent=SECTION_PROGRESS[lastKey];
     });
     const clean=txt.replace(/```json|```/g,'').trim();
     try{result=JSON.parse(clean);}catch(e){throw new Error('IA no devolvió JSON válido');}
     originalResult=JSON.parse(JSON.stringify(result));
+    const missing=validateReport(result);
+    if(missing.length) showValidationWarning(missing);
     stopProgress(true);renderPreview(result);showExportBtns();
     showStatus('Informe generado — edita y exporta');setDot('ok');saveToHistory(result);
   }catch(err){
@@ -598,9 +707,12 @@ function renderPreview(r){
   // ── Findings ───────────────────────────────────────────────
   if(r.findings?.length){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5] section-collapsible">
-      <div class="flex items-center justify-between mb-6 cursor-pointer select-none" onclick="this.closest('.section-collapsible').classList.toggle('collapsed')">
-        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">Hallazgos Clave</h2>
-        <span class="collapse-icon material-symbols-outlined text-sm text-slate-400">expand_more</span>
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3 cursor-pointer select-none flex-1" onclick="this.closest('.section-collapsible').classList.toggle('collapsed')">
+          <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">Hallazgos Clave</h2>
+          <span class="collapse-icon material-symbols-outlined text-sm text-slate-400">expand_more</span>
+        </div>
+        <button class="regen-btn" onclick="event.stopPropagation();regenSection('findings',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>Regenerar</button>
       </div>
       <div class="section-body" style="max-height:2000px">
       <div class="space-y-5">`;
@@ -623,12 +735,15 @@ function renderPreview(r){
   if(r.analysis_blocks?.length){
     r.analysis_blocks.forEach((s,i)=>{
       h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-        <div class="flex items-start gap-0 mb-5">
-          <div class="accent-bar self-stretch mr-5"></div>
-          <div>
-            <span class="font-['Inter'] text-[#BB0014] text-[10px] uppercase tracking-widest font-bold">${i+1}. Análisis</span>
-            <h2 class="font-['Manrope'] text-lg font-bold text-[#041627] mt-1 editable" contenteditable="true" data-path="analysis_blocks[${i}].heading" onblur="updateField(this)">${esc(s.heading)}</h2>
+        <div class="flex items-start justify-between mb-5">
+          <div class="flex items-start gap-0 flex-1">
+            <div class="accent-bar self-stretch mr-5"></div>
+            <div>
+              <span class="font-['Inter'] text-[#BB0014] text-[10px] uppercase tracking-widest font-bold">${i+1}. Análisis</span>
+              <h2 class="font-['Manrope'] text-lg font-bold text-[#041627] mt-1 editable" contenteditable="true" data-path="analysis_blocks[${i}].heading" onblur="updateField(this)">${esc(s.heading)}</h2>
+            </div>
           </div>
+          <button class="regen-btn" onclick="regenSection('analysis_blocks',${i},this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>Regenerar</button>
         </div>`;
       if(s.governing_thought){
         h+=`<div class="bg-[#041627] text-white p-5 mb-5">
@@ -687,7 +802,10 @@ function renderPreview(r){
   // ── Recommendations ────────────────────────────────────────
   if(r.recommendations){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-6">Recomendaciones</h2>`;
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">Recomendaciones</h2>
+        <button class="regen-btn" onclick="regenSection('recommendations',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>Regenerar</button>
+      </div>`;
     [{key:'short_term',label:'Corto Plazo',color:'#BB0014'},{key:'medium_term',label:'Mediano Plazo',color:'#041627'},{key:'long_term',label:'Largo Plazo',color:'#1A2B3C'}].forEach(hz=>{
       const items=r.recommendations[hz.key];
       if(!items?.length)return;
@@ -1600,80 +1718,152 @@ REGLAS OBLIGATORIAS:
 
 <script>
 function buildBriefHTML(r){
-  const stats=(r.findings||[]).slice(0,3);
-  const keyMsgs=(r.key_messages||[]).slice(0,4);
-  const conclusion=r.conclusion||r.executive_summary||'';
   const dateStr=new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
-  const P='28px';  // consistent padding
+  const P='28px';
   const s=[];
+  const NAVY='#041627',RED='#BB0014',BLUE='#4279B0',LGRAY='#F2F4F6',BODY='#191C1E',MUTED='#74777D';
+  const typeLabel={market_analysis:'Análisis de Mercado',strategic_plan:'Plan Estratégico',due_diligence:'Due Diligence',competitive:'Análisis Competitivo',general:'Informe Estratégico'}[currentReportType]||'Informe Estratégico';
 
-  // ── Outer wrapper — fixed width, overflow hidden ──────────
-  s.push('<div style="width:660px;background:#fff;overflow:hidden;box-sizing:border-box;">');
+  s.push('<div style="width:660px;background:#fff;overflow:hidden;box-sizing:border-box;font-family:Inter,sans-serif;">');
 
   // ── Header navy ───────────────────────────────────────────
-  s.push('<div style="background:#041627;padding:24px '+P+' 18px;box-sizing:border-box;">');
-  s.push('<div style="color:#BB0014;font-size:8px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;font-weight:700;">ALTO · Executive Brief</div>');
-  s.push('<div style="color:#fff;font-size:19px;font-weight:800;line-height:1.25;word-wrap:break-word;">'+esc(r.title)+'</div>');
-  if(r.subtitle)s.push('<div style="color:#8192A7;font-size:11px;margin-top:6px;font-style:italic;word-wrap:break-word;">'+esc(r.subtitle)+'</div>');
-  s.push('<div style="color:#74777D;font-size:8px;margin-top:10px;">'+dateStr+'</div>');
+  s.push('<div style="background:'+NAVY+';padding:22px '+P+' 18px;box-sizing:border-box;">');
+  s.push('<div style="display:table;width:100%;margin-bottom:14px;">');
+  s.push('<div style="display:table-cell;vertical-align:middle;">');
+  if(typeof logoBase64!=='undefined'&&logoBase64){
+    s.push('<img src="data:image/png;base64,'+logoBase64+'" style="height:26px;display:block;" />');
+  }else{
+    s.push('<div style="font-size:13px;font-weight:900;color:'+RED+';letter-spacing:2px;">ALTO</div>');
+  }
   s.push('</div>');
-  s.push('<div style="height:3px;background:#BB0014;"></div>');
-
-  // ── Resumen ejecutivo ─────────────────────────────────────
-  s.push('<div style="padding:18px '+P+' 0;box-sizing:border-box;">');
-  s.push('<div style="background:#F2F4F6;border-left:3px solid #041627;padding:12px 14px;box-sizing:border-box;">');
-  s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#BB0014;font-weight:700;margin-bottom:6px;">Resumen Ejecutivo</div>');
-  s.push('<div style="font-size:10.5px;color:#191C1E;line-height:1.65;font-style:italic;word-wrap:break-word;">'+esc(r.executive_summary||'')+'</div>');
+  s.push('<div style="display:table-cell;vertical-align:middle;text-align:right;">');
+  s.push('<div style="color:'+RED+';font-size:8px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:3px;">'+typeLabel+'</div>');
+  s.push('<div style="color:'+MUTED+';font-size:8px;">'+dateStr+'</div>');
   s.push('</div></div>');
+  s.push('<div style="height:1px;background:rgba(255,255,255,0.12);margin-bottom:12px;"></div>');
+  s.push('<div style="color:#fff;font-size:19px;font-weight:800;line-height:1.25;word-wrap:break-word;">'+esc(r.title)+'</div>');
+  if(r.subtitle)s.push('<div style="color:#8192A7;font-size:10px;margin-top:5px;font-style:italic;word-wrap:break-word;">'+esc(r.subtitle)+'</div>');
+  s.push('</div>');
+  s.push('<div style="height:4px;background:'+RED+';"></div>');
 
-  // ── Hallazgos — usar tabla para compatibilidad con html2canvas ──
-  if(stats.length){
-    const colPct = stats.length===1?'100%': stats.length===2?'49%':'32%';
-    const gap = stats.length===1?'0': '1%';
-    s.push('<div style="padding:14px '+P+' 0;box-sizing:border-box;">');
-    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#041627;font-weight:700;margin-bottom:10px;">Hallazgos Clave</div>');
-    s.push('<table style="width:100%;border-collapse:separate;border-spacing:8px 0;table-layout:fixed;">');
-    s.push('<tr style="vertical-align:top;">');
-    stats.forEach(function(f,i){
-      s.push('<td style="width:'+colPct+';background:#F8F9FB;border-top:3px solid '+(i===0?'#BB0014':'#041627')+';padding:11px;vertical-align:top;word-wrap:break-word;">');
-      s.push('<div style="font-size:9.5px;font-weight:700;color:#041627;margin-bottom:5px;line-height:1.3;">'+esc(f.finding||'')+'</div>');
-      s.push('<div style="font-size:8px;color:#74777D;line-height:1.45;word-wrap:break-word;">'+esc(f.evidence||'')+'</div>');
+  // ── Two columns: Exec Summary + Key Messages | Stat boxes ─
+  s.push('<div style="display:table;width:100%;padding:18px '+P+' 0;box-sizing:border-box;">');
+
+  // Left: exec summary + key messages
+  s.push('<div style="display:table-cell;width:57%;padding-right:14px;vertical-align:top;">');
+  s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:'+RED+';font-weight:800;margin-bottom:7px;">Resumen Ejecutivo</div>');
+  s.push('<div style="font-size:10px;color:'+BODY+';line-height:1.65;font-style:italic;word-wrap:break-word;">'+esc(r.executive_summary||'')+'</div>');
+  const keyMsgs=(r.key_messages||[]).slice(0,3);
+  if(keyMsgs.length){
+    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:'+NAVY+';font-weight:800;margin:12px 0 7px;">Mensajes Clave</div>');
+    keyMsgs.forEach(m=>{
+      s.push('<div style="display:table;width:100%;margin-bottom:5px;">');
+      s.push('<div style="display:table-cell;width:14px;color:'+RED+';font-weight:900;font-size:10px;vertical-align:top;padding-top:1px;">▸</div>');
+      s.push('<div style="display:table-cell;font-size:9.5px;color:'+BODY+';line-height:1.45;word-wrap:break-word;">'+esc(m)+'</div>');
+      s.push('</div>');
+    });
+  }
+  s.push('</div>');
+
+  // Right: KPI stat boxes (or summary counts fallback)
+  s.push('<div style="display:table-cell;width:43%;vertical-align:top;">');
+  const kpis=(r.kpis||[]).slice(0,4);
+  if(kpis.length){
+    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:'+NAVY+';font-weight:800;margin-bottom:7px;">KPIs</div>');
+    kpis.forEach((k,i)=>{
+      const accent=i%2===0?NAVY:RED;
+      s.push('<div style="background:'+LGRAY+';border-left:3px solid '+accent+';padding:8px 10px;margin-bottom:6px;word-wrap:break-word;">');
+      s.push('<div style="font-size:18px;font-weight:900;color:'+accent+';line-height:1;">'+esc(k.value||k.metric||'—')+'</div>');
+      s.push('<div style="font-size:8px;color:'+MUTED+';margin-top:2px;">'+esc(k.label||k.name||k.metric||'')+'</div>');
+      if(k.trend||k.delta){const t=k.trend||k.delta;s.push('<div style="font-size:8px;font-weight:700;color:'+(String(t).startsWith('-')?RED:'#16a34a')+';margin-top:2px;">'+esc(t)+'</div>');}
+      s.push('</div>');
+    });
+  }else{
+    const stats=[
+      {v:String((r.findings||[]).length),l:'Hallazgos identificados',c:NAVY},
+      {v:String((r.risks||[]).length),l:'Riesgos detectados',c:RED},
+      {v:String((r.opportunities||[]).length),l:'Oportunidades',c:BLUE},
+    ];
+    stats.forEach(st=>{
+      s.push('<div style="background:'+LGRAY+';border-left:3px solid '+st.c+';padding:8px 10px;margin-bottom:6px;">');
+      s.push('<div style="font-size:20px;font-weight:900;color:'+st.c+';line-height:1;">'+st.v+'</div>');
+      s.push('<div style="font-size:8px;color:'+MUTED+';margin-top:2px;">'+st.l+'</div>');
+      s.push('</div>');
+    });
+  }
+  s.push('</div>');
+  s.push('</div>'); // end two-col
+
+  // ── Top Findings ──────────────────────────────────────────
+  const findings=(r.findings||[]).slice(0,3);
+  if(findings.length){
+    const colW=findings.length===1?'100%':findings.length===2?'49.5%':'32.5%';
+    s.push('<div style="padding:16px '+P+' 0;box-sizing:border-box;">');
+    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:'+NAVY+';font-weight:800;margin-bottom:8px;">Hallazgos Principales</div>');
+    s.push('<table style="width:100%;border-collapse:separate;border-spacing:5px 0;table-layout:fixed;"><tr style="vertical-align:top;">');
+    findings.forEach((f,i)=>{
+      const accent=i===0?RED:NAVY;
+      s.push('<td style="width:'+colW+';vertical-align:top;background:'+LGRAY+';border-top:3px solid '+accent+';padding:10px;word-wrap:break-word;">');
+      s.push('<div style="font-size:9px;font-weight:800;color:'+accent+';margin-bottom:3px;">'+(i+1)+'</div>');
+      s.push('<div style="font-size:9px;font-weight:700;color:'+NAVY+';margin-bottom:4px;line-height:1.35;word-wrap:break-word;">'+esc(f.finding||'')+'</div>');
+      if(f.business_implication)s.push('<div style="font-size:8px;color:'+MUTED+';line-height:1.4;word-wrap:break-word;">'+esc(f.business_implication)+'</div>');
       s.push('</td>');
     });
     s.push('</tr></table></div>');
   }
 
-  // ── Mensajes clave ────────────────────────────────────────
-  if(keyMsgs.length){
-    s.push('<div style="padding:14px '+P+' 0;box-sizing:border-box;">');
-    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#041627;font-weight:700;margin-bottom:9px;">Mensajes Clave</div>');
-    keyMsgs.forEach(function(m){
-      s.push('<div style="display:table;width:100%;margin-bottom:6px;">');
-      s.push('<div style="display:table-cell;width:16px;color:#BB0014;font-weight:900;font-size:10px;vertical-align:top;padding-top:1px;">▸</div>');
-      s.push('<div style="display:table-cell;font-size:10px;color:#191C1E;line-height:1.45;word-wrap:break-word;">'+esc(m)+'</div>');
-      s.push('</div>');
-    });
-    s.push('</div>');
+  // ── Recommendations — 3 horizons compact ─────────────────
+  if(r.recommendations){
+    const horizons=[{key:'short_term',label:'Corto Plazo',color:RED},{key:'medium_term',label:'Mediano Plazo',color:NAVY},{key:'long_term',label:'Largo Plazo',color:BLUE}];
+    const hasRec=horizons.some(h=>(r.recommendations[h.key]||[]).length>0);
+    if(hasRec){
+      s.push('<div style="padding:16px '+P+' 0;box-sizing:border-box;">');
+      s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:'+NAVY+';font-weight:800;margin-bottom:8px;">Recomendaciones Estratégicas</div>');
+      s.push('<table style="width:100%;border-collapse:separate;border-spacing:5px 0;table-layout:fixed;"><tr style="vertical-align:top;">');
+      horizons.forEach(h=>{
+        const items=(r.recommendations[h.key]||[]).slice(0,2);
+        if(!items.length)return;
+        s.push('<td style="vertical-align:top;word-wrap:break-word;">');
+        s.push('<div style="background:'+h.color+';color:#fff;font-size:7px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:4px 8px;margin-bottom:5px;">'+h.label+'</div>');
+        items.forEach((rec,i)=>{
+          s.push('<div style="display:table;width:100%;margin-bottom:4px;">');
+          s.push('<div style="display:table-cell;width:16px;vertical-align:top;">');
+          s.push('<div style="background:'+h.color+';color:#fff;font-size:8px;font-weight:800;text-align:center;width:14px;height:14px;line-height:14px;">'+(i+1)+'</div>');
+          s.push('</div>');
+          s.push('<div style="display:table-cell;vertical-align:top;padding-left:5px;font-size:8.5px;color:'+BODY+';line-height:1.4;word-wrap:break-word;">'+esc(rec.action||rec)+'</div>');
+          s.push('</div>');
+        });
+        s.push('</td>');
+      });
+      s.push('</tr></table></div>');
+    }
   }
 
-  // ── Conclusión ────────────────────────────────────────────
+  // ── Conclusion ────────────────────────────────────────────
+  const conclusion=r.conclusion||'';
   if(conclusion){
-    s.push('<div style="padding:14px '+P+' 0;box-sizing:border-box;">');
+    s.push('<div style="padding:16px '+P+' 0;box-sizing:border-box;">');
     s.push('<div style="display:table;width:100%;">');
-    s.push('<div style="display:table-cell;width:3px;background:#BB0014;vertical-align:top;"> </div>');
-    s.push('<div style="display:table-cell;background:#FFF5F5;padding:12px 14px;word-wrap:break-word;">');
-    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#BB0014;font-weight:700;margin-bottom:5px;">Conclusión Ejecutiva</div>');
-    s.push('<div style="font-size:10px;color:#041627;line-height:1.55;font-weight:600;word-wrap:break-word;">'+esc(conclusion)+'</div>');
+    s.push('<div style="display:table-cell;width:4px;background:'+NAVY+';vertical-align:top;"> </div>');
+    s.push('<div style="display:table-cell;background:'+LGRAY+';padding:11px 14px;word-wrap:break-word;">');
+    s.push('<div style="font-size:8px;text-transform:uppercase;letter-spacing:2px;color:'+NAVY+';font-weight:800;margin-bottom:5px;">Conclusión Ejecutiva</div>');
+    s.push('<div style="font-size:10px;color:'+NAVY+';line-height:1.55;font-weight:600;font-style:italic;word-wrap:break-word;">'+esc(conclusion)+'</div>');
     s.push('</div></div></div>');
   }
 
   // ── Footer ────────────────────────────────────────────────
-  s.push('<div style="margin-top:18px;padding:10px '+P+';background:#F2F4F6;border-left:3px solid #BB0014;display:table;width:100%;box-sizing:border-box;">');
-  s.push('<div style="display:table-cell;font-size:9px;font-weight:800;color:#041627;letter-spacing:1px;">ALTO</div>');
-  s.push('<div style="display:table-cell;text-align:right;font-size:8px;color:#74777D;font-style:italic;">Confidencial · Uso interno</div>');
+  s.push('<div style="margin-top:16px;padding:10px '+P+';background:'+NAVY+';display:table;width:100%;box-sizing:border-box;">');
+  s.push('<div style="display:table-cell;vertical-align:middle;">');
+  if(typeof logoBase64!=='undefined'&&logoBase64){
+    s.push('<img src="data:image/png;base64,'+logoBase64+'" style="height:18px;display:block;opacity:0.8;" />');
+  }else{
+    s.push('<span style="font-size:10px;font-weight:900;color:#fff;letter-spacing:2px;">ALTO</span>');
+  }
+  s.push('</div>');
+  s.push('<div style="display:table-cell;text-align:right;vertical-align:middle;font-size:8px;color:#8192A7;font-style:italic;">Confidencial · '+typeLabel+'</div>');
   s.push('</div>');
 
-  s.push('</div>');  // outer wrapper
+  s.push('</div>');
   return s.join('');
 }
 async function downloadBrief(){
