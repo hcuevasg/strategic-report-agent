@@ -1066,16 +1066,20 @@ async function downloadPptx(){if(!result)return;
         const rowH=0.62;
         const startY=1.1;
         const listW=CW*0.68;
+        // Slide numbers: cover=1, toc=2, content starts at 3
+        const slideNumStart=3;
         items.forEach((item,i)=>{
           const iy=startY+(i*rowH);
           // Number — elegant: small circle outline style
           sl.addShape('ellipse',{x:M,y:iy+0.04,w:0.32,h:0.32,fill:{color:i===0?A.RED:A.NAVY},line:{color:i===0?A.RED:A.NAVY,width:0}});
           sl.addText(String(i+1),{x:M,y:iy+0.04,w:0.32,h:0.32,fontSize:10,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
           // Title bold navy
-          sl.addText(item.title||item,{x:M+0.45,y:iy,w:listW-0.55,h:0.35,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle'});
+          sl.addText(item.title||item,{x:M+0.45,y:iy,w:listW-1.2,h:0.35,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle'});
+          // Slide number — right-aligned
+          sl.addText(String(slideNumStart+i),{x:M+listW-0.8,y:iy,w:0.7,h:0.35,fontSize:10,fontFace:'Calibri',color:A.SGRAY,bold:false,align:'right',valign:'middle'});
           // Description
           if(item.description){
-            sl.addText(item.description,{x:M+0.45,y:iy+0.33,w:listW-0.55,h:0.22,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'top'});
+            sl.addText(item.description,{x:M+0.45,y:iy+0.33,w:listW-1.2,h:0.22,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'top'});
           }
           if(i<items.length-1){
             sl.addShape('rect',{x:M,y:iy+rowH-0.04,w:listW,h:0.008,fill:{color:A.MGRAY}});
@@ -1127,35 +1131,30 @@ async function downloadPptx(){if(!result)return;
       // ========== LAYOUT: BAR CHART ==========
       } else if(vis==='bar_chart' && s.chart_data){
         const cd=s.chart_data;
-        const chartColors=[{color:A.NAVY},{color:A.RED},{color:A.TBLUE}];
-        const chartH=4.8;
+        const chartH=5.0;
+        const chartW=LW*0.95;
         const series=(cd.series||[]).slice(0,3).map((ser,i)=>({
           name:ser.name||('Serie '+(i+1)),
           labels:cd.categories||[],
           values:(ser.values||[]).map(Number)
         }));
         if(series.length&&(cd.categories||[]).length){
-          pptx.addChart(pptx.ChartType.bar,series,{
-            x:M,y:cy,w:CW*0.72,h:chartH,
-            barDir:'col',
+          sl.addChart(pptx.charts.BAR, series, {
+            x:M,y:cy,w:chartW,h:chartH,
+            barDir:'col',barGapWidthPct:80,
             catAxisLabelColor:A.BODY,valAxisLabelColor:A.BODY,
+            catAxisLabelFontFace:'Calibri',valAxisLabelFontFace:'Calibri',
             catAxisLabelFontSize:9,valAxisLabelFontSize:9,
-            dataLabelFontSize:9,dataLabelFontBold:true,
-            catGridLine:{style:'none'},valGridLine:{color:A.MGRAY,style:'solid',size:0.5},
+            catAxisOrientation:'minMax',
+            dataLabelFontSize:8,dataLabelFontBold:true,dataLabelColor:A.NAVY,
+            showDataLabel:true,dataLabelPosition:'outEnd',
+            catGridLine:{style:'none'},valGridLine:{color:A.MGRAY,style:'dash',size:0.5},
+            valAxisHidden:false,valAxisMajorUnit:null,
             plotAreaBorderColor:A.WHITE,
-            chartColors:chartColors.map(c=>c.color),
-            showLegend:series.length>1,legendPos:'b',legendFontSize:8,
-            showTitle:false,
-            chartArea:{fill:{color:A.WHITE}},
-            sl
+            chartColors:[A.NAVY,A.RED,A.TBLUE],
+            showLegend:series.length>1,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
+            showTitle:false
           });
-          // Insight box to the right
-          if(s.highlight_box||s.so_what){
-            const rx=M+CW*0.74,rw=CW*0.26;
-            sl.addShape('rect',{x:rx,y:cy,w:rw,h:chartH,fill:{color:A.LGRAY}});
-            sl.addShape('rect',{x:rx,y:cy,w:0.05,h:chartH,fill:{color:A.RED}});
-            sl.addText(s.highlight_box||s.so_what||'',{x:rx+0.15,y:cy+0.3,w:rw-0.25,h:chartH-0.5,fontSize:11,fontFace:'Calibri',color:A.NAVY,italic:true,lineSpacingMultiple:1.6,valign:'middle'});
-          }
         }
         soWhatPanel(sl,s.so_what);
 
@@ -1321,6 +1320,37 @@ async function downloadPptx(){if(!result)return;
       }
       srcNote(sl,s.source_note);
     });
+
+    // =================== APPENDIX: INFORMATION GAPS ===================
+    if(result.information_gaps&&result.information_gaps.length){
+      const sl=pptx.addSlide({masterName:'ALTO_MASTER'});
+      sl.background={color:'F8F9FB'};
+      addLogo(sl);
+      // Navy left accent bar
+      sl.addShape('rect',{x:0,y:0,w:0.08,h:7.5,fill:{color:A.NAVY}});
+      // Header
+      sl.addText('Anexo: Áreas Pendientes de Validación',{x:M,y:0.25,w:8,h:0.6,fontSize:20,fontFace:'Calibri',color:A.NAVY,bold:true});
+      sl.addShape('rect',{x:M,y:0.88,w:1.0,h:0.04,fill:{color:A.RED}});
+      sl.addText('Los siguientes puntos requieren información adicional para completar el análisis.',{x:M,y:1.05,w:CW*0.7,h:0.35,fontSize:10,fontFace:'Calibri',color:A.SGRAY,italic:true});
+      // Gap items
+      const gaps=result.information_gaps;
+      const gapH=Math.min(0.7,(7.5-1.7-0.5)/gaps.length);
+      let gy=1.55;
+      gaps.forEach((gap,i)=>{
+        // Number circle
+        sl.addShape('ellipse',{x:M,y:gy+0.08,w:0.28,h:0.28,fill:{color:A.RED}});
+        sl.addText(String(i+1),{x:M,y:gy+0.08,w:0.28,h:0.28,fontSize:9,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+        // Card background
+        sl.addShape('rect',{x:M+0.4,y:gy,w:CW*0.65,h:gapH-0.08,fill:{color:A.LGRAY}});
+        sl.addShape('rect',{x:M+0.4,y:gy,w:0.04,h:gapH-0.08,fill:{color:A.RED}});
+        // Gap text
+        sl.addText(gap,{x:M+0.6,y:gy+0.04,w:CW*0.6,h:gapH-0.16,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'middle',lineSpacingMultiple:1.3});
+        gy+=gapH;
+      });
+      // Status label bottom
+      sl.addShape('rect',{x:M,y:6.7,w:CW*0.7,h:0.01,fill:{color:A.MGRAY}});
+      sl.addText('BACKUP · PARA DISCUSIÓN',{x:M,y:6.8,w:4,h:0.25,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:true,letterSpacing:3});
+    }
 
     updatePptxProgress(99, 'Generando archivo .pptx...');
     await pptx.writeFile({fileName:'Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pptx'});
