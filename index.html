@@ -549,7 +549,52 @@ function renderHistory(){
 }
 
 // Init history on load
-document.addEventListener('DOMContentLoaded', renderHistory);
+document.addEventListener('DOMContentLoaded', () => {
+  renderHistory();
+  handleMagicLink();
+});
+
+// ============================================================
+// MAGIC LINK HANDLER — WhatsApp email links (?wa=UUID&worker=...&format=...)
+// ============================================================
+async function handleMagicLink(){
+  const params = new URLSearchParams(window.location.search);
+  const uuid   = params.get('wa');
+  const wUrl   = params.get('worker');
+  const format = params.get('format'); // pptx | pdf | docx | brief
+  if(!uuid || !wUrl) return;
+
+  // Clean URL so user doesn't accidentally share the magic link
+  history.replaceState(null,'',window.location.pathname);
+
+  // Save worker URL if not already set
+  if(!localStorage.getItem('workerUrl')) localStorage.setItem('workerUrl', wUrl);
+  document.getElementById('workerUrl').value = wUrl;
+
+  showStatus('Cargando informe desde enlace…');
+  try{
+    const res = await fetch(`${wUrl}/report/${uuid}`);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if(!data || !data.title) throw new Error('Informe inválido o expirado');
+
+    result = data;
+    renderPreview(result);
+    document.getElementById('validationWarn').classList.add('hidden');
+    document.getElementById('output').classList.remove('hidden');
+    document.getElementById('exportButtons').classList.remove('hidden');
+
+    // Auto-trigger the requested download
+    if(format==='pptx')       setTimeout(downloadPptx, 800);
+    else if(format==='pdf')   setTimeout(downloadPdf,  800);
+    else if(format==='docx')  setTimeout(downloadDocx, 800);
+    else if(format==='brief') setTimeout(downloadBrief,800);
+
+    showStatus(`Informe cargado${format ? ' — iniciando descarga '+format.toUpperCase()+'…' : ''}`);
+  }catch(e){
+    showStatus('Error cargando informe: '+e.message, true);
+  }
+}
 
 
 // ============================================================
