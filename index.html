@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO v3.14</title>
+<title>Strategic Report Agent — ALTO v3.15</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -1245,9 +1245,7 @@ async function downloadPptx(){if(!result)return;
 
       // ========== LAYOUT: SPLIT ==========
       } else if(vis==='split'){
-        const leftW=LW*0.85,rightW=SW-0.3;
-        const rX=SX+0.07;
-        const rY=0.9;
+        const leftW=LW*0.88,rightW=SW-0.3;
         // Left side: subtle surface background
         sl.addShape('rect',{x:0,y:0,w:rX,h:7.5,fill:{color:'F8F9FB'}});
         // Body text — larger
@@ -1261,24 +1259,28 @@ async function downloadPptx(){if(!result)return;
             bcy+=0.48;
           });
         }
-        // Right navy block — full height
-        const navyH=7.5-rY;
-        sl.addShape('rect',{x:rX,y:0,w:W-rX,h:7.5,fill:{color:A.NAVY}});
-        sl.addShape('rect',{x:rX,y:0,w:0.06,h:7.5,fill:{color:A.RED}});
+        // Right content block — navy, between content and SO WHAT panel
+        // Use space between leftW and SX (the SO WHAT panel starts at SX)
+        const splitRX=M+leftW+0.15;
+        const splitBlockW=SX-splitRX-0.1;
+        sl.addShape('rect',{x:splitRX,y:0.85,w:splitBlockW,h:7.5-0.85,fill:{color:A.NAVY}});
+        sl.addShape('rect',{x:splitRX,y:0.85,w:0.06,h:7.5-0.85,fill:{color:A.RED}});
         const hText=s.highlight_box||s.so_what||'';
-        // Big quote text — centered, large, impactful
-        sl.addText(hText,{x:rX+0.25,y:1.5,w:rightW-0.1,h:4.5,
-          fontSize:16,fontFace:'Calibri',color:A.WHITE,italic:true,
-          lineSpacingMultiple:1.6,valign:'middle',bold:false});
+        if(hText){
+          sl.addText(hText,{x:splitRX+0.2,y:1.5,w:splitBlockW-0.3,h:4.5,
+            fontSize:15,fontFace:'Calibri',color:A.WHITE,italic:true,
+            lineSpacingMultiple:1.6,valign:'middle',bold:false});
+        }
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: DEFAULT ==========
       } else {
         if(s.type==='executive_summary' && s.body_text){
-          sl.addShape('rect',{x:M,y:cy,w:CW,h:2.0,fill:{color:A.LGRAY}});
-          sl.addShape('rect',{x:M,y:cy,w:0.06,h:2.0,fill:{color:A.NAVY}});
-          sl.addText(s.body_text,{x:M+0.25,y:cy+0.15,w:CW-0.4,h:1.7,fontSize:11,fontFace:'Calibri',color:A.DGRAY,italic:true,lineSpacingMultiple:1.4,valign:'top'});
-          cy+=2.2;
+          const exH=Math.min(4.0,Math.max(1.5,s.body_text.length/130+1.0));
+          sl.addShape('rect',{x:M,y:cy,w:LW,h:exH,fill:{color:A.LGRAY}});
+          sl.addShape('rect',{x:M,y:cy,w:0.06,h:exH,fill:{color:A.NAVY}});
+          sl.addText(s.body_text,{x:M+0.25,y:cy+0.15,w:LW-0.4,h:exH-0.25,fontSize:12,fontFace:'Calibri',color:A.DGRAY,italic:true,lineSpacingMultiple:1.5,valign:'top'});
+          cy+=exH+0.2;
         } else if(s.body_text){
           sl.addText(s.body_text,{x:M,y:cy,w:LW,h:2.2,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top'});
           cy+=2.35;
