@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Strategic Report Agent — ALTO v3.11</title>
+<title>Strategic Report Agent — ALTO v3.12</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -951,33 +951,40 @@ async function downloadPptx(){if(!result)return;
     // --- HELPER FUNCTIONS ---
     function addLogo(sl){if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:12.1,y:0.1,w:1.0,h:0.39});}
     function actionTitle(sl,t,accent){
-      sl.addText(t||'',{x:M,y:0.15,w:10.3,h:0.55,fontSize:13,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.05,valign:'top'});
+      // Title only in left content area (before SO WHAT panel)
+      const titleW=W-SW-M-0.2;
+      sl.addText(t||'',{x:M,y:0.15,w:titleW,h:0.55,fontSize:13,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.05,valign:'top'});
       sl.addShape('rect',{x:M,y:0.72,w:1.2,h:0.035,fill:{color:accent||A.RED}});
       addLogo(sl);
     }
-    function soWhatBox(sl,text,y){
+    // SO WHAT panel width constant — right side panel
+    const SW=3.5; // width of SO WHAT panel
+    const SX=W-SW; // x position of panel
+
+    function soWhatPanel(sl,text){
       if(!text)return;
-      const bY=Math.min(y,5.9);
-      const boxH=0.88;
-      // Background surface (not white, not pink — off-white surface)
-      sl.addShape('rect',{x:M,y:bY,w:CW,h:boxH,fill:{color:'F2F4F6'}});
-      // Left red bar — taller, more prominent
-      sl.addShape('rect',{x:M,y:bY,w:0.06,h:boxH,fill:{color:A.RED}});
-      // "SO WHAT?" label — Manrope-style: large, red, bold, tracking
+      // Full-height right panel background
+      sl.addShape('rect',{x:SX,y:0,w:SW,h:7.5,fill:{color:'F2F4F6'}});
+      // Red accent left border of panel
+      sl.addShape('rect',{x:SX,y:0,w:0.07,h:7.5,fill:{color:A.RED}});
+      // "SO WHAT?" — large red Manrope-style label
       sl.addText('SO WHAT?',{
-        x:M+0.2,y:bY+0.06,w:1.6,h:0.35,
-        fontSize:11,fontFace:'Calibri',color:A.RED,bold:true,
-        charSpacing:2,valign:'middle'
+        x:SX+0.2,y:1.2,w:SW-0.35,h:0.65,
+        fontSize:20,fontFace:'Calibri',color:A.RED,bold:true,
+        charSpacing:4,valign:'middle'
       });
-      // Vertical divider
-      sl.addShape('rect',{x:M+1.85,y:bY+0.12,w:0.02,h:boxH-0.24,fill:{color:A.MGRAY}});
-      // The actual insight text — navy, bold, larger
+      // Thin red divider under label
+      sl.addShape('rect',{x:SX+0.2,y:1.95,w:SW-0.5,h:0.03,fill:{color:A.RED}});
+      // Insight text — navy bold, large, centered vertically
       sl.addText(text,{
-        x:M+2.05,y:bY+0.08,w:CW-2.2,h:boxH-0.16,
-        fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true,
-        lineSpacingMultiple:1.3,valign:'middle'
+        x:SX+0.2,y:2.1,w:SW-0.35,h:4.0,
+        fontSize:13,fontFace:'Calibri',color:A.NAVY,bold:true,
+        lineSpacingMultiple:1.6,valign:'top',wrap:true
       });
     }
+
+    // Keep old soWhatBox as no-op (replaced by soWhatPanel)
+    function soWhatBox(sl,text,y){ /* replaced by soWhatPanel */ }
     function srcNote(sl,t){if(t)sl.addText('Fuente: '+t,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true});}
 
     const slides=slideData.slides||[];
@@ -1081,15 +1088,18 @@ async function downloadPptx(){if(!result)return;
       const accentColor=s.type==='risks'?A.RED:s.type==='opportunities'?A.TBLUE:A.RED;
       actionTitle(sl,s.action_title,accentColor);
       let cy=0.82;
-      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:CW,h:0.28,fontSize:9,fontFace:'Calibri',color:A.SGRAY,italic:true});cy+=0.32;}
+      const LW=SX-M-0.2; // content width left of SO WHAT panel
+      // Draw SO WHAT panel first (behind content)
+      soWhatPanel(sl,s.so_what);
+      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:LW,h:0.28,fontSize:9,fontFace:'Calibri',color:A.SGRAY,italic:true});cy+=0.32;}
 
       // ========== LAYOUT: STAT CALLOUTS ==========
       if(vis==='stat_callouts' && s.data_points&&s.data_points.length){
         const dp=s.data_points.slice(0,4);
-        const cols=dp.length;const colW=CW/cols;
+        const cols=dp.length;const colW=LW/cols;
         const cardColors=[A.NAVY,A.RED,A.TBLUE,A.NAVY];
         // Dynamic card height: taller number zone + generous label area
-        const cardH=5.2;
+        const cardH=4.5;
         dp.forEach((d,i)=>{
           const cx=M+(i*colW);
           sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:cardH,fill:{color:A.LGRAY}});
@@ -1100,7 +1110,7 @@ async function downloadPptx(){if(!result)return;
           sl.addShape('rect',{x:cx+0.25,y:cy+cardH*0.58,w:colW-0.5,h:0.03,fill:{color:A.MGRAY}});
           sl.addText(d.label,{x:cx+0.15,y:cy+cardH*0.62,w:colW-0.3,h:cardH*0.34,fontSize:14,fontFace:'Calibri',color:A.BODY,align:'center',valign:'top',lineSpacingMultiple:1.4,bold:false});
         });
-        soWhatBox(sl,s.so_what,cy+cardH+0.1);
+        soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: BAR CHART ==========
       } else if(vis==='bar_chart' && s.chart_data){
@@ -1135,53 +1145,59 @@ async function downloadPptx(){if(!result)return;
             sl.addText(s.highlight_box||s.so_what||'',{x:rx+0.15,y:cy+0.3,w:rw-0.25,h:chartH-0.5,fontSize:11,fontFace:'Calibri',color:A.NAVY,italic:true,lineSpacingMultiple:1.6,valign:'middle'});
           }
         }
-        soWhatBox(sl,s.so_what,cy+chartH+0.2);
+        soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: COMPARISON COLUMNS ==========
       } else if(vis==='comparison' && s.columns&&s.columns.length){
         const cols=s.columns.slice(0,3);
-        const colW=CW/cols.length;
+        const colW=LW/cols.length;
         const colColors=[A.NAVY,A.RED,A.TBLUE];
+        // Calculate dynamic height BEFORE drawing
+        const maxCompItems=Math.max(...cols.map(c=>(c.items||[]).length));
+        const compH=Math.min(4.2, Math.max(1.8, maxCompItems*0.52+0.5));
         cols.forEach((col,i)=>{
           const cx=M+(i*colW);
-          sl.addShape('rect',{x:cx+0.06,y:cy,w:colW-0.12,h:0.5,fill:{color:colColors[i%3]}});
-          sl.addText(col.title||'',{x:cx+0.06,y:cy,w:colW-0.12,h:0.5,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
-          const compH=Math.min(5.0,Math.max(2.8,(col.items||[]).length*0.52+0.8));sl.addShape('rect',{x:cx+0.06,y:cy+0.5,w:colW-0.12,h:compH,fill:{color:A.LGRAY}});
-          let iy=cy+0.65;
+          sl.addShape('rect',{x:cx+0.06,y:cy,w:colW-0.12,h:0.52,fill:{color:colColors[i%3]}});
+          sl.addText(col.title||'',{x:cx+0.06,y:cy,w:colW-0.12,h:0.52,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          sl.addShape('rect',{x:cx+0.06,y:cy+0.52,w:colW-0.12,h:compH,fill:{color:A.LGRAY}});
+          let iy=cy+0.68;
           (col.items||[]).forEach(item=>{
-            sl.addText([{text:'\u25B8 ',options:{fontSize:12,color:colColors[i%3],bold:true}},{text:item,options:{fontSize:11,color:A.BODY}}],{x:cx+0.2,y:iy,w:colW-0.35,h:0.4,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.2});
-            iy+=0.46;
+            sl.addText([{text:'\u25B8 ',options:{fontSize:12,color:colColors[i%3],bold:true}},{text:item,options:{fontSize:11,color:A.BODY}}],{x:cx+0.2,y:iy,w:colW-0.35,h:0.42,fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.2});
+            iy+=0.48;
           });
         });
-        soWhatBox(sl,s.so_what,cy+5.2);
+        soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: TIMELINE ==========
       } else if(vis==='timeline' && s.columns&&s.columns.length){
         const phases=s.columns.slice(0,4);
-        const phW=CW/phases.length;
-        sl.addShape('rect',{x:M,y:cy+0.2,w:CW,h:0.06,fill:{color:A.MGRAY}});
+        const phW=LW/phases.length;
+        const maxPhItems=Math.max(...phases.map(p=>(p.items||[]).length));
+        const phCardH=Math.min(4.0, Math.max(1.6, maxPhItems*0.52+0.4));
+        sl.addShape('rect',{x:M,y:cy+0.2,w:LW,h:0.05,fill:{color:A.MGRAY}});
         phases.forEach((ph,i)=>{
           const px=M+(i*phW);
-          sl.addShape('ellipse',{x:px+phW/2-0.18,y:cy+0.05,w:0.36,h:0.36,fill:{color:i===0?A.RED:A.NAVY},line:{color:A.WHITE,width:2}});
-          sl.addText(String(i+1),{x:px+phW/2-0.18,y:cy+0.05,w:0.36,h:0.36,fontSize:11,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          sl.addShape('ellipse',{x:px+phW/2-0.2,y:cy+0.02,w:0.4,h:0.4,fill:{color:i===0?A.RED:A.NAVY},line:{color:A.WHITE,width:2}});
+          sl.addText(String(i+1),{x:px+phW/2-0.2,y:cy+0.02,w:0.4,h:0.4,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
           sl.addText(ph.title||'',{x:px+0.05,y:cy+0.55,w:phW-0.1,h:0.45,fontSize:12,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'top'});
-          sl.addShape('rect',{x:px+0.05,y:cy+1.0,w:phW-0.1,h:3.8,fill:{color:A.LGRAY}});
-          let iy=cy+1.1;
+          sl.addShape('rect',{x:px+0.05,y:cy+1.05,w:phW-0.1,h:phCardH,fill:{color:A.LGRAY}});
+          sl.addShape('rect',{x:px+0.05,y:cy+1.05,w:phW-0.1,h:0.05,fill:{color:i===0?A.RED:A.NAVY}});
+          let iy=cy+1.18;
           (ph.items||[]).forEach(item=>{
-            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:0.4,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'top',lineSpacingMultiple:1.2});
-            iy+=0.46;
+            sl.addText('\u25B8 '+item,{x:px+0.15,y:iy,w:phW-0.3,h:0.42,fontSize:11,fontFace:'Calibri',color:A.BODY,valign:'top',lineSpacingMultiple:1.2});
+            iy+=0.48;
           });
         });
-        soWhatBox(sl,s.so_what,cy+5.1);
+        soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: PILLARS ==========
       } else if(vis==='pillars' && s.columns&&s.columns.length){
         const pils=s.columns.slice(0,4);
-        const pW=CW/pils.length;
+        const pW=LW/pils.length;
         const pilColors=[A.NAVY,A.TBLUE,A.RED,A.NAVY];
         pils.forEach((p,i)=>{
           const px=M+(i*pW);
-          sl.addShape('rect',{x:px+0.06,y:cy,w:pW-0.12,h:4.8,fill:{color:A.LGRAY}});
+          const pilH2=Math.min(4.2,Math.max(1.8,(p.items||[]).length*0.52+0.5));sl.addShape('rect',{x:px+0.06,y:cy,w:pW-0.12,h:pilH2,fill:{color:A.LGRAY}});
           sl.addShape('rect',{x:px+0.06,y:cy,w:pW-0.12,h:0.55,fill:{color:pilColors[i%4]}});
           sl.addText(p.title||'',{x:px+0.06,y:cy,w:pW-0.12,h:0.55,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
           let iy=cy+0.7;
@@ -1190,12 +1206,14 @@ async function downloadPptx(){if(!result)return;
             iy+=0.48;
           });
         });
-        soWhatBox(sl,s.so_what,cy+5.0);
+        const maxPilItems=Math.max(...pils.map(p=>(p.items||[]).length));
+        const pilCardH=Math.min(4.2, Math.max(1.8, maxPilItems*0.52+0.5));
+        soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: MATRIX 2x2 ==========
       } else if(vis==='matrix' && s.columns&&s.columns.length>=4){
         const q=s.columns.slice(0,4);
-        const halfW=CW/2,halfH=2.8;
+        const halfW=LW/2,halfH=2.8;
         const qColors=[A.NAVY,A.RED,A.TBLUE,A.NAVY];
         q.forEach((qd,i)=>{
           const qx=M+(i%2)*halfW;
@@ -1209,13 +1227,13 @@ async function downloadPptx(){if(!result)return;
             iy+=0.32;
           });
         });
-        soWhatBox(sl,s.so_what,cy+halfH*2+0.15);
+        soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: SPLIT ==========
       } else if(vis==='split'){
-        const leftW=CW*0.56,rightW=CW*0.40;
-        const rX=M+leftW+CW*0.04;
-        const rY=cy;
+        const leftW=LW*0.85,rightW=SW-0.3;
+        const rX=SX+0.07;
+        const rY=0.9;
         // Left side: subtle surface background
         sl.addShape('rect',{x:0,y:0,w:rX,h:7.5,fill:{color:'F8F9FB'}});
         // Body text — larger
@@ -1238,7 +1256,7 @@ async function downloadPptx(){if(!result)return;
         sl.addText(hText,{x:rX+0.25,y:1.5,w:rightW-0.1,h:4.5,
           fontSize:16,fontFace:'Calibri',color:A.WHITE,italic:true,
           lineSpacingMultiple:1.6,valign:'middle',bold:false});
-        soWhatBox(sl,s.so_what,6.0);
+        soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: DEFAULT ==========
       } else {
@@ -1248,12 +1266,12 @@ async function downloadPptx(){if(!result)return;
           sl.addText(s.body_text,{x:M+0.25,y:cy+0.15,w:CW-0.4,h:1.7,fontSize:11,fontFace:'Calibri',color:A.DGRAY,italic:true,lineSpacingMultiple:1.4,valign:'top'});
           cy+=2.2;
         } else if(s.body_text){
-          sl.addText(s.body_text,{x:M,y:cy,w:CW,h:2.2,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top'});
+          sl.addText(s.body_text,{x:M,y:cy,w:LW,h:2.2,fontSize:13,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.6,valign:'top'});
           cy+=2.35;
         }
         if(s.bullets&&s.bullets.length){
           s.bullets.forEach(b=>{
-            sl.addText([{text:'\u25B8 ',options:{fontSize:13,fontFace:'Calibri',color:accentColor,bold:true}},{text:b,options:{fontSize:12,fontFace:'Calibri',color:A.BODY}}],{x:M+0.15,y:cy,w:CW-0.2,h:0.44,valign:'top',lineSpacingMultiple:1.3});
+            sl.addText([{text:'\u25B8 ',options:{fontSize:13,fontFace:'Calibri',color:accentColor,bold:true}},{text:b,options:{fontSize:12,fontFace:'Calibri',color:A.BODY}}],{x:M+0.15,y:cy,w:LW-0.2,h:0.44,valign:'top',lineSpacingMultiple:1.3});
             cy+=0.5;
           });
           cy+=0.1;
@@ -1270,7 +1288,7 @@ async function downloadPptx(){if(!result)return;
           });
           cy+=1.6;
         }
-        soWhatBox(sl,s.so_what,cy+0.1);
+        soWhatPanel(sl,s.so_what);
       }
       srcNote(sl,s.source_note);
     });
