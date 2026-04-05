@@ -1280,7 +1280,7 @@ function showStatus(m){const e=document.getElementById('statusMsg');e.textConten
 function showError(m){const b=document.getElementById('errorBox');b.textContent=m;b.classList.remove('hidden');document.getElementById('statusMsg').classList.add('hidden');}
 function hideError(){document.getElementById('errorBox').classList.add('hidden');}
 function hidePreview(){document.getElementById('previewCard').classList.add('hidden');document.getElementById('editBanner').classList.add('hidden');document.getElementById('methodCards').classList.remove('hidden');}
-function showExportBtns(){['btnMd','btnDocx','btnPdf','btnPptx','btnBrief'].forEach(id=>document.getElementById(id).classList.remove('hidden'));document.getElementById('chatSection').classList.remove('hidden');}
+function showExportBtns(){['btnDocx','btnPdf','btnPptx','btnBrief'].forEach(id=>document.getElementById(id).classList.remove('hidden'));document.getElementById('chatSection').classList.remove('hidden');}
 
 // ============================================================
 // MEJORA #8: FOLLOW-UP CHAT
