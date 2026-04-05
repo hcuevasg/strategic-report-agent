@@ -425,6 +425,27 @@ function setOutputLang(el){
   el.classList.add('active');
   outputLanguage=el.dataset.lang;
   if(outputLanguage!=='auto' && i18n[outputLanguage]) currentLang=outputLanguage;
+}
+
+// ============================================================
+// UI LANGUAGE TOGGLE (ES/EN in header)
+// ============================================================
+function setUILang(lang){
+  currentLang=lang;
+  // Toggle active styles
+  const esBtn=document.getElementById('uiLangEs');
+  const enBtn=document.getElementById('uiLangEn');
+  if(lang==='es'){
+    esBtn.className="font-['Inter'] text-[10px] uppercase tracking-widest text-white font-bold px-1.5 py-0.5 transition-all";
+    esBtn.style.background='rgba(187,0,20,0.8)';
+    enBtn.className="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400 px-1.5 py-0.5 transition-all hover:text-white";
+    enBtn.style.background='transparent';
+  } else {
+    enBtn.className="font-['Inter'] text-[10px] uppercase tracking-widest text-white font-bold px-1.5 py-0.5 transition-all";
+    enBtn.style.background='rgba(187,0,20,0.8)';
+    esBtn.className="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400 px-1.5 py-0.5 transition-all hover:text-white";
+    esBtn.style.background='transparent';
+  }
   updateUI();
 }
 

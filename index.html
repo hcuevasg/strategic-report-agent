@@ -43,6 +43,11 @@ tailwind.config={theme:{extend:{colors:{
       <div class="w-2 h-2" id="statusDot" style="background:#64748b"></div>
       <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400" id="statusDotLabel" data-i18n="uiOffline">Sin conexión</span>
     </div>
+    <div class="w-px h-4 bg-white/20"></div>
+    <div class="flex items-center gap-1">
+      <button onclick="setUILang('es')" id="uiLangEs" class="font-['Inter'] text-[10px] uppercase tracking-widest text-white font-bold px-1.5 py-0.5 transition-all" style="background:rgba(187,0,20,0.8);border-radius:2px">ES</button>
+      <button onclick="setUILang('en')" id="uiLangEn" class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400 px-1.5 py-0.5 transition-all hover:text-white" style="border-radius:2px">EN</button>
+    </div>
   </div>
 </header>
 
