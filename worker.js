@@ -281,6 +281,32 @@ function jsonResponse(status, body, env, requestOrigin) {
 // SECURITY HEADERS
 // ============================================================
 
+// ============================================================
+// INPUT SANITIZATION — strip prompt injection patterns
+// ============================================================
+function sanitizeInput(text) {
+  if (!text || typeof text !== 'string') return text;
+  // Strip common prompt injection markers
+  const injectionPatterns = [
+    /\bignore\s+(all\s+)?(previous|above|prior)\s+(instructions?|prompts?|rules?)\b/gi,
+    /\byou\s+are\s+now\b/gi,
+    /\bsystem\s*:\s*/gi,
+    /\b(act|behave|pretend|respond)\s+as\b/gi,
+    /\bnew\s+instructions?\s*:/gi,
+    /\boverride\s+(system|instructions?|rules?)\b/gi,
+    /<\/?system[^>]*>/gi,
+    /\[INST\]/gi,
+    /\[\/INST\]/gi,
+    /<<\s*SYS\s*>>/gi,
+    /<<\s*\/SYS\s*>>/gi,
+  ];
+  let sanitized = text;
+  for (const pat of injectionPatterns) {
+    sanitized = sanitized.replace(pat, '[filtered]');
+  }
+  return sanitized;
+}
+
 function securityHeaders() {
   return {
     'X-Content-Type-Options': 'nosniff',
@@ -970,40 +996,39 @@ export default {
       return jsonResponse(403, { error: 'Origin not allowed' }, env, requestOrigin);
     }
 
-    // ── App token authentication ─────────────────────────
-    if (env.APP_SECRET) {
-      const token = request.headers.get('X-App-Token') || '';
-      if (token !== env.APP_SECRET) {
-        return jsonResponse(401, { error: 'Unauthorized' }, env, requestOrigin);
-      }
-    }
-
-    // ── Rate limiting ─────────────────────────────────────
+    // ── Session token authentication (mandatory) ─────────
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
     const sessionToken = request.headers.get('X-Session-Token') || '';
-    if (sessionToken) {
-      const tokenValid = await validateSessionToken(sessionToken, ip, env);
-      if (!tokenValid) {
-        ctx.waitUntil(logAbuse(env, 'invalid_token', ip));
-        return jsonResponse(401, { error: 'Invalid or expired session token. Refresh the page.' }, env, requestOrigin);
-      }
-    } else {
-      // No token — still allow (for backwards compat) but log and apply stricter rate limit
+    if (!sessionToken) {
       ctx.waitUntil(logAbuse(env, 'no_token', ip));
+      return jsonResponse(401, { error: 'Session token required. Refresh the page.' }, env, requestOrigin);
+    }
+    const tokenValid = await validateSessionToken(sessionToken, ip, env);
+    if (!tokenValid) {
+      ctx.waitUntil(logAbuse(env, 'invalid_token', ip));
+      return jsonResponse(401, { error: 'Invalid or expired session token. Refresh the page.' }, env, requestOrigin);
     }
 
-    // ── Rate limiting — stricter for unauthenticated requests ──
-    const baseLimit = parseInt(env.RATE_LIMIT_PER_HOUR || '30', 10);
-    const limitPerHour = sessionToken ? baseLimit : Math.min(baseLimit, 5); // 5/hr without token
+    // ── Rate limiting (dual: by IP and by session token) ──
+    const limitPerHour = parseInt(env.RATE_LIMIT_PER_HOUR || '30', 10);
     if (env.RATE_LIMIT_KV) {
-      const rlPrefix = sessionToken ? 'rl' : 'rl:noauth';
-      const key = `${rlPrefix}:${ip}`;
-      const current = parseInt((await env.RATE_LIMIT_KV.get(key)) || '0', 10);
-      if (current >= limitPerHour) {
-        ctx.waitUntil(logAbuse(env, 'rate_limited', `${ip} (auth:${!!sessionToken})`));
+      // Rate limit by IP
+      const ipKey = `rl:ip:${ip}`;
+      const ipCurrent = parseInt((await env.RATE_LIMIT_KV.get(ipKey)) || '0', 10);
+      if (ipCurrent >= limitPerHour) {
+        ctx.waitUntil(logAbuse(env, 'rate_limited_ip', ip));
         return jsonResponse(429, { error: 'Rate limit exceeded. Try again later.', limit: limitPerHour, reset: '1 hour' }, env, requestOrigin);
       }
-      await env.RATE_LIMIT_KV.put(key, String(current + 1), { expirationTtl: 3600 });
+      // Rate limit by session token (prevents token sharing across IPs)
+      const tokenHash = sessionToken.slice(0, 16);
+      const tokenKey = `rl:tok:${tokenHash}`;
+      const tokCurrent = parseInt((await env.RATE_LIMIT_KV.get(tokenKey)) || '0', 10);
+      if (tokCurrent >= limitPerHour) {
+        ctx.waitUntil(logAbuse(env, 'rate_limited_token', ip));
+        return jsonResponse(429, { error: 'Rate limit exceeded. Try again later.', limit: limitPerHour, reset: '1 hour' }, env, requestOrigin);
+      }
+      await env.RATE_LIMIT_KV.put(ipKey, String(ipCurrent + 1), { expirationTtl: 3600 });
+      await env.RATE_LIMIT_KV.put(tokenKey, String(tokCurrent + 1), { expirationTtl: 3600 });
     }
 
     // ── FIX 5: Body size limit ────────────────────────────
@@ -1023,6 +1048,11 @@ export default {
       // ── CHAT MODE ──────────────────────────────────────
       if (body.userContent === '__CHAT_MODE__' && body.chatMessages) {
         ctx.waitUntil(trackEvent(env, 'chat'));
+        // Sanitize chat messages
+        const sanitizedChat = (body.chatMessages || []).map(m => ({
+          ...m,
+          content: typeof m.content === 'string' ? sanitizeInput(m.content) : m.content,
+        }));
         const resp = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
@@ -1034,7 +1064,7 @@ export default {
             model,
             max_tokens: 8000,
             system: 'Eres un consultor estratégico senior. El usuario te consulta sobre un informe ejecutivo que ya fue generado. Responde de forma concisa y profesional en el mismo idioma del informe. Si el usuario pide modificaciones al informe, responde con el texto explicativo seguido de __JSON_UPDATE__ en una línea separada y luego el JSON completo actualizado del informe (mismo esquema que el original). Si solo pide información o aclaración, responde en texto normal sin JSON.',
-            messages: body.chatMessages,
+            messages: sanitizedChat,
           }),
         });
         const data = await resp.json();
@@ -1149,6 +1179,7 @@ export default {
 
         // Build messages — support vision (images array)
         const userBlocks = [];
+        const sanitizedContent = sanitizeInput(body.userContent || '');
         const promptPrefix = langPref + typePref + 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n';
         if (body.images && Array.isArray(body.images) && body.images.length > 0) {
           body.images.forEach(img => {
@@ -1159,12 +1190,12 @@ export default {
           });
           userBlocks.push({
             type: 'text',
-            text: promptPrefix + '(incluye imágenes del documento — analiza las imágenes para extraer datos, gráficos y tablas relevantes)\n\n' + (body.userContent || ''),
+            text: promptPrefix + '(incluye imágenes del documento — analiza las imágenes para extraer datos, gráficos y tablas relevantes)\n\n' + sanitizedContent,
           });
         } else {
           userBlocks.push({
             type: 'text',
-            text: promptPrefix + (body.userContent || ''),
+            text: promptPrefix + sanitizedContent,
           });
         }
 
