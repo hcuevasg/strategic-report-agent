@@ -1038,7 +1038,7 @@ async function downloadPdf(){
         }
         y+=8;
       });
-      y+=4;
+      y+=8;
     }
 
     // ── Analysis Blocks ────────────────────────────────────────
@@ -1067,19 +1067,19 @@ async function downloadPdf(){
           drawRect(ML,y-3,CW,gtH,NAVY);
           pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
           gtLines.forEach(line=>{pdf.text(line,ML+6,y);y+=5;});
-          y+=7;
+          y+=10;
         }
 
         // Content
         if(s.content){
           checkPage(8);
           drawWrapped(s.content,ML,CW,9,BODY,'normal');
-          y+=5;
+          y+=7;
         }
 
         // Bullets
         if(s.bullets?.length){
-          y+=2;
+          y+=3;
           s.bullets.forEach(b=>{
             checkPage(7);
             pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
@@ -1106,9 +1106,9 @@ async function downloadPdf(){
           y+=8;
           pdf.setFontSize(8);pdf.setFont('helvetica','italic');pdf.setTextColor('#475569');
           swLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+5,y);y+=4.5;});
-          y+=8;
+          y+=10;
         }
-        y+=6;
+        y+=10;
       });
     }
 
@@ -1123,15 +1123,15 @@ async function downloadPdf(){
         const rkLines=wrapText(rk.risk,CW-8);
         pdf.setFontSize(8);
         const impLines=wrapText(rk.implication||'',CW-8);
-        const boxH=rkLines.length*4.5+impLines.length*4.5+8;
+        const boxH=rkLines.length*4.5+impLines.length*4.5+12;
         drawRect(ML,y-3,1.2,boxH,RED);
         drawRect(ML+1.2,y-3,CW-1.2,boxH,'#FFF5F5');
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
         rkLines.forEach(line=>{pdf.text(line,ML+5,y);y+=4.5;});
-        y+=2;
+        y+=4;
         pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(SGRAY);
         impLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+5,y);y+=4.5;});
-        y+=6;
+        y+=8;
       });
       y+=4;
     }
@@ -1148,9 +1148,9 @@ async function downloadPdf(){
         pdf.setFont('helvetica','normal');pdf.setTextColor('#191C1E');
         const oLines=wrapText(o,CW-8);
         oLines.forEach(line=>{checkPage(5);pdf.text(line,ML+7,y);y+=5;});
-        y+=4;
+        y+=5;
       });
-      y+=6;
+      y+=8;
     }
 
     // ── Recommendations ────────────────────────────────────────
