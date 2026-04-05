@@ -48,6 +48,47 @@ const i18n = {
     progressKpis: 'Calculando KPIs...',
     imagesDetected: 'imágenes detectadas',
     restored: 'Restaurado',
+    // UI labels
+    uiOffline: 'Sin conexión',
+    uiConsulting: 'Consultoría Estratégica',
+    uiReports: 'Informes Ejecutivos',
+    uiReportType: 'Tipo de Informe',
+    uiReportLang: 'Idioma del Informe',
+    uiUploadFile: 'Subir archivo',
+    uiPlaceholder: 'Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí...',
+    uiGenerate: 'Generar Informe Ejecutivo',
+    uiExportPdf: 'Exportar PDF',
+    uiGenPptx: 'Generar PPTX',
+    uiExportWord: 'Exportar Word',
+    uiBrief: 'Brief 1 página',
+    uiDesigningSlides: 'Diseñando slides...',
+    uiRetry: 'Reintentar',
+    uiChatPlaceholder: 'Ej: Profundiza el hallazgo 3, agrega análisis financiero, reformula para el CFO...',
+    uiMece: 'Mutuamente excluyente, colectivamente exhaustivo. Sin solapamientos ni vacíos.',
+    uiPyramid: 'Conclusión primero, argumentos después. Estructura de arriba hacia abajo.',
+    uiFacts: 'Basado en Hechos',
+    uiFactsDesc: 'Hechos observados, inferencias razonables e hipótesis diferenciados explícitamente.',
+    uiStrategic: 'Estratégico',
+    uiFinancial: 'Financiero',
+    uiOperational: 'Operacional',
+    uiRisks: 'Riesgos',
+    uiCompetitive: 'Competitivo',
+    uiDueDiligence: 'Due Diligence',
+    uiGeneral: 'General',
+    tipStrategic: 'Análisis estratégico con hallazgos, riesgos, oportunidades y recomendaciones por horizonte',
+    tipFinancial: 'Enfoque en impacto financiero, ROI, métricas de rentabilidad y proyecciones',
+    tipOperational: 'Diagnóstico de procesos, eficiencia operacional, cuellos de botella y mejoras',
+    tipRisk: 'Matriz de riesgos, probabilidad e impacto, mitigación y planes de contingencia',
+    tipCompetitive: 'Benchmarking competitivo, posicionamiento, ventajas y brechas vs competencia',
+    tipDueDiligence: 'Due diligence: evaluación de viabilidad, red flags, fortalezas y riesgos',
+    tipGeneral: 'Análisis general sin enfoque específico',
+    uiSourceDoc: 'Documento Fuente',
+    uiExample: 'Ejemplo',
+    uiEditBanner: 'Haz click en cualquier texto para editarlo antes de exportar',
+    uiRestore: 'Restaurar',
+    uiChatHeader: 'Consultar sobre el informe',
+    uiPyramidTitle: 'Principio Piramidal',
+    uiLangAuto: 'Auto (detectar)',
   },
   en: {
     analysisLabel: 'Strategic Analysis',
@@ -89,6 +130,47 @@ const i18n = {
     progressKpis: 'Calculating KPIs...',
     imagesDetected: 'images detected',
     restored: 'Restored',
+    // UI labels
+    uiOffline: 'Offline',
+    uiConsulting: 'Strategic Consulting',
+    uiReports: 'Executive Reports',
+    uiReportType: 'Report Type',
+    uiReportLang: 'Report Language',
+    uiUploadFile: 'Upload file',
+    uiPlaceholder: 'Paste text, or drag a .txt / .pdf / .docx file here...',
+    uiGenerate: 'Generate Executive Report',
+    uiExportPdf: 'Export PDF',
+    uiGenPptx: 'Generate PPTX',
+    uiExportWord: 'Export Word',
+    uiBrief: '1-page Brief',
+    uiDesigningSlides: 'Designing slides...',
+    uiRetry: 'Retry',
+    uiChatPlaceholder: 'E.g.: Deepen finding 3, add financial analysis, reformat for CFO...',
+    uiMece: 'Mutually exclusive, collectively exhaustive. No overlaps or gaps.',
+    uiPyramid: 'Conclusion first, arguments after. Top-down structure.',
+    uiFacts: 'Fact-Based',
+    uiFactsDesc: 'Observed facts, reasonable inferences, and hypotheses explicitly differentiated.',
+    uiStrategic: 'Strategic',
+    uiFinancial: 'Financial',
+    uiOperational: 'Operational',
+    uiRisks: 'Risks',
+    uiCompetitive: 'Competitive',
+    uiDueDiligence: 'Due Diligence',
+    uiGeneral: 'General',
+    tipStrategic: 'Strategic analysis with findings, risks, opportunities and recommendations by horizon',
+    tipFinancial: 'Focus on financial impact, ROI, profitability metrics and projections',
+    tipOperational: 'Process diagnosis, operational efficiency, bottlenecks and improvements',
+    tipRisk: 'Risk matrix, probability and impact, mitigation and contingency plans',
+    tipCompetitive: 'Competitive benchmarking, positioning, advantages and gaps vs competition',
+    tipDueDiligence: 'Due diligence: feasibility assessment, red flags, strengths and risks',
+    tipGeneral: 'General analysis without specific focus',
+    uiSourceDoc: 'Source Document',
+    uiExample: 'Example',
+    uiEditBanner: 'Click any text to edit before exporting',
+    uiRestore: 'Reset',
+    uiChatHeader: 'Ask about the report',
+    uiPyramidTitle: 'Pyramid Principle',
+    uiLangAuto: 'Auto (detect)',
   },
   pt: {
     analysisLabel: 'Análise Estratégica',
@@ -343,6 +425,28 @@ function setOutputLang(el){
   el.classList.add('active');
   outputLanguage=el.dataset.lang;
   if(outputLanguage!=='auto' && i18n[outputLanguage]) currentLang=outputLanguage;
+  updateUI();
+}
+
+// ============================================================
+// UPDATE UI LANGUAGE — applies i18n to all data-i18n elements
+// ============================================================
+function updateUI(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.getAttribute('data-i18n');
+    const val=t(key);
+    if(val && val!==key) el.textContent=val;
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{
+    const key=el.getAttribute('data-i18n-title');
+    const val=t(key);
+    if(val && val!==key) el.title=val;
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    const key=el.getAttribute('data-i18n-placeholder');
+    const val=t(key);
+    if(val && val!==key) el.placeholder=val;
+  });
 }
 
 // ============================================================
@@ -463,6 +567,7 @@ function renderHistory(){
 
 // Init history on load
 document.addEventListener('DOMContentLoaded', () => {
+  updateUI();
   renderHistory();
   handleMagicLink();
 });

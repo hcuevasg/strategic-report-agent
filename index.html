@@ -41,7 +41,7 @@ tailwind.config={theme:{extend:{colors:{
     <div class="w-px h-4 bg-white/20"></div>
     <div class="flex items-center gap-2">
       <div class="w-2 h-2" id="statusDot" style="background:#64748b"></div>
-      <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400" id="statusDotLabel">Sin conexión</span>
+      <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400" id="statusDotLabel" data-i18n="uiOffline">Sin conexión</span>
     </div>
   </div>
 </header>
@@ -66,8 +66,8 @@ tailwind.config={theme:{extend:{colors:{
 
     <!-- Page header -->
     <header class="mb-10">
-      <span class="font-['Inter'] text-[#BB0014] font-bold tracking-[0.25em] uppercase text-[10px] mb-2 block">Consultoría Estratégica</span>
-      <h1 class="font-['Manrope'] text-4xl md:text-5xl font-extrabold text-[#041627] tracking-tight leading-none">Informes Ejecutivos</h1>
+      <span class="font-['Inter'] text-[#BB0014] font-bold tracking-[0.25em] uppercase text-[10px] mb-2 block" data-i18n="uiConsulting">Consultoría Estratégica</span>
+      <h1 class="font-['Manrope'] text-4xl md:text-5xl font-extrabold text-[#041627] tracking-tight leading-none" data-i18n="uiReports">Informes Ejecutivos</h1>
       <div class="w-16 h-1 bg-[#BB0014] mt-4"></div>
     </header>
 
@@ -75,21 +75,21 @@ tailwind.config={theme:{extend:{colors:{
     <section class="bg-white border-l-4 border-[#041627] p-8 md:p-10 mb-0" style="box-shadow:0 2px 32px rgba(4,22,39,0.06)">
       <div class="space-y-7">
         <div class="space-y-1.5">
-          <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">Tipo de Informe</label>
+          <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold" data-i18n="uiReportType">Tipo de Informe</label>
           <div class="flex flex-wrap gap-2" id="reportTypeChips">
-            <button data-type="strategic" onclick="setReportType(this)" class="rtype-chip active" title="Análisis estratégico con hallazgos, riesgos, oportunidades y recomendaciones por horizonte">Estratégico</button>
-            <button data-type="financial" onclick="setReportType(this)" class="rtype-chip" title="Enfoque en impacto financiero, ROI, métricas de rentabilidad y proyecciones">Financiero</button>
-            <button data-type="operational" onclick="setReportType(this)" class="rtype-chip" title="Diagnóstico de procesos, eficiencia operacional, cuellos de botella y mejoras">Operacional</button>
-            <button data-type="risk" onclick="setReportType(this)" class="rtype-chip" title="Matriz de riesgos, probabilidad e impacto, mitigación y planes de contingencia">Riesgos</button>
-            <button data-type="competitive" onclick="setReportType(this)" class="rtype-chip" title="Benchmarking competitivo, posicionamiento, ventajas y brechas vs competencia">Competitivo</button>
-            <button data-type="due_diligence" onclick="setReportType(this)" class="rtype-chip" title="Due diligence: evaluación de viabilidad, red flags, fortalezas y riesgos">Due Diligence</button>
-            <button data-type="general" onclick="setReportType(this)" class="rtype-chip" title="Análisis general sin enfoque específico">General</button>
+            <button data-type="strategic" onclick="setReportType(this)" class="rtype-chip active" data-i18n="uiStrategic" data-i18n-title="tipStrategic" title="Análisis estratégico con hallazgos, riesgos, oportunidades y recomendaciones por horizonte">Estratégico</button>
+            <button data-type="financial" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiFinancial" data-i18n-title="tipFinancial" title="Enfoque en impacto financiero, ROI, métricas de rentabilidad y proyecciones">Financiero</button>
+            <button data-type="operational" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiOperational" data-i18n-title="tipOperational" title="Diagnóstico de procesos, eficiencia operacional, cuellos de botella y mejoras">Operacional</button>
+            <button data-type="risk" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiRisks" data-i18n-title="tipRisk" title="Matriz de riesgos, probabilidad e impacto, mitigación y planes de contingencia">Riesgos</button>
+            <button data-type="competitive" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiCompetitive" data-i18n-title="tipCompetitive" title="Benchmarking competitivo, posicionamiento, ventajas y brechas vs competencia">Competitivo</button>
+            <button data-type="due_diligence" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiDueDiligence" data-i18n-title="tipDueDiligence" title="Due diligence: evaluación de viabilidad, red flags, fortalezas y riesgos">Due Diligence</button>
+            <button data-type="general" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiGeneral" data-i18n-title="tipGeneral" title="Análisis general sin enfoque específico">General</button>
           </div>
         </div>
         <div class="space-y-1.5">
-          <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">Idioma del Informe</label>
+          <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold" data-i18n="uiReportLang">Idioma del Informe</label>
           <div class="flex flex-wrap gap-2" id="langChips">
-            <button data-lang="auto" onclick="setOutputLang(this)" class="rtype-chip active">Auto (detectar)</button>
+            <button data-lang="auto" onclick="setOutputLang(this)" class="rtype-chip active" data-i18n="uiLangAuto">Auto (detectar)</button>
             <button data-lang="es" onclick="setOutputLang(this)" class="rtype-chip">Español</button>
             <button data-lang="en" onclick="setOutputLang(this)" class="rtype-chip">English</button>
             <button data-lang="pt" onclick="setOutputLang(this)" class="rtype-chip">Português</button>
@@ -99,19 +99,19 @@ tailwind.config={theme:{extend:{colors:{
         </div>
         <div class="space-y-1.5">
           <div class="flex justify-between items-end">
-            <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">Documento Fuente</label>
+            <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold" data-i18n="uiSourceDoc">Documento Fuente</label>
             <div class="flex gap-4">
               <button onclick="document.getElementById('fileInput').click()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#BB0014] transition-all flex items-center gap-1" style="position:relative;z-index:10">
-                <span class="material-symbols-outlined text-[13px]">upload_file</span> Subir archivo
+                <span class="material-symbols-outlined text-[13px]">upload_file</span> <span data-i18n="uiUploadFile">Subir archivo</span>
               </button>
               <button onclick="loadSample()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#041627] transition-all flex items-center gap-1" style="position:relative;z-index:10">
-                Ejemplo <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+                <span data-i18n="uiExample">Ejemplo</span> <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
               </button>
             </div>
           </div>
           <input type="file" id="fileInput" accept=".txt,.md,.csv,.pdf,.docx,.doc,.png,.jpg,.jpeg,.gif,.webp" class="hidden" onchange="handleFile(event)"/>
           <div id="dropZone" class="drop-zone relative">
-            <textarea id="inputText" class="w-full bg-[#F8F9FB] border-0 border-b border-outline-variant p-4 text-[#191C1E] placeholder:text-slate-400 transition-all resize-none text-sm leading-relaxed focus:border-[#041627]" placeholder="Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí..." rows="8" oninput="updateCharCount(this)"></textarea>
+            <textarea id="inputText" class="w-full bg-[#F8F9FB] border-0 border-b border-outline-variant p-4 text-[#191C1E] placeholder:text-slate-400 transition-all resize-none text-sm leading-relaxed focus:border-[#041627]" placeholder="Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí..." data-i18n-placeholder="uiPlaceholder" rows="8" oninput="updateCharCount(this)"></textarea>
           </div>
           <div id="fileInfo" class="hidden font-['Inter'] text-[10px] text-slate-500 flex items-center gap-2">
             <span class="material-symbols-outlined text-sm text-[#4279B0]">check_circle</span>
@@ -134,18 +134,18 @@ tailwind.config={theme:{extend:{colors:{
         <div class="flex flex-col sm:flex-row gap-3 pt-2">
           <button id="btnAnalyze" onclick="analyze()" class="flex-1 bg-[#041627] hover:bg-[#1A2B3C] text-white font-['Manrope'] font-bold h-13 py-3.5 flex items-center justify-center gap-3 transition-all group disabled:opacity-40 disabled:cursor-not-allowed">
             <span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform" style="font-variation-settings:'FILL'1;">psychology</span>
-            <span class="text-xs uppercase tracking-[0.2em]">Generar Informe Ejecutivo</span>
+            <span class="text-xs uppercase tracking-[0.2em]" data-i18n="uiGenerate">Generar Informe Ejecutivo</span>
           </button>
-<div class="tooltip-wrap"><span class="tooltip">Exportar PDF</span><button id="btnPdf" onclick="downloadPdf()" class="hidden bg-[#BB0014] hover:bg-red-800 text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+<div class="tooltip-wrap"><span class="tooltip" data-i18n="uiExportPdf">Exportar PDF</span><button id="btnPdf" onclick="downloadPdf()" class="hidden bg-[#BB0014] hover:bg-red-800 text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
             <span class="material-symbols-outlined text-base">picture_as_pdf</span> PDF
           </button></div>
-          <div class="tooltip-wrap"><span class="tooltip">Generar PPTX</span><button id="btnPptx" onclick="downloadPptx()" class="hidden bg-[#041627] hover:bg-[#1A2B3C] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex disabled:opacity-40 disabled:cursor-not-allowed">
+          <div class="tooltip-wrap"><span class="tooltip" data-i18n="uiGenPptx">Generar PPTX</span><button id="btnPptx" onclick="downloadPptx()" class="hidden bg-[#041627] hover:bg-[#1A2B3C] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex disabled:opacity-40 disabled:cursor-not-allowed">
             <span class="material-symbols-outlined text-base">slideshow</span> PPTX
           </button></div>
-          <div class="tooltip-wrap"><span class="tooltip">Exportar Word</span><button id="btnDocx" onclick="downloadDocx()" class="hidden bg-[#4279B0] hover:bg-[#3568A0] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
+          <div class="tooltip-wrap"><span class="tooltip" data-i18n="uiExportWord">Exportar Word</span><button id="btnDocx" onclick="downloadDocx()" class="hidden bg-[#4279B0] hover:bg-[#3568A0] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
             <span class="material-symbols-outlined text-base">download</span> DOCX
           </button></div>
-          <div class="tooltip-wrap"><span class="tooltip">Brief 1 página</span><button id="btnBrief" onclick="downloadBrief()" class="hidden bg-[#F2F4F6] hover:bg-[#E0E3E5] text-[#041627] border border-[#C4C6CD] font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex" title="">
+          <div class="tooltip-wrap"><span class="tooltip" data-i18n="uiBrief">Brief 1 página</span><button id="btnBrief" onclick="downloadBrief()" class="hidden bg-[#F2F4F6] hover:bg-[#E0E3E5] text-[#041627] border border-[#C4C6CD] font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex" title="">
             <span class="material-symbols-outlined text-base">bolt</span> Brief
           </button></div>
         </div>
@@ -160,7 +160,7 @@ tailwind.config={theme:{extend:{colors:{
     <div id="pptxProgressSection" class="hidden mt-6 bg-white border-l-4 border-[#041627] overflow-hidden fade-in" style="box-shadow:0 2px 16px rgba(4,22,39,0.06)">
       <div class="px-6 py-3 bg-[#041627] flex items-center gap-2">
         <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL'1;">auto_awesome</span>
-        <span class="font-['Manrope'] text-[10px] uppercase tracking-widest text-white font-bold" id="pptxProgressLabel">Diseñando slides...</span>
+        <span class="font-['Manrope'] text-[10px] uppercase tracking-widest text-white font-bold" id="pptxProgressLabel" data-i18n="uiDesigningSlides">Diseñando slides...</span>
       </div>
       <div class="px-6 pb-5 pt-4 space-y-2">
         <div class="progress-track"><div id="pptxProgressFill" class="progress-fill" style="width:0%"></div></div>
@@ -180,7 +180,7 @@ tailwind.config={theme:{extend:{colors:{
         <p id="validationWarnText" class="font-['Inter'] text-xs leading-relaxed" style="color:#92400E"></p>
       </div>
       <div class="flex gap-2 shrink-0 items-center">
-        <button onclick="analyze()" class="font-['Inter'] text-[10px] uppercase tracking-wide px-3 py-1.5 transition-all" style="background:#FEF3C7;color:#92400E;border:1px solid #D97706">Reintentar</button>
+        <button onclick="analyze()" class="font-['Inter'] text-[10px] uppercase tracking-wide px-3 py-1.5 transition-all" style="background:#FEF3C7;color:#92400E;border:1px solid #D97706" data-i18n="uiRetry">Reintentar</button>
         <button onclick="document.getElementById('validationWarn').classList.add('hidden')" class="font-['Inter'] text-[10px] px-2" style="color:#D97706">✕</button>
       </div>
     </div>
@@ -190,20 +190,20 @@ tailwind.config={theme:{extend:{colors:{
     <div id="editBanner" class="hidden mt-4 bg-[#F2F4F6] border-l-4 border-[#BB0014] p-4 flex items-center justify-between">
       <div class="flex items-center gap-2 font-['Inter'] text-xs text-slate-500">
         <span class="material-symbols-outlined text-sm text-[#BB0014]">edit_note</span>
-        Haz click en cualquier texto para editarlo antes de exportar
+        <span data-i18n="uiEditBanner">Haz click en cualquier texto para editarlo antes de exportar</span>
       </div>
-      <button onclick="resetEdits()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] hover:text-red-700 font-bold">Restaurar</button>
+      <button onclick="resetEdits()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] hover:text-red-700 font-bold" data-i18n="uiRestore">Restaurar</button>
     </div>
 
     <!-- Chat -->
     <div id="chatSection" class="hidden mt-8 bg-white border-l-4 border-[#041627] overflow-hidden" style="box-shadow:0 2px 16px rgba(4,22,39,0.06)">
       <div class="px-6 py-3 bg-[#041627] flex items-center gap-2">
         <span class="material-symbols-outlined text-white text-base">forum</span>
-        <span class="font-['Manrope'] text-[10px] uppercase tracking-widest text-white font-bold">Consultar sobre el informe</span>
+        <span class="font-['Manrope'] text-[10px] uppercase tracking-widest text-white font-bold" data-i18n="uiChatHeader">Consultar sobre el informe</span>
       </div>
       <div id="chatMessages" class="p-5 space-y-3 max-h-80 overflow-y-auto"></div>
       <div class="p-5 border-t border-outline-variant/20 flex gap-3">
-        <input id="chatInput" type="text" class="flex-1 bg-transparent border-0 border-b border-outline-variant h-10 px-0 text-[#191C1E] placeholder:text-slate-400 focus:border-[#041627] transition-all font-['Inter'] text-sm" placeholder="Ej: Profundiza el hallazgo 3, agrega análisis financiero, reformula para el CFO..." onkeydown="if(event.key==='Enter')sendChat()"/>
+        <input id="chatInput" type="text" class="flex-1 bg-transparent border-0 border-b border-outline-variant h-10 px-0 text-[#191C1E] placeholder:text-slate-400 focus:border-[#041627] transition-all font-['Inter'] text-sm" placeholder="Ej: Profundiza el hallazgo 3, agrega análisis financiero, reformula para el CFO..." data-i18n-placeholder="uiChatPlaceholder" onkeydown="if(event.key==='Enter')sendChat()"/>
         <button onclick="sendChat()" class="bg-[#BB0014] hover:bg-red-800 text-white font-bold px-5 flex items-center gap-2 transition-all disabled:opacity-40" id="btnChat">
           <span class="material-symbols-outlined text-base">send</span>
         </button>
@@ -217,21 +217,21 @@ tailwind.config={theme:{extend:{colors:{
           <span class="material-symbols-outlined text-[#BB0014] text-xl" style="font-variation-settings:'FILL'1;">analytics</span>
           <h3 class="font-['Manrope'] text-sm font-bold text-[#041627] uppercase tracking-widest">MECE</h3>
         </div>
-        <p class="font-['Inter'] text-xs text-slate-500 leading-relaxed">Mutuamente excluyente, colectivamente exhaustivo. Sin solapamientos ni vacíos.</p>
+        <p class="font-['Inter'] text-xs text-slate-500 leading-relaxed" data-i18n="uiMece">Mutuamente excluyente, colectivamente exhaustivo. Sin solapamientos ni vacíos.</p>
       </div>
       <div class="p-8 bg-white border-r border-outline-variant/30 border-l-4 border-l-[#BB0014]">
         <div class="flex items-center gap-3 mb-4">
           <span class="material-symbols-outlined text-[#BB0014] text-xl" style="font-variation-settings:'FILL'1;">account_tree</span>
-          <h3 class="font-['Manrope'] text-sm font-bold text-[#041627] uppercase tracking-widest">Principio Piramidal</h3>
+          <h3 class="font-['Manrope'] text-sm font-bold text-[#041627] uppercase tracking-widest" data-i18n="uiPyramidTitle">Principio Piramidal</h3>
         </div>
-        <p class="font-['Inter'] text-xs text-slate-500 leading-relaxed">Conclusión primero, argumentos después. Estructura de arriba hacia abajo.</p>
+        <p class="font-['Inter'] text-xs text-slate-500 leading-relaxed" data-i18n="uiPyramid">Conclusión primero, argumentos después. Estructura de arriba hacia abajo.</p>
       </div>
       <div class="p-8 bg-white">
         <div class="flex items-center gap-3 mb-4">
           <span class="material-symbols-outlined text-[#BB0014] text-xl" style="font-variation-settings:'FILL'1;">verified</span>
-          <h3 class="font-['Manrope'] text-sm font-bold text-[#041627] uppercase tracking-widest">Basado en Hechos</h3>
+          <h3 class="font-['Manrope'] text-sm font-bold text-[#041627] uppercase tracking-widest" data-i18n="uiFacts">Basado en Hechos</h3>
         </div>
-        <p class="font-['Inter'] text-xs text-slate-500 leading-relaxed">Hechos observados, inferencias razonables e hipótesis diferenciados explícitamente.</p>
+        <p class="font-['Inter'] text-xs text-slate-500 leading-relaxed" data-i18n="uiFactsDesc">Hechos observados, inferencias razonables e hipótesis diferenciados explícitamente.</p>
       </div>
     </section>
 
