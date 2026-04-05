@@ -896,9 +896,9 @@ async function downloadPdf(){
     const pdf=new jsPDF('p','mm','a4');
     const r=result;
     const W=210,H=297;
-    const ML=20,MR=20,MT=20,MB=20; // margins
-    const CW=W-ML-MR; // content width
-    let y=0; // current Y position
+    const ML=20,MR=20,MT=20,MB=20;
+    const CW=W-ML-MR;
+    let y=0;
     const NAVY='#041627',RED='#BB0014',BLUE='#4279B0',BODY='#44474C',SGRAY='#74777D',LGRAY='#F2F4F6';
 
     function checkPage(need){
@@ -906,8 +906,13 @@ async function downloadPdf(){
       return false;
     }
     function drawRect(x,ry,w,h,color){pdf.setFillColor(color);pdf.rect(x,ry,w,h,'F');}
-    // Wrap text and return array of lines
     function wrapText(text,maxW){return pdf.splitTextToSize(text||'',maxW);}
+    // Measure wrapped height without drawing
+    function measureWrapped(text,maxW,fontSize){
+      pdf.setFontSize(fontSize);
+      const lines=wrapText(text,maxW);
+      return lines.length*fontSize*0.45;
+    }
     function drawWrapped(text,x,maxW,fontSize,color,style){
       pdf.setFontSize(fontSize);
       pdf.setFont('helvetica',style||'normal');
@@ -921,6 +926,9 @@ async function downloadPdf(){
       });
       return lines.length;
     }
+    // ASCII bullet — helvetica doesn't support Unicode bullets
+    const BULLET='>';
+    const DIAMOND='*';
 
     // ── Cover bar ──────────────────────────────────────────────
     drawRect(0,0,W,14,NAVY);
@@ -941,27 +949,25 @@ async function downloadPdf(){
     titleLines.forEach(line=>{pdf.text(line,ML,y);y+=8;});
     if(r.subtitle){
       pdf.setFontSize(10);pdf.setFont('helvetica','italic');pdf.setTextColor('#64748B');
-      pdf.text(r.subtitle,ML,y);y+=6;
+      const subLines=wrapText(r.subtitle,CW);
+      subLines.forEach(line=>{pdf.text(line,ML,y);y+=4.5;});
+      y+=2;
     }
     drawRect(ML,y,24,0.8,RED);y+=8;
 
     // ── Executive Summary ──────────────────────────────────────
-    drawRect(ML,y,1,0,NAVY); // will draw after measuring
-    const exY=y;
-    drawRect(ML,y,CW,0,LGRAY); // placeholder — draw bg after
+    // Pre-measure to draw background first
+    pdf.setFontSize(10);
+    const exLines=wrapText(r.executive_summary,CW-10);
+    const exH=9+exLines.length*4.5+3;
+    drawRect(ML,y,1.2,exH,RED);
+    drawRect(ML+1.2,y,CW-1.2,exH,LGRAY);
+    // Now draw text on top
     pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-    const exStartY=y;
     pdf.text('EXECUTIVE SUMMARY',ML+5,y+4);y+=9;
     pdf.setFontSize(10);pdf.setFont('helvetica','italic');pdf.setTextColor(NAVY);
-    const exLines=wrapText(r.executive_summary,CW-10);
     exLines.forEach(line=>{checkPage(5);pdf.text(line,ML+5,y);y+=4.5;});
-    y+=3;
-    // Draw background rect behind summary
-    const exH=y-exStartY;
-    // Re-draw on same page (background goes behind text — jsPDF draws in order so we accept overlay)
-    // For proper layering we accept the text-on-white approach
-    drawRect(ML,exStartY,1.2,exH,RED);
-    y+=5;
+    y+=8;
 
     // ── Key Messages ───────────────────────────────────────────
     if(r.key_messages?.length){
@@ -971,7 +977,7 @@ async function downloadPdf(){
       r.key_messages.forEach(m=>{
         checkPage(6);
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-        pdf.text('\u25B8',ML+2,y);
+        pdf.text(BULLET,ML+2,y);
         pdf.setFont('helvetica','normal');pdf.setTextColor('#191C1E');
         const mLines=wrapText(m,CW-8);
         mLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+7,y);y+=4.5;});
@@ -996,39 +1002,37 @@ async function downloadPdf(){
       pdf.text('FINDINGS',ML,y);y+=7;
       r.findings.forEach((f,i)=>{
         checkPage(18);
+        const fX=ML+8;
+        // Pre-measure finding height for background
+        pdf.setFontSize(9);
+        const fLines=wrapText(f.finding,CW-14);
+        let fH=fLines.length*4+2;
+        if(f.evidence){pdf.setFontSize(8);fH+=4+wrapText(f.evidence,CW-14).length*3.8;}
+        if(f.business_implication){pdf.setFontSize(8);fH+=4+wrapText(f.business_implication,CW-14).length*3.8;}
+        // Draw backgrounds first
+        drawRect(ML,y-3.5,6,Math.max(6,fH+2),NAVY);
+        drawRect(fX,y-3.5,CW-8,Math.max(6,fH+2),'#F8F9FB');
+        drawRect(fX,y-3.5+Math.max(6,fH+2)-0.4,CW-8,0.4,RED);
         // Number badge
-        drawRect(ML,y-3.5,6,6,NAVY);
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
         pdf.text(String(i+1),ML+3,y,{align:'center'});
         // Finding text
-        const fX=ML+8;
-        drawRect(fX,y-3.5,CW-8,0,'#F8F9FB');
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-        const fLines=wrapText(f.finding,CW-12);
         fLines.forEach(line=>{pdf.text(line,fX+2,y);y+=4;});
         if(f.evidence){
           pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(SGRAY);
-          pdf.text('Evidence: ',fX+2,y);
+          pdf.text('Evidence:',fX+2,y);y+=4;
           pdf.setFont('helvetica','normal');
-          const evLines=wrapText(f.evidence,CW-30);
-          const evX=fX+2+pdf.getTextWidth('Evidence: ');
-          if(evLines.length===1&&pdf.getTextWidth('Evidence: '+f.evidence)<CW-12){
-            pdf.text(f.evidence,evX,y);y+=4;
-          } else {
-            y+=4;
-            evLines.forEach(line=>{checkPage(4);pdf.text(line,fX+2,y);y+=3.8;});
-          }
+          const evLines=wrapText(f.evidence,CW-14);
+          evLines.forEach(line=>{checkPage(4);pdf.text(line,fX+2,y);y+=3.8;});
         }
         if(f.business_implication){
           pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-          pdf.text('Implication: ',fX+2,y);
-          pdf.setFont('helvetica','normal');
-          const impLines=wrapText(f.business_implication,CW-12);
-          y+=4;
-          impLines.forEach(line=>{checkPage(4);pdf.setTextColor(RED);pdf.text(line,fX+2,y);y+=3.8;});
+          pdf.text('Implication:',fX+2,y);y+=4;
+          pdf.setFont('helvetica','normal');pdf.setTextColor(RED);
+          const impLines=wrapText(f.business_implication,CW-14);
+          impLines.forEach(line=>{checkPage(4);pdf.text(line,fX+2,y);y+=3.8;});
         }
-        // Bottom red line
-        drawRect(fX,y,CW-8,0.4,RED);
         y+=6;
       });
       y+=2;
@@ -1038,24 +1042,27 @@ async function downloadPdf(){
     if(r.analysis_blocks?.length){
       r.analysis_blocks.forEach((s,i)=>{
         checkPage(20);
-        // Accent bar + section header
-        drawRect(ML,y,1.2,12,RED);
-        pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-        pdf.text(`${i+1}. ANALYSIS`,ML+4,y+3);
-        pdf.setFontSize(12);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+        // Accent bar — measure heading first for bar height
+        pdf.setFontSize(12);
         const hLines=wrapText(s.heading,CW-8);
+        const barH=8+hLines.length*5.5+3;
+        drawRect(ML,y,1.2,barH,RED);
+        // Section header
+        pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
+        pdf.text((i+1)+'. ANALYSIS',ML+4,y+3);
+        pdf.setFontSize(12);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
         let hy=y+8;
         hLines.forEach(line=>{pdf.text(line,ML+4,hy);hy+=5.5;});
         y=hy+3;
 
-        // Governing thought
+        // Governing thought — background first, then text
         if(s.governing_thought){
           checkPage(14);
-          drawRect(ML,y-3,CW,0,NAVY);
+          pdf.setFontSize(9);
           const gtLines=wrapText(s.governing_thought,CW-10);
           const gtH=gtLines.length*4.5+6;
           drawRect(ML,y-3,CW,gtH,NAVY);
-          pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
+          pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
           gtLines.forEach(line=>{pdf.text(line,ML+5,y);y+=4.5;});
           y+=5;
         }
@@ -1072,7 +1079,7 @@ async function downloadPdf(){
           s.bullets.forEach(b=>{
             checkPage(6);
             pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-            pdf.text('\u25B8',ML+3,y);
+            pdf.text(BULLET,ML+3,y);
             pdf.setFont('helvetica','normal');pdf.setTextColor('#191C1E');
             const bLines=wrapText(b,CW-10);
             bLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+8,y);y+=4.5;});
@@ -1081,11 +1088,12 @@ async function downloadPdf(){
           y+=2;
         }
 
-        // So What box
+        // So What box — background first
         if(s.so_what){
           checkPage(12);
+          pdf.setFontSize(8);
           const swLines=wrapText(s.so_what,CW-14);
-          const swH=swLines.length*4+8;
+          const swH=swLines.length*4+10;
           drawRect(ML,y-2,1.2,swH,RED);
           drawRect(ML+1.2,y-2,CW-1.2,swH,'#FFF5F5');
           pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
@@ -1093,7 +1101,7 @@ async function downloadPdf(){
           y+=6;
           pdf.setFontSize(8);pdf.setFont('helvetica','italic');pdf.setTextColor('#475569');
           swLines.forEach(line=>{checkPage(4);pdf.text(line,ML+5,y);y+=4;});
-          y+=5;
+          y+=6;
         }
         y+=4;
       });
@@ -1106,10 +1114,11 @@ async function downloadPdf(){
       pdf.text('RISKS',ML,y);y+=7;
       r.risks.forEach(rk=>{
         checkPage(10);
-        drawRect(ML,y-3,1.2,0,RED);
-        const rkLines=wrapText(rk.risk,CW-6);
-        const impLines=wrapText(rk.implication||'',CW-6);
-        const boxH=(rkLines.length+impLines.length)*4+6;
+        pdf.setFontSize(9);
+        const rkLines=wrapText(rk.risk,CW-8);
+        pdf.setFontSize(8);
+        const impLines=wrapText(rk.implication||'',CW-8);
+        const boxH=rkLines.length*4+impLines.length*4+6;
         drawRect(ML,y-3,1.2,boxH,RED);
         drawRect(ML+1.2,y-3,CW-1.2,boxH,'#FFF5F5');
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
@@ -1129,7 +1138,7 @@ async function downloadPdf(){
       r.opportunities.forEach(o=>{
         checkPage(6);
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(BLUE);
-        pdf.text('\u2726',ML+2,y);
+        pdf.text(DIAMOND,ML+2,y);
         pdf.setFont('helvetica','normal');pdf.setTextColor('#191C1E');
         const oLines=wrapText(o,CW-8);
         oLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+7,y);y+=4.5;});
@@ -1150,27 +1159,35 @@ async function downloadPdf(){
         drawRect(ML,y-3,CW*0.22,5.5,hz.color);
         pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
         pdf.text(hz.label,ML+2,y);y+=7;
-        items.forEach((rec,i)=>{
+        items.forEach((rec,idx)=>{
           checkPage(14);
-          // Number badge
-          drawRect(ML,y-3,5.5,5.5,hz.color);
-          pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
-          pdf.text(String(i+1),ML+2.75,y,{align:'center'});
-          // Content
           const rcX=ML+7;
-          drawRect(rcX,y-3,CW-7,0,'#F8F9FB');
+          // Pre-measure for background
+          pdf.setFontSize(9);
+          const aLines=wrapText(rec.action,CW-14);
+          pdf.setFontSize(8);
+          const ratLines=rec.rationale?wrapText(rec.rationale,CW-14):[];
+          const impLines=rec.impact?wrapText('Impact: '+rec.impact,CW-14):[];
+          const recH=aLines.length*4.2+ratLines.length*3.8+impLines.length*3.8+4;
+          // Draw backgrounds
+          drawRect(ML,y-3,5.5,Math.max(5.5,recH),hz.color);
+          drawRect(rcX,y-3,CW-7,Math.max(5.5,recH),'#F8F9FB');
+          // Number badge
+          pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
+          pdf.text(String(idx+1),ML+2.75,y,{align:'center'});
+          // Action
           pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-          const aLines=wrapText(rec.action,CW-12);
           aLines.forEach(line=>{pdf.text(line,rcX+2,y);y+=4.2;});
-          if(rec.rationale){
+          // Rationale
+          if(ratLines.length){
             pdf.setFontSize(8);pdf.setFont('helvetica','italic');pdf.setTextColor(SGRAY);
-            const ratLines=wrapText(rec.rationale,CW-12);
             ratLines.forEach(line=>{checkPage(4);pdf.text(line,rcX+2,y);y+=3.8;});
           }
-          if(rec.impact){
+          // Impact — wrapped to avoid truncation
+          if(impLines.length){
             checkPage(4);
             pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(hz.color);
-            pdf.text('Impact: '+rec.impact,rcX+2,y);y+=4;
+            impLines.forEach(line=>{checkPage(4);pdf.text(line,rcX+2,y);y+=3.8;});
           }
           y+=4;
         });
@@ -1181,52 +1198,54 @@ async function downloadPdf(){
     // ── Information Gaps ───────────────────────────────────────
     if(r.information_gaps?.length){
       checkPage(15);
-      drawRect(ML,y,1.2,0,BLUE);
+      // Pre-measure for blue bar
+      let igH=8;
+      pdf.setFontSize(8);
+      r.information_gaps.forEach(g=>{
+        igH+=wrapText(g,CW-14).length*4+2;
+      });
       const igStart=y;
+      drawRect(ML,y,1.2,igH,BLUE);
       pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(BLUE);
       pdf.text('INFORMATION GAPS',ML+5,y+3);y+=8;
       r.information_gaps.forEach(g=>{
         checkPage(6);
-        pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(BODY);
-        pdf.text('\u2139',ML+5,y);
+        pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(BLUE);
+        pdf.text('(i)',ML+4,y);
+        pdf.setFont('helvetica','normal');pdf.setTextColor(BODY);
         const gLines=wrapText(g,CW-14);
         gLines.forEach(line=>{checkPage(4);pdf.text(line,ML+10,y);y+=4;});
         y+=2;
       });
-      drawRect(ML,igStart,1.2,y-igStart,BLUE);
       y+=5;
     }
 
     // ── Conclusion ─────────────────────────────────────────────
     if(r.conclusion){
       checkPage(18);
+      // Pre-measure for background
+      pdf.setFontSize(10);
+      const clLines=wrapText(r.conclusion,CW-10);
+      const clH=10+clLines.length*5+3;
       const clStart=y;
-      drawRect(ML,y,CW,0,LGRAY);
+      // Draw background first
+      drawRect(ML,y,1.2,clH,NAVY);
+      drawRect(ML+1.2,y,CW-1.2,clH,LGRAY);
+      // Draw text on top — only once
       pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
       pdf.text('CONCLUSION',ML+5,y+4);y+=10;
       pdf.setFontSize(10);pdf.setFont('helvetica','bolditalic');pdf.setTextColor(NAVY);
-      const clLines=wrapText(r.conclusion,CW-10);
       clLines.forEach(line=>{checkPage(5);pdf.text(line,ML+5,y);y+=5;});
-      y+=3;
-      const clH=y-clStart;
-      drawRect(ML,clStart,1.2,clH,NAVY);
-      drawRect(ML+1.2,clStart,CW-1.2,clH,LGRAY);
-      // Re-render text over background (jsPDF draws in order)
-      let cy2=clStart;
-      pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-      pdf.text('CONCLUSION',ML+5,cy2+4);cy2+=10;
-      pdf.setFontSize(10);pdf.setFont('helvetica','bolditalic');pdf.setTextColor(NAVY);
-      clLines.forEach(line=>{pdf.text(line,ML+5,cy2);cy2+=5;});
     }
 
     // ── Footer on each page ────────────────────────────────────
     const pages=pdf.internal.getNumberOfPages();
     for(let p=1;p<=pages;p++){
       pdf.setPage(p);
-      pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.setTextColor(SGRAY);
-      pdf.text('ALTO \u00B7 Strategic Insights',ML,H-10);
-      pdf.text(`${p} / ${pages}`,W-MR,H-10,{align:'right'});
       drawRect(ML,H-13,CW,0.3,'#E0E3E5');
+      pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.setTextColor(SGRAY);
+      pdf.text('ALTO - Strategic Insights',ML,H-10);
+      pdf.text(p+' / '+pages,W-MR,H-10,{align:'right'});
     }
 
     pdf.save('Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pdf');
