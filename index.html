@@ -94,12 +94,8 @@ tailwind.config={theme:{extend:{colors:{
         <div class="space-y-1.5">
           <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold" data-i18n="uiReportLang">Idioma del Informe</label>
           <div class="flex flex-wrap gap-2" id="langChips">
-            <button data-lang="auto" onclick="setOutputLang(this)" class="rtype-chip active" data-i18n="uiLangAuto">Auto (detectar)</button>
-            <button data-lang="es" onclick="setOutputLang(this)" class="rtype-chip">Español</button>
+            <button data-lang="es" onclick="setOutputLang(this)" class="rtype-chip active">Español</button>
             <button data-lang="en" onclick="setOutputLang(this)" class="rtype-chip">English</button>
-            <button data-lang="pt" onclick="setOutputLang(this)" class="rtype-chip">Português</button>
-            <button data-lang="fr" onclick="setOutputLang(this)" class="rtype-chip">Français</button>
-            <button data-lang="de" onclick="setOutputLang(this)" class="rtype-chip">Deutsch</button>
           </div>
         </div>
         <div class="space-y-1.5">
