@@ -918,7 +918,7 @@ async function downloadPdf(){
       pdf.setFont('helvetica',style||'normal');
       pdf.setTextColor(color);
       const lines=wrapText(text,maxW);
-      const lineH=fontSize*0.45;
+      const lineH=fontSize*0.5;
       lines.forEach(line=>{
         checkPage(lineH+1);
         pdf.text(line,x,y);
@@ -958,84 +958,86 @@ async function downloadPdf(){
     // ── Executive Summary ──────────────────────────────────────
     // Pre-measure to draw background first
     pdf.setFontSize(10);
-    const exLines=wrapText(r.executive_summary,CW-10);
-    const exH=9+exLines.length*4.5+3;
+    const exLines=wrapText(r.executive_summary,CW-12);
+    const exH=12+exLines.length*5+6;
     drawRect(ML,y,1.2,exH,RED);
     drawRect(ML+1.2,y,CW-1.2,exH,LGRAY);
     // Now draw text on top
     pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-    pdf.text('EXECUTIVE SUMMARY',ML+5,y+4);y+=9;
+    pdf.text('EXECUTIVE SUMMARY',ML+6,y+5);y+=12;
     pdf.setFontSize(10);pdf.setFont('helvetica','italic');pdf.setTextColor(NAVY);
-    exLines.forEach(line=>{checkPage(5);pdf.text(line,ML+5,y);y+=4.5;});
-    y+=8;
+    exLines.forEach(line=>{checkPage(5);pdf.text(line,ML+6,y);y+=5;});
+    y+=10;
 
     // ── Key Messages ───────────────────────────────────────────
     if(r.key_messages?.length){
       checkPage(15);
       pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-      pdf.text('KEY MESSAGES',ML,y);y+=6;
+      pdf.text('KEY MESSAGES',ML,y);y+=8;
       r.key_messages.forEach(m=>{
         checkPage(6);
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
         pdf.text(BULLET,ML+2,y);
         pdf.setFont('helvetica','normal');pdf.setTextColor('#191C1E');
         const mLines=wrapText(m,CW-8);
-        mLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+7,y);y+=4.5;});
-        y+=1.5;
+        mLines.forEach(line=>{checkPage(5);pdf.text(line,ML+7,y);y+=5;});
+        y+=3;
       });
-      y+=4;
+      y+=6;
     }
 
     // ── Context ────────────────────────────────────────────────
     if(r.context){
       checkPage(15);
       pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-      pdf.text('CONTEXT',ML,y);y+=6;
+      pdf.text('CONTEXT',ML,y);y+=8;
       drawWrapped(r.context,ML,CW,9,BODY,'normal');
-      y+=6;
+      y+=8;
     }
 
     // ── Findings ───────────────────────────────────────────────
     if(r.findings?.length){
       checkPage(15);
       pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-      pdf.text('FINDINGS',ML,y);y+=7;
+      pdf.text('FINDINGS',ML,y);y+=9;
       r.findings.forEach((f,i)=>{
-        checkPage(18);
+        checkPage(20);
         const fX=ML+8;
         // Pre-measure finding height for background
         pdf.setFontSize(9);
         const fLines=wrapText(f.finding,CW-14);
-        let fH=fLines.length*4+2;
-        if(f.evidence){pdf.setFontSize(8);fH+=4+wrapText(f.evidence,CW-14).length*3.8;}
-        if(f.business_implication){pdf.setFontSize(8);fH+=4+wrapText(f.business_implication,CW-14).length*3.8;}
+        let fH=fLines.length*4.5+4;
+        if(f.evidence){pdf.setFontSize(8);fH+=6+wrapText(f.evidence,CW-14).length*4;}
+        if(f.business_implication){pdf.setFontSize(8);fH+=6+wrapText(f.business_implication,CW-14).length*4;}
         // Draw backgrounds first
-        drawRect(ML,y-3.5,6,Math.max(6,fH+2),NAVY);
-        drawRect(fX,y-3.5,CW-8,Math.max(6,fH+2),'#F8F9FB');
-        drawRect(fX,y-3.5+Math.max(6,fH+2)-0.4,CW-8,0.4,RED);
+        drawRect(ML,y-3.5,6,Math.max(6,fH+4),NAVY);
+        drawRect(fX,y-3.5,CW-8,Math.max(6,fH+4),'#F8F9FB');
+        drawRect(fX,y-3.5+Math.max(6,fH+4)-0.4,CW-8,0.4,RED);
         // Number badge
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
         pdf.text(String(i+1),ML+3,y,{align:'center'});
         // Finding text
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-        fLines.forEach(line=>{pdf.text(line,fX+2,y);y+=4;});
+        fLines.forEach(line=>{pdf.text(line,fX+3,y);y+=4.5;});
+        y+=2;
         if(f.evidence){
           pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(SGRAY);
-          pdf.text('Evidence:',fX+2,y);y+=4;
+          pdf.text('Evidence:',fX+3,y);y+=4.5;
           pdf.setFont('helvetica','normal');
           const evLines=wrapText(f.evidence,CW-14);
-          evLines.forEach(line=>{checkPage(4);pdf.text(line,fX+2,y);y+=3.8;});
+          evLines.forEach(line=>{checkPage(4);pdf.text(line,fX+3,y);y+=4;});
+          y+=2;
         }
         if(f.business_implication){
           pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-          pdf.text('Implication:',fX+2,y);y+=4;
+          pdf.text('Implication:',fX+3,y);y+=4.5;
           pdf.setFont('helvetica','normal');pdf.setTextColor(RED);
           const impLines=wrapText(f.business_implication,CW-14);
-          impLines.forEach(line=>{checkPage(4);pdf.text(line,fX+2,y);y+=3.8;});
+          impLines.forEach(line=>{checkPage(4);pdf.text(line,fX+3,y);y+=4;});
         }
-        y+=6;
+        y+=8;
       });
-      y+=2;
+      y+=4;
     }
 
     // ── Analysis Blocks ────────────────────────────────────────
@@ -1045,65 +1047,67 @@ async function downloadPdf(){
         // Accent bar — measure heading first for bar height
         pdf.setFontSize(12);
         const hLines=wrapText(s.heading,CW-8);
-        const barH=8+hLines.length*5.5+3;
+        const barH=10+hLines.length*6+4;
         drawRect(ML,y,1.2,barH,RED);
         // Section header
         pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-        pdf.text((i+1)+'. ANALYSIS',ML+4,y+3);
+        pdf.text((i+1)+'. ANALYSIS',ML+4,y+4);
         pdf.setFontSize(12);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-        let hy=y+8;
-        hLines.forEach(line=>{pdf.text(line,ML+4,hy);hy+=5.5;});
-        y=hy+3;
+        let hy=y+10;
+        hLines.forEach(line=>{pdf.text(line,ML+4,hy);hy+=6;});
+        y=hy+5;
 
         // Governing thought — background first, then text
         if(s.governing_thought){
-          checkPage(14);
+          checkPage(16);
           pdf.setFontSize(9);
-          const gtLines=wrapText(s.governing_thought,CW-10);
-          const gtH=gtLines.length*4.5+6;
+          const gtLines=wrapText(s.governing_thought,CW-12);
+          const gtH=gtLines.length*5+8;
           drawRect(ML,y-3,CW,gtH,NAVY);
           pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
-          gtLines.forEach(line=>{pdf.text(line,ML+5,y);y+=4.5;});
-          y+=5;
+          gtLines.forEach(line=>{pdf.text(line,ML+6,y);y+=5;});
+          y+=7;
         }
 
         // Content
         if(s.content){
           checkPage(8);
           drawWrapped(s.content,ML,CW,9,BODY,'normal');
-          y+=3;
+          y+=5;
         }
 
         // Bullets
         if(s.bullets?.length){
+          y+=2;
           s.bullets.forEach(b=>{
-            checkPage(6);
+            checkPage(7);
             pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
             pdf.text(BULLET,ML+3,y);
             pdf.setFont('helvetica','normal');pdf.setTextColor('#191C1E');
             const bLines=wrapText(b,CW-10);
-            bLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+8,y);y+=4.5;});
-            y+=1;
+            bLines.forEach(line=>{checkPage(5);pdf.text(line,ML+8,y);y+=5;});
+            y+=3;
           });
-          y+=2;
+          y+=3;
         }
 
         // So What box — background first
         if(s.so_what){
-          checkPage(12);
+          y+=2;
+          checkPage(14);
           pdf.setFontSize(8);
           const swLines=wrapText(s.so_what,CW-14);
-          const swH=swLines.length*4+10;
+          const swH=swLines.length*4.5+12;
           drawRect(ML,y-2,1.2,swH,RED);
           drawRect(ML+1.2,y-2,CW-1.2,swH,'#FFF5F5');
           pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-          pdf.text('SO WHAT?',ML+5,y+2);
-          y+=6;
+          pdf.text('SO WHAT?',ML+5,y+3);
+          y+=8;
           pdf.setFontSize(8);pdf.setFont('helvetica','italic');pdf.setTextColor('#475569');
-          swLines.forEach(line=>{checkPage(4);pdf.text(line,ML+5,y);y+=4;});
-          y+=6;
+          swLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+5,y);y+=4.5;});
+          y+=8;
         }
-        y+=4;
+        y+=6;
       });
     }
 
@@ -1111,56 +1115,57 @@ async function downloadPdf(){
     if(r.risks?.length){
       checkPage(15);
       pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-      pdf.text('RISKS',ML,y);y+=7;
+      pdf.text('RISKS',ML,y);y+=9;
       r.risks.forEach(rk=>{
-        checkPage(10);
+        checkPage(12);
         pdf.setFontSize(9);
         const rkLines=wrapText(rk.risk,CW-8);
         pdf.setFontSize(8);
         const impLines=wrapText(rk.implication||'',CW-8);
-        const boxH=rkLines.length*4+impLines.length*4+6;
+        const boxH=rkLines.length*4.5+impLines.length*4.5+8;
         drawRect(ML,y-3,1.2,boxH,RED);
         drawRect(ML+1.2,y-3,CW-1.2,boxH,'#FFF5F5');
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-        rkLines.forEach(line=>{pdf.text(line,ML+5,y);y+=4;});
+        rkLines.forEach(line=>{pdf.text(line,ML+5,y);y+=4.5;});
+        y+=2;
         pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(SGRAY);
-        impLines.forEach(line=>{checkPage(4);pdf.text(line,ML+5,y);y+=4;});
-        y+=4;
+        impLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+5,y);y+=4.5;});
+        y+=6;
       });
-      y+=3;
+      y+=4;
     }
 
     // ── Opportunities ──────────────────────────────────────────
     if(r.opportunities?.length){
       checkPage(15);
       pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-      pdf.text('OPPORTUNITIES',ML,y);y+=7;
+      pdf.text('OPPORTUNITIES',ML,y);y+=9;
       r.opportunities.forEach(o=>{
-        checkPage(6);
+        checkPage(7);
         pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(BLUE);
         pdf.text(DIAMOND,ML+2,y);
         pdf.setFont('helvetica','normal');pdf.setTextColor('#191C1E');
         const oLines=wrapText(o,CW-8);
-        oLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+7,y);y+=4.5;});
-        y+=1.5;
+        oLines.forEach(line=>{checkPage(5);pdf.text(line,ML+7,y);y+=5;});
+        y+=4;
       });
-      y+=4;
+      y+=6;
     }
 
     // ── Recommendations ────────────────────────────────────────
     if(r.recommendations){
       checkPage(15);
       pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-      pdf.text('RECOMMENDATIONS',ML,y);y+=7;
+      pdf.text('RECOMMENDATIONS',ML,y);y+=9;
       [{key:'short_term',label:'SHORT TERM',color:RED},{key:'medium_term',label:'MEDIUM TERM',color:NAVY},{key:'long_term',label:'LONG TERM',color:'#1A2B3C'}].forEach(hz=>{
         const items=r.recommendations[hz.key];
         if(!items?.length)return;
-        checkPage(12);
-        drawRect(ML,y-3,CW*0.22,5.5,hz.color);
+        checkPage(14);
+        drawRect(ML,y-3,CW*0.22,6,hz.color);
         pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
-        pdf.text(hz.label,ML+2,y);y+=7;
+        pdf.text(hz.label,ML+2,y);y+=9;
         items.forEach((rec,idx)=>{
-          checkPage(14);
+          checkPage(16);
           const rcX=ML+7;
           // Pre-measure for background
           pdf.setFontSize(9);
@@ -1168,7 +1173,7 @@ async function downloadPdf(){
           pdf.setFontSize(8);
           const ratLines=rec.rationale?wrapText(rec.rationale,CW-14):[];
           const impLines=rec.impact?wrapText('Impact: '+rec.impact,CW-14):[];
-          const recH=aLines.length*4.2+ratLines.length*3.8+impLines.length*3.8+4;
+          const recH=aLines.length*4.5+ratLines.length*4.2+impLines.length*4.2+8;
           // Draw backgrounds
           drawRect(ML,y-3,5.5,Math.max(5.5,recH),hz.color);
           drawRect(rcX,y-3,CW-7,Math.max(5.5,recH),'#F8F9FB');
@@ -1177,21 +1182,23 @@ async function downloadPdf(){
           pdf.text(String(idx+1),ML+2.75,y,{align:'center'});
           // Action
           pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-          aLines.forEach(line=>{pdf.text(line,rcX+2,y);y+=4.2;});
+          aLines.forEach(line=>{pdf.text(line,rcX+3,y);y+=4.5;});
+          y+=1;
           // Rationale
           if(ratLines.length){
             pdf.setFontSize(8);pdf.setFont('helvetica','italic');pdf.setTextColor(SGRAY);
-            ratLines.forEach(line=>{checkPage(4);pdf.text(line,rcX+2,y);y+=3.8;});
+            ratLines.forEach(line=>{checkPage(4.2);pdf.text(line,rcX+3,y);y+=4.2;});
+            y+=1;
           }
           // Impact — wrapped to avoid truncation
           if(impLines.length){
-            checkPage(4);
+            checkPage(4.2);
             pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(hz.color);
-            impLines.forEach(line=>{checkPage(4);pdf.text(line,rcX+2,y);y+=3.8;});
+            impLines.forEach(line=>{checkPage(4.2);pdf.text(line,rcX+3,y);y+=4.2;});
           }
-          y+=4;
+          y+=6;
         });
-        y+=3;
+        y+=5;
       });
     }
 
@@ -1199,25 +1206,25 @@ async function downloadPdf(){
     if(r.information_gaps?.length){
       checkPage(15);
       // Pre-measure for blue bar
-      let igH=8;
+      let igH=10;
       pdf.setFontSize(8);
       r.information_gaps.forEach(g=>{
-        igH+=wrapText(g,CW-14).length*4+2;
+        igH+=wrapText(g,CW-14).length*4.5+5;
       });
       const igStart=y;
       drawRect(ML,y,1.2,igH,BLUE);
       pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(BLUE);
-      pdf.text('INFORMATION GAPS',ML+5,y+3);y+=8;
+      pdf.text('INFORMATION GAPS',ML+5,y+4);y+=10;
       r.information_gaps.forEach(g=>{
-        checkPage(6);
+        checkPage(7);
         pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(BLUE);
         pdf.text('(i)',ML+4,y);
         pdf.setFont('helvetica','normal');pdf.setTextColor(BODY);
         const gLines=wrapText(g,CW-14);
-        gLines.forEach(line=>{checkPage(4);pdf.text(line,ML+10,y);y+=4;});
-        y+=2;
+        gLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+10,y);y+=4.5;});
+        y+=5;
       });
-      y+=5;
+      y+=6;
     }
 
     // ── Conclusion ─────────────────────────────────────────────
@@ -1225,17 +1232,17 @@ async function downloadPdf(){
       checkPage(18);
       // Pre-measure for background
       pdf.setFontSize(10);
-      const clLines=wrapText(r.conclusion,CW-10);
-      const clH=10+clLines.length*5+3;
+      const clLines=wrapText(r.conclusion,CW-12);
+      const clH=12+clLines.length*5.5+6;
       const clStart=y;
       // Draw background first
       drawRect(ML,y,1.2,clH,NAVY);
       drawRect(ML+1.2,y,CW-1.2,clH,LGRAY);
       // Draw text on top — only once
       pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
-      pdf.text('CONCLUSION',ML+5,y+4);y+=10;
+      pdf.text('CONCLUSION',ML+6,y+5);y+=12;
       pdf.setFontSize(10);pdf.setFont('helvetica','bolditalic');pdf.setTextColor(NAVY);
-      clLines.forEach(line=>{checkPage(5);pdf.text(line,ML+5,y);y+=5;});
+      clLines.forEach(line=>{checkPage(5.5);pdf.text(line,ML+6,y);y+=5.5;});
     }
 
     // ── Footer on each page ────────────────────────────────────
