@@ -130,6 +130,88 @@ const i18n = {
     imagesDetected: 'imagens detectadas',
     restored: 'Restaurado',
   },
+  fr: {
+    analysisLabel: 'Analyse Stratégique',
+    execSummary: 'Résumé Exécutif',
+    keyMessages: 'Messages Clés',
+    context: 'Contexte et Objectif',
+    findings: 'Conclusions Clés',
+    analysis: 'Analyse',
+    risks: 'Risques',
+    opportunities: 'Opportunités',
+    recommendations: 'Recommandations',
+    infoGaps: "Lacunes d'Information",
+    conclusion: 'Conclusion Exécutive',
+    evidence: 'Preuve',
+    implication: 'Implication',
+    impact: 'Impact',
+    soWhat: 'Et alors ?',
+    shortTerm: 'Court Terme',
+    mediumTerm: 'Moyen Terme',
+    longTerm: 'Long Terme',
+    regenerate: 'Régénérer',
+    confidential: 'Rapport Exécutif Confidentiel',
+    reportReady: 'Rapport généré — modifiez et exportez',
+    reportLoaded: 'Rapport chargé',
+    generating: 'Traitement...',
+    generateBtn: 'Générer le Rapport Exécutif',
+    thinkingStep: 'Analyse approfondie en cours...',
+    writingStep: 'Rédaction du rapport...',
+    progressTitle: 'Rédaction du titre...',
+    progressSummary: 'Rédaction du résumé...',
+    progressKeys: 'Structuration des messages clés...',
+    progressContext: 'Construction du contexte...',
+    progressFindings: 'Identification des conclusions...',
+    progressAnalysis: "Construction des blocs d'analyse...",
+    progressRisks: 'Évaluation des risques...',
+    progressOpps: 'Identification des opportunités...',
+    progressRecs: 'Rédaction des recommandations...',
+    progressConclusion: 'Rédaction de la conclusion...',
+    progressKpis: 'Calcul des KPIs...',
+    imagesDetected: 'images détectées',
+    restored: 'Restauré',
+  },
+  de: {
+    analysisLabel: 'Strategische Analyse',
+    execSummary: 'Executive Summary',
+    keyMessages: 'Kernbotschaften',
+    context: 'Kontext und Ziel',
+    findings: 'Zentrale Erkenntnisse',
+    analysis: 'Analyse',
+    risks: 'Risiken',
+    opportunities: 'Chancen',
+    recommendations: 'Empfehlungen',
+    infoGaps: 'Informationslücken',
+    conclusion: 'Executive Fazit',
+    evidence: 'Beleg',
+    implication: 'Implikation',
+    impact: 'Auswirkung',
+    soWhat: 'Bedeutung?',
+    shortTerm: 'Kurzfristig',
+    mediumTerm: 'Mittelfristig',
+    longTerm: 'Langfristig',
+    regenerate: 'Neu generieren',
+    confidential: 'Vertraulicher Executive Report',
+    reportReady: 'Bericht erstellt — bearbeiten und exportieren',
+    reportLoaded: 'Bericht geladen',
+    generating: 'Verarbeitung...',
+    generateBtn: 'Executive Report generieren',
+    thinkingStep: 'Tiefenanalyse läuft...',
+    writingStep: 'Bericht wird verfasst...',
+    progressTitle: 'Titel wird verfasst...',
+    progressSummary: 'Executive Summary wird verfasst...',
+    progressKeys: 'Kernbotschaften werden strukturiert...',
+    progressContext: 'Kontext wird aufgebaut...',
+    progressFindings: 'Erkenntnisse werden identifiziert...',
+    progressAnalysis: 'Analyseblöcke werden aufgebaut...',
+    progressRisks: 'Risiken werden bewertet...',
+    progressOpps: 'Chancen werden identifiziert...',
+    progressRecs: 'Empfehlungen werden verfasst...',
+    progressConclusion: 'Fazit wird verfasst...',
+    progressKpis: 'KPIs werden berechnet...',
+    imagesDetected: 'Bilder erkannt',
+    restored: 'Wiederhergestellt',
+  },
 };
 
 // Current language — defaults to Spanish, updated when report is generated
@@ -426,12 +508,14 @@ async function handleMagicLink(){
 // WORKER FETCH — soporta streaming SSE y JSON legado
 // ============================================================
 async function fetchFromWorker(url, body, onChunk, onPhase){
+  const headers = {'Content-Type':'application/json'};
+  if(window._sessionToken) headers['X-Session-Token'] = window._sessionToken;
   const timeoutMs = body.userContent==='__PPTX_MODE__' ? 180000 : 120000;
   const controller = new AbortController();
   const timer = setTimeout(()=>controller.abort(), timeoutMs);
   let res;
   try{
-    res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body), signal:controller.signal});
+    res = await fetch(url, {method:'POST', headers, body:JSON.stringify(body), signal:controller.signal});
   }catch(e){
     clearTimeout(timer);
     if(e.name==='AbortError') throw new Error('Tiempo de espera agotado. Intenta con un documento más corto.');
@@ -905,6 +989,19 @@ function flash(m){showStatus(m);setTimeout(()=>{if(result)showStatus('Informe li
 function loadSample(){document.getElementById('inputText').value=`Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar.\n\nLas tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.\n\nEl área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.\n\nNecesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.\n\nNota: la data de modus operandi tiene un 30% de registros sin clasificar. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;}
 // Prevent accidental navigation when report is loaded
 window.addEventListener('beforeunload',e=>{if(result){e.preventDefault();}});
+
+// ── Session token for Worker auth ──
+window._sessionToken = null;
+async function refreshSessionToken(){
+  try{
+    const res=await fetch(`${WORKER_URL}/token`);
+    if(res.ok){const d=await res.json();window._sessionToken=d.token;}
+  }catch(e){console.warn('Token fetch failed:',e);}
+}
+// Fetch token on load (after DOM ready)
+setTimeout(refreshSessionToken, 500);
+// Refresh token every 90 minutes
+setInterval(refreshSessionToken, 90*60*1000);
 
 // ── Chart Utilities ──
 function extractNumbers(r) {
