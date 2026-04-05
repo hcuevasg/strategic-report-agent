@@ -803,7 +803,64 @@ function copyMarkdown(){if(!result)return;let md=`# ${result.title}\n*${result.s
 // ============================================================
 // PDF EXPORT
 // ============================================================
-async function downloadPdf(){if(!result)return;showStatus('Generando PDF...');try{const el=document.getElementById('reportContent');if(!el)throw new Error('Sin informe');el.style.width='800px';const canvas=await html2canvas(el,{backgroundColor:'#ffffff',scale:2,useCORS:true,logging:false});el.style.width='';const imgData=canvas.toDataURL('image/png');const{jsPDF}=window.jspdf;const pxW=canvas.width,pxH=canvas.height,pdfW=210,pdfH=(pxH*pdfW)/pxW,pageH=297;const pdf=new jsPDF('p','mm','a4');let pos=0;while(pos<pdfH){if(pos>0)pdf.addPage();pdf.addImage(imgData,'PNG',0,-pos,pdfW,pdfH);pos+=pageH;}pdf.save('Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pdf');flash('✓ PDF descargado');}catch(err){showError('Error PDF: '+err.message);}}
+async function downloadPdf(){
+  if(!result)return;
+  showStatus('Generando PDF...');
+  try{
+    const el=document.getElementById('reportContent');
+    if(!el)throw new Error('Sin informe');
+    el.style.width='800px';
+
+    // Find section boundaries for smart page breaks
+    const sections=el.querySelectorAll('.section-collapsible, [class*="bg-white"]>div');
+    const sectionTops=[];
+    if(sections.length>1){
+      sections.forEach(s=>{sectionTops.push(s.offsetTop);});
+    }
+
+    const canvas=await html2canvas(el,{backgroundColor:'#ffffff',scale:2,useCORS:true,logging:false});
+    el.style.width='';
+    const imgData=canvas.toDataURL('image/png');
+    const{jsPDF}=window.jspdf;
+    const pxW=canvas.width,pxH=canvas.height;
+    const pdfW=210;
+    const pdfH=(pxH*pdfW)/pxW;
+    const pageH=297;
+    const marginBottom=12; // mm safety margin to avoid cutting text
+    const usableH=pageH-marginBottom;
+    const scale=pdfW/el.offsetWidth; // px to mm conversion
+
+    // Build smart breakpoints: prefer section boundaries over arbitrary cuts
+    const breakpoints=[0];
+    let currentPos=0;
+    while(currentPos<pdfH){
+      let nextBreak=currentPos+usableH;
+      if(nextBreak>=pdfH){break;}
+      // Find a section boundary close to the natural break (within 30% of page)
+      if(sectionTops.length){
+        let bestSection=nextBreak;
+        const minBreak=currentPos+usableH*0.65;
+        for(const st of sectionTops){
+          const stMm=st*scale;
+          if(stMm>minBreak && stMm<nextBreak){
+            bestSection=stMm;
+          }
+        }
+        nextBreak=bestSection;
+      }
+      breakpoints.push(nextBreak);
+      currentPos=nextBreak;
+    }
+
+    const pdf=new jsPDF('p','mm','a4');
+    for(let i=0;i<breakpoints.length;i++){
+      if(i>0) pdf.addPage();
+      pdf.addImage(imgData,'PNG',0,-breakpoints[i],pdfW,pdfH);
+    }
+    pdf.save('Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pdf');
+    flash('\u2713 PDF descargado');
+  }catch(err){showError('Error PDF: '+err.message);}
+}
 
 // ============================================================
 // HELPERS
