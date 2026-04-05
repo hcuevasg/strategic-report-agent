@@ -40,6 +40,12 @@ const MAX_BODY_SIZE = 10_485_760;
 // ── UUID v4 format validation ────────────────────────────────
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// ── Session token TTL: 2 hours ───────────────────────────────
+const TOKEN_TTL_SECONDS = 7200;
+
+// ── Language names for output language override ──────────────
+const LANG_NAMES = { es:'español', en:'English', pt:'português', fr:'français', de:'Deutsch' };
+
 const SYSTEM_PROMPT = `Eres un consultor senior de estrategia corporativa y redactor ejecutivo de informes de alta dirección. Tu tarea es transformar el documento fuente en un informe de estándar consultoría premium.
 
 OBJETIVO: Convertir el texto en un informe estratégico, estructurado, analítico, accionable y persuasivo.
@@ -258,7 +264,7 @@ function corsHeaders(env, requestOrigin) {
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Session-Token, Authorization',
     'Access-Control-Max-Age': '86400',
     ...(origin !== '*' ? { 'Vary': 'Origin' } : {}),
   };
@@ -267,8 +273,68 @@ function corsHeaders(env, requestOrigin) {
 function jsonResponse(status, body, env, requestOrigin) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders(env, requestOrigin) },
+    headers: { 'Content-Type': 'application/json', ...securityHeaders(), ...corsHeaders(env, requestOrigin) },
   });
+}
+
+// ============================================================
+// SECURITY HEADERS
+// ============================================================
+
+function securityHeaders() {
+  return {
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  };
+}
+
+// ============================================================
+// SESSION TOKENS — HMAC-based, IP-bound, time-limited
+// ============================================================
+
+async function generateSessionToken(ip, env) {
+  const secret = env.ANTHROPIC_API_KEY;
+  const timestamp = Math.floor(Date.now() / 1000);
+  const payload = `${ip}:${timestamp}`;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+  const hmac = [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, '0')).join('');
+  // Token format: timestamp.hmac
+  return `${timestamp}.${hmac}`;
+}
+
+async function validateSessionToken(token, ip, env) {
+  if (!token || !token.includes('.')) return false;
+  const [tsStr, hmac] = token.split('.');
+  const timestamp = parseInt(tsStr, 10);
+  if (isNaN(timestamp)) return false;
+
+  // Check expiration
+  const now = Math.floor(Date.now() / 1000);
+  if (now - timestamp > TOKEN_TTL_SECONDS) return false;
+
+  // Recompute HMAC
+  const secret = env.ANTHROPIC_API_KEY;
+  const payload = `${ip}:${timestamp}`;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+  const expected = [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, '0')).join('');
+
+  // Constant-time comparison
+  if (expected.length !== hmac.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < expected.length; i++) {
+    mismatch |= expected.charCodeAt(i) ^ hmac.charCodeAt(i);
+  }
+  return mismatch === 0;
 }
 
 // ============================================================
@@ -301,6 +367,29 @@ async function trackEvent(env, event, meta) {
     await env.WA_KV.put(key, JSON.stringify(raw), { expirationTtl: 604800 }); // 7 days
   } catch (e) {
     console.error('trackEvent error:', e);
+  }
+}
+
+// ============================================================
+// ABUSE LOGGING — tracks suspicious activity in KV
+// ============================================================
+
+async function logAbuse(env, type, detail) {
+  if (!env.WA_KV) return;
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `abuse:${today}`;
+    const raw = await env.WA_KV.get(key, { type: 'json' }) || {};
+    raw[type] = (raw[type] || 0) + 1;
+    // Store last 5 details for forensics
+    const detailKey = `${type}_details`;
+    if (!raw[detailKey]) raw[detailKey] = [];
+    raw[detailKey].push({ detail, ts: new Date().toISOString() });
+    if (raw[detailKey].length > 5) raw[detailKey] = raw[detailKey].slice(-5);
+    await env.WA_KV.put(key, JSON.stringify(raw), { expirationTtl: 604800 });
+    console.error(`[ABUSE] ${type}: ${detail}`);
+  } catch (e) {
+    console.error('logAbuse error:', e);
   }
 }
 
@@ -749,7 +838,7 @@ export default {
 
     // ── OPTIONS (CORS preflight) ──────────────────────────
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders(env, requestOrigin) });
+      return new Response(null, { status: 204, headers: { ...securityHeaders(), ...corsHeaders(env, requestOrigin) } });
     }
 
     // ── GET /stats — monitoring dashboard data ─────────────
@@ -786,25 +875,60 @@ export default {
         }
       }
 
-      return new Response(JSON.stringify({ days: stats, totals }, null, 2), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders(env, requestOrigin) }
+      // Collect abuse logs
+      const abuseLogs = [];
+      for (let i = 0; i < days; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const abuseKey = `abuse:${d.toISOString().slice(0, 10)}`;
+        const abuseData = await env.WA_KV.get(abuseKey, { type: 'json' });
+        if (abuseData) abuseLogs.push({ date: d.toISOString().slice(0, 10), ...abuseData });
+      }
+
+      return new Response(JSON.stringify({ days: stats, totals, abuse: abuseLogs }, null, 2), {
+        headers: { 'Content-Type': 'application/json', ...securityHeaders(), ...corsHeaders(env, requestOrigin) }
       });
+    }
+
+    // ── GET /token — issue session token (origin-checked, IP-bound) ──
+    if (request.method === 'GET' && url.pathname === '/token') {
+      const allowed = (env.ALLOWED_ORIGIN || '').split(',').map(s => s.trim());
+      const originOk = allowed[0] === '*' || allowed.some(a => requestOrigin === a || requestOrigin.startsWith(a));
+      if (!originOk) {
+        return jsonResponse(403, { error: 'Origin not allowed' }, env, requestOrigin);
+      }
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      const token = await generateSessionToken(ip, env);
+      return jsonResponse(200, { token }, env, requestOrigin);
     }
 
     // ── GET /report/:uuid — serve cached report for magic links ──
     if (request.method === 'GET' && url.pathname.startsWith('/report/')) {
       const uuid = url.pathname.split('/')[2];
       if (!uuid || !UUID_RE.test(uuid)) {
-        return new Response('Not found', { status: 404 });
+        return new Response('Not found', { status: 404, headers: securityHeaders() });
       }
+
+      // Rate limit magic link fetches (60/hour per IP)
+      const reportIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+      if (env.RATE_LIMIT_KV) {
+        const rlKey = `rl:report:${reportIp}`;
+        const cur = parseInt((await env.RATE_LIMIT_KV.get(rlKey)) || '0', 10);
+        if (cur >= 60) {
+          ctx.waitUntil(logAbuse(env, 'report_brute_force', reportIp));
+          return jsonResponse(429, { error: 'Too many requests' }, env, requestOrigin);
+        }
+        await env.RATE_LIMIT_KV.put(rlKey, String(cur + 1), { expirationTtl: 3600 });
+      }
+
       const data = await env.WA_KV.get(`report:${uuid}`);
       if (!data) return new Response(JSON.stringify({ error: 'Report not found or expired' }), {
         status: 404,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders(env, requestOrigin) }
+        headers: { 'Content-Type': 'application/json', ...securityHeaders(), ...corsHeaders(env, requestOrigin) }
       });
       ctx.waitUntil(trackEvent(env, 'report_fetch'));
       return new Response(data, {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders(env, requestOrigin) }
+        headers: { 'Content-Type': 'application/json', ...securityHeaders(), ...corsHeaders(env, requestOrigin) }
       });
     }
 
@@ -842,6 +966,7 @@ export default {
     const allowed = (env.ALLOWED_ORIGIN || '').split(',').map(s => s.trim());
     const isAllowed = allowed[0] === '*' || allowed.some(a => requestOrigin === a || requestOrigin.startsWith(a));
     if (!isAllowed) {
+      ctx.waitUntil(logAbuse(env, 'origin_rejected', requestOrigin));
       return jsonResponse(403, { error: 'Origin not allowed' }, env, requestOrigin);
     }
 
@@ -855,11 +980,27 @@ export default {
 
     // ── Rate limiting ─────────────────────────────────────
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const limitPerHour = parseInt(env.RATE_LIMIT_PER_HOUR || '30', 10);
+    const sessionToken = request.headers.get('X-Session-Token') || '';
+    if (sessionToken) {
+      const tokenValid = await validateSessionToken(sessionToken, ip, env);
+      if (!tokenValid) {
+        ctx.waitUntil(logAbuse(env, 'invalid_token', ip));
+        return jsonResponse(401, { error: 'Invalid or expired session token. Refresh the page.' }, env, requestOrigin);
+      }
+    } else {
+      // No token — still allow (for backwards compat) but log and apply stricter rate limit
+      ctx.waitUntil(logAbuse(env, 'no_token', ip));
+    }
+
+    // ── Rate limiting — stricter for unauthenticated requests ──
+    const baseLimit = parseInt(env.RATE_LIMIT_PER_HOUR || '30', 10);
+    const limitPerHour = sessionToken ? baseLimit : Math.min(baseLimit, 5); // 5/hr without token
     if (env.RATE_LIMIT_KV) {
-      const key = `rl:${ip}`;
+      const rlPrefix = sessionToken ? 'rl' : 'rl:noauth';
+      const key = `${rlPrefix}:${ip}`;
       const current = parseInt((await env.RATE_LIMIT_KV.get(key)) || '0', 10);
       if (current >= limitPerHour) {
+        ctx.waitUntil(logAbuse(env, 'rate_limited', `${ip} (auth:${!!sessionToken})`));
         return jsonResponse(429, { error: 'Rate limit exceeded. Try again later.', limit: limitPerHour, reset: '1 hour' }, env, requestOrigin);
       }
       await env.RATE_LIMIT_KV.put(key, String(current + 1), { expirationTtl: 3600 });
@@ -979,6 +1120,7 @@ export default {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
             'X-Accel-Buffering': 'no',
+            ...securityHeaders(),
             ...corsHeaders(env, requestOrigin),
           },
         });
@@ -987,11 +1129,10 @@ export default {
       } else {
         ctx.waitUntil(trackEvent(env, 'analysis'));
 
-        // Language instruction based on user selection
-        const LANG_NAMES = { es: 'español', en: 'English', pt: 'português', fr: 'français', de: 'Deutsch' };
+        // Language preference override
         const langPref = body.outputLanguage && body.outputLanguage !== 'auto' && LANG_NAMES[body.outputLanguage]
           ? `\nIMPORTANTE: Redacta TODO el informe en ${LANG_NAMES[body.outputLanguage]}, independientemente del idioma del contenido fuente.\n\n`
-          : '\n\n';
+          : '';
 
         // Build messages — support vision (images array)
         const userBlocks = [];
@@ -1004,12 +1145,12 @@ export default {
           });
           userBlocks.push({
             type: 'text',
-            text: 'Transforma el siguiente documento fuente (incluye imágenes del documento) en el informe ejecutivo solicitado. Analiza las imágenes para extraer datos, gráficos y tablas relevantes.' + langPref + 'Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
+            text: langPref + 'Transforma el siguiente documento fuente (incluye imágenes del documento) en el informe ejecutivo solicitado. Analiza las imágenes para extraer datos, gráficos y tablas relevantes. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
           });
         } else {
           userBlocks.push({
             type: 'text',
-            text: 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado.' + langPref + 'Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
+            text: langPref + 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
           });
         }
 
@@ -1086,6 +1227,7 @@ export default {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
             'X-Accel-Buffering': 'no',
+            ...securityHeaders(),
             ...corsHeaders(env, requestOrigin),
           },
         });

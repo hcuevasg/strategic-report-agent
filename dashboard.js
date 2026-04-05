@@ -157,6 +157,33 @@ function renderDashboard(data){
   h+=`</div>`;
   h+=`</div>`;
 
+  // ── Security / Abuse section ────────────────────────────
+  const abuse = data.abuse || [];
+  const totalAbuse = abuse.reduce((sum,d) => {
+    return sum + Object.entries(d).filter(([k])=>!k.endsWith('_details')&&k!=='date').reduce((s,[,v])=>s+(typeof v==='number'?v:0),0);
+  }, 0);
+  if (totalAbuse > 0) {
+    h+=`<div style="background:#fff;padding:18px 20px;margin-bottom:24px;border-left:3px solid ${A.RED};">`;
+    h+=`<div style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:2px;color:${A.RED};font-weight:800;margin-bottom:14px;">
+      <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;margin-right:4px;">shield</span>Security Events (${totalAbuse})
+    </div>`;
+    const abuseTypes = {};
+    abuse.forEach(d => {
+      Object.entries(d).forEach(([k,v]) => {
+        if(k==='date'||k.endsWith('_details')) return;
+        if(typeof v==='number') abuseTypes[k] = (abuseTypes[k]||0) + v;
+      });
+    });
+    Object.entries(abuseTypes).sort((a,b)=>b[1]-a[1]).forEach(([k,v]) => {
+      const labels = {no_token:'No auth token',invalid_token:'Invalid token',origin_rejected:'Origin blocked',rate_limited:'Rate limited',report_brute_force:'Report brute force'};
+      h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <div style="font-family:Inter,sans-serif;font-size:11px;color:${A.BODY};width:140px;">${labels[k]||k}</div>
+        <div style="font-family:Manrope,sans-serif;font-size:11px;font-weight:700;color:${A.RED};">${v}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
   // ── Footer ───────────────────────────────────────────────
   h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #E0E3E5;">
     <span style="font-family:Inter,sans-serif;font-size:10px;color:${A.SGRAY};">Data from last 7 days (KV TTL: 7d)</span>
