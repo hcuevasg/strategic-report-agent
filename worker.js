@@ -264,7 +264,7 @@ function corsHeaders(env, requestOrigin) {
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Session-Token, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Session-Token, X-App-Token, Authorization',
     'Access-Control-Max-Age': '86400',
     ...(origin !== '*' ? { 'Vary': 'Origin' } : {}),
   };
