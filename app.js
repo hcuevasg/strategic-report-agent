@@ -943,17 +943,18 @@ async function downloadPdf(){
 
     // ── Title ──────────────────────────────────────────────────
     pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
-    pdf.text('STRATEGIC ANALYSIS',ML,y);y+=5;
+    pdf.text('STRATEGIC ANALYSIS',ML,y);y+=8;
     pdf.setFontSize(20);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
     const titleLines=wrapText(r.title,CW);
-    titleLines.forEach(line=>{pdf.text(line,ML,y);y+=8;});
+    titleLines.forEach(line=>{pdf.text(line,ML,y);y+=9;});
+    y+=4;
     if(r.subtitle){
       pdf.setFontSize(10);pdf.setFont('helvetica','italic');pdf.setTextColor('#64748B');
       const subLines=wrapText(r.subtitle,CW);
-      subLines.forEach(line=>{pdf.text(line,ML,y);y+=4.5;});
-      y+=2;
+      subLines.forEach(line=>{pdf.text(line,ML,y);y+=5;});
+      y+=4;
     }
-    drawRect(ML,y,24,0.8,RED);y+=8;
+    drawRect(ML,y,24,0.8,RED);y+=10;
 
     // ── Executive Summary ──────────────────────────────────────
     // Pre-measure to draw background first
