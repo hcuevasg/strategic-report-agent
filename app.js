@@ -892,56 +892,343 @@ async function downloadPdf(){
   if(!result)return;
   showStatus('Generando PDF...');
   try{
-    const el=document.getElementById('reportContent');
-    if(!el)throw new Error('Sin informe');
-    el.style.width='800px';
+    const{jsPDF}=window.jspdf;
+    const pdf=new jsPDF('p','mm','a4');
+    const r=result;
+    const W=210,H=297;
+    const ML=20,MR=20,MT=20,MB=20; // margins
+    const CW=W-ML-MR; // content width
+    let y=0; // current Y position
+    const NAVY='#041627',RED='#BB0014',BLUE='#4279B0',BODY='#44474C',SGRAY='#74777D',LGRAY='#F2F4F6';
 
-    // Find section boundaries for smart page breaks
-    const sections=el.querySelectorAll('.section-collapsible, [class*="bg-white"]>div');
-    const sectionTops=[];
-    if(sections.length>1){
-      sections.forEach(s=>{sectionTops.push(s.offsetTop);});
+    function checkPage(need){
+      if(y+need>H-MB){pdf.addPage();y=MT;return true;}
+      return false;
+    }
+    function drawRect(x,ry,w,h,color){pdf.setFillColor(color);pdf.rect(x,ry,w,h,'F');}
+    // Wrap text and return array of lines
+    function wrapText(text,maxW){return pdf.splitTextToSize(text||'',maxW);}
+    function drawWrapped(text,x,maxW,fontSize,color,style){
+      pdf.setFontSize(fontSize);
+      pdf.setFont('helvetica',style||'normal');
+      pdf.setTextColor(color);
+      const lines=wrapText(text,maxW);
+      const lineH=fontSize*0.45;
+      lines.forEach(line=>{
+        checkPage(lineH+1);
+        pdf.text(line,x,y);
+        y+=lineH;
+      });
+      return lines.length;
     }
 
-    const canvas=await html2canvas(el,{backgroundColor:'#ffffff',scale:2,useCORS:true,logging:false});
-    el.style.width='';
-    const imgData=canvas.toDataURL('image/png');
-    const{jsPDF}=window.jspdf;
-    const pxW=canvas.width,pxH=canvas.height;
-    const pdfW=210;
-    const pdfH=(pxH*pdfW)/pxW;
-    const pageH=297;
-    const marginBottom=12; // mm safety margin to avoid cutting text
-    const usableH=pageH-marginBottom;
-    const scale=pdfW/el.offsetWidth; // px to mm conversion
+    // ── Cover bar ──────────────────────────────────────────────
+    drawRect(0,0,W,14,NAVY);
+    pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
+    pdf.text('ALTO',ML,9);
+    pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.setTextColor('#94A3B8');
+    pdf.text('CONFIDENTIAL',ML+18,9);
+    pdf.setFontSize(7);pdf.setFont('helvetica','italic');pdf.setTextColor('#64748B');
+    const dateStr=new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
+    pdf.text(dateStr,W-MR,9,{align:'right'});
+    y=22;
 
-    // Build smart breakpoints: prefer section boundaries over arbitrary cuts
-    const breakpoints=[0];
-    let currentPos=0;
-    while(currentPos<pdfH){
-      let nextBreak=currentPos+usableH;
-      if(nextBreak>=pdfH){break;}
-      // Find a section boundary close to the natural break (within 30% of page)
-      if(sectionTops.length){
-        let bestSection=nextBreak;
-        const minBreak=currentPos+usableH*0.65;
-        for(const st of sectionTops){
-          const stMm=st*scale;
-          if(stMm>minBreak && stMm<nextBreak){
-            bestSection=stMm;
+    // ── Title ──────────────────────────────────────────────────
+    pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
+    pdf.text('STRATEGIC ANALYSIS',ML,y);y+=5;
+    pdf.setFontSize(20);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+    const titleLines=wrapText(r.title,CW);
+    titleLines.forEach(line=>{pdf.text(line,ML,y);y+=8;});
+    if(r.subtitle){
+      pdf.setFontSize(10);pdf.setFont('helvetica','italic');pdf.setTextColor('#64748B');
+      pdf.text(r.subtitle,ML,y);y+=6;
+    }
+    drawRect(ML,y,24,0.8,RED);y+=8;
+
+    // ── Executive Summary ──────────────────────────────────────
+    drawRect(ML,y,1,0,NAVY); // will draw after measuring
+    const exY=y;
+    drawRect(ML,y,CW,0,LGRAY); // placeholder — draw bg after
+    pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
+    const exStartY=y;
+    pdf.text('EXECUTIVE SUMMARY',ML+5,y+4);y+=9;
+    pdf.setFontSize(10);pdf.setFont('helvetica','italic');pdf.setTextColor(NAVY);
+    const exLines=wrapText(r.executive_summary,CW-10);
+    exLines.forEach(line=>{checkPage(5);pdf.text(line,ML+5,y);y+=4.5;});
+    y+=3;
+    // Draw background rect behind summary
+    const exH=y-exStartY;
+    // Re-draw on same page (background goes behind text — jsPDF draws in order so we accept overlay)
+    // For proper layering we accept the text-on-white approach
+    drawRect(ML,exStartY,1.2,exH,RED);
+    y+=5;
+
+    // ── Key Messages ───────────────────────────────────────────
+    if(r.key_messages?.length){
+      checkPage(15);
+      pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+      pdf.text('KEY MESSAGES',ML,y);y+=6;
+      r.key_messages.forEach(m=>{
+        checkPage(6);
+        pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
+        pdf.text('\u25B8',ML+2,y);
+        pdf.setFont('helvetica','normal');pdf.setTextColor('#191C1E');
+        const mLines=wrapText(m,CW-8);
+        mLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+7,y);y+=4.5;});
+        y+=1.5;
+      });
+      y+=4;
+    }
+
+    // ── Context ────────────────────────────────────────────────
+    if(r.context){
+      checkPage(15);
+      pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+      pdf.text('CONTEXT',ML,y);y+=6;
+      drawWrapped(r.context,ML,CW,9,BODY,'normal');
+      y+=6;
+    }
+
+    // ── Findings ───────────────────────────────────────────────
+    if(r.findings?.length){
+      checkPage(15);
+      pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+      pdf.text('FINDINGS',ML,y);y+=7;
+      r.findings.forEach((f,i)=>{
+        checkPage(18);
+        // Number badge
+        drawRect(ML,y-3.5,6,6,NAVY);
+        pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
+        pdf.text(String(i+1),ML+3,y,{align:'center'});
+        // Finding text
+        const fX=ML+8;
+        drawRect(fX,y-3.5,CW-8,0,'#F8F9FB');
+        pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+        const fLines=wrapText(f.finding,CW-12);
+        fLines.forEach(line=>{pdf.text(line,fX+2,y);y+=4;});
+        if(f.evidence){
+          pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(SGRAY);
+          pdf.text('Evidence: ',fX+2,y);
+          pdf.setFont('helvetica','normal');
+          const evLines=wrapText(f.evidence,CW-30);
+          const evX=fX+2+pdf.getTextWidth('Evidence: ');
+          if(evLines.length===1&&pdf.getTextWidth('Evidence: '+f.evidence)<CW-12){
+            pdf.text(f.evidence,evX,y);y+=4;
+          } else {
+            y+=4;
+            evLines.forEach(line=>{checkPage(4);pdf.text(line,fX+2,y);y+=3.8;});
           }
         }
-        nextBreak=bestSection;
-      }
-      breakpoints.push(nextBreak);
-      currentPos=nextBreak;
+        if(f.business_implication){
+          pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
+          pdf.text('Implication: ',fX+2,y);
+          pdf.setFont('helvetica','normal');
+          const impLines=wrapText(f.business_implication,CW-12);
+          y+=4;
+          impLines.forEach(line=>{checkPage(4);pdf.setTextColor(RED);pdf.text(line,fX+2,y);y+=3.8;});
+        }
+        // Bottom red line
+        drawRect(fX,y,CW-8,0.4,RED);
+        y+=6;
+      });
+      y+=2;
     }
 
-    const pdf=new jsPDF('p','mm','a4');
-    for(let i=0;i<breakpoints.length;i++){
-      if(i>0) pdf.addPage();
-      pdf.addImage(imgData,'PNG',0,-breakpoints[i],pdfW,pdfH);
+    // ── Analysis Blocks ────────────────────────────────────────
+    if(r.analysis_blocks?.length){
+      r.analysis_blocks.forEach((s,i)=>{
+        checkPage(20);
+        // Accent bar + section header
+        drawRect(ML,y,1.2,12,RED);
+        pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
+        pdf.text(`${i+1}. ANALYSIS`,ML+4,y+3);
+        pdf.setFontSize(12);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+        const hLines=wrapText(s.heading,CW-8);
+        let hy=y+8;
+        hLines.forEach(line=>{pdf.text(line,ML+4,hy);hy+=5.5;});
+        y=hy+3;
+
+        // Governing thought
+        if(s.governing_thought){
+          checkPage(14);
+          drawRect(ML,y-3,CW,0,NAVY);
+          const gtLines=wrapText(s.governing_thought,CW-10);
+          const gtH=gtLines.length*4.5+6;
+          drawRect(ML,y-3,CW,gtH,NAVY);
+          pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
+          gtLines.forEach(line=>{pdf.text(line,ML+5,y);y+=4.5;});
+          y+=5;
+        }
+
+        // Content
+        if(s.content){
+          checkPage(8);
+          drawWrapped(s.content,ML,CW,9,BODY,'normal');
+          y+=3;
+        }
+
+        // Bullets
+        if(s.bullets?.length){
+          s.bullets.forEach(b=>{
+            checkPage(6);
+            pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
+            pdf.text('\u25B8',ML+3,y);
+            pdf.setFont('helvetica','normal');pdf.setTextColor('#191C1E');
+            const bLines=wrapText(b,CW-10);
+            bLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+8,y);y+=4.5;});
+            y+=1;
+          });
+          y+=2;
+        }
+
+        // So What box
+        if(s.so_what){
+          checkPage(12);
+          const swLines=wrapText(s.so_what,CW-14);
+          const swH=swLines.length*4+8;
+          drawRect(ML,y-2,1.2,swH,RED);
+          drawRect(ML+1.2,y-2,CW-1.2,swH,'#FFF5F5');
+          pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
+          pdf.text('SO WHAT?',ML+5,y+2);
+          y+=6;
+          pdf.setFontSize(8);pdf.setFont('helvetica','italic');pdf.setTextColor('#475569');
+          swLines.forEach(line=>{checkPage(4);pdf.text(line,ML+5,y);y+=4;});
+          y+=5;
+        }
+        y+=4;
+      });
     }
+
+    // ── Risks ──────────────────────────────────────────────────
+    if(r.risks?.length){
+      checkPage(15);
+      pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
+      pdf.text('RISKS',ML,y);y+=7;
+      r.risks.forEach(rk=>{
+        checkPage(10);
+        drawRect(ML,y-3,1.2,0,RED);
+        const rkLines=wrapText(rk.risk,CW-6);
+        const impLines=wrapText(rk.implication||'',CW-6);
+        const boxH=(rkLines.length+impLines.length)*4+6;
+        drawRect(ML,y-3,1.2,boxH,RED);
+        drawRect(ML+1.2,y-3,CW-1.2,boxH,'#FFF5F5');
+        pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(RED);
+        rkLines.forEach(line=>{pdf.text(line,ML+5,y);y+=4;});
+        pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(SGRAY);
+        impLines.forEach(line=>{checkPage(4);pdf.text(line,ML+5,y);y+=4;});
+        y+=4;
+      });
+      y+=3;
+    }
+
+    // ── Opportunities ──────────────────────────────────────────
+    if(r.opportunities?.length){
+      checkPage(15);
+      pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+      pdf.text('OPPORTUNITIES',ML,y);y+=7;
+      r.opportunities.forEach(o=>{
+        checkPage(6);
+        pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(BLUE);
+        pdf.text('\u2726',ML+2,y);
+        pdf.setFont('helvetica','normal');pdf.setTextColor('#191C1E');
+        const oLines=wrapText(o,CW-8);
+        oLines.forEach(line=>{checkPage(4.5);pdf.text(line,ML+7,y);y+=4.5;});
+        y+=1.5;
+      });
+      y+=4;
+    }
+
+    // ── Recommendations ────────────────────────────────────────
+    if(r.recommendations){
+      checkPage(15);
+      pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+      pdf.text('RECOMMENDATIONS',ML,y);y+=7;
+      [{key:'short_term',label:'SHORT TERM',color:RED},{key:'medium_term',label:'MEDIUM TERM',color:NAVY},{key:'long_term',label:'LONG TERM',color:'#1A2B3C'}].forEach(hz=>{
+        const items=r.recommendations[hz.key];
+        if(!items?.length)return;
+        checkPage(12);
+        drawRect(ML,y-3,CW*0.22,5.5,hz.color);
+        pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
+        pdf.text(hz.label,ML+2,y);y+=7;
+        items.forEach((rec,i)=>{
+          checkPage(14);
+          // Number badge
+          drawRect(ML,y-3,5.5,5.5,hz.color);
+          pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor('#FFFFFF');
+          pdf.text(String(i+1),ML+2.75,y,{align:'center'});
+          // Content
+          const rcX=ML+7;
+          drawRect(rcX,y-3,CW-7,0,'#F8F9FB');
+          pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+          const aLines=wrapText(rec.action,CW-12);
+          aLines.forEach(line=>{pdf.text(line,rcX+2,y);y+=4.2;});
+          if(rec.rationale){
+            pdf.setFontSize(8);pdf.setFont('helvetica','italic');pdf.setTextColor(SGRAY);
+            const ratLines=wrapText(rec.rationale,CW-12);
+            ratLines.forEach(line=>{checkPage(4);pdf.text(line,rcX+2,y);y+=3.8;});
+          }
+          if(rec.impact){
+            checkPage(4);
+            pdf.setFontSize(8);pdf.setFont('helvetica','bold');pdf.setTextColor(hz.color);
+            pdf.text('Impact: '+rec.impact,rcX+2,y);y+=4;
+          }
+          y+=4;
+        });
+        y+=3;
+      });
+    }
+
+    // ── Information Gaps ───────────────────────────────────────
+    if(r.information_gaps?.length){
+      checkPage(15);
+      drawRect(ML,y,1.2,0,BLUE);
+      const igStart=y;
+      pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(BLUE);
+      pdf.text('INFORMATION GAPS',ML+5,y+3);y+=8;
+      r.information_gaps.forEach(g=>{
+        checkPage(6);
+        pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(BODY);
+        pdf.text('\u2139',ML+5,y);
+        const gLines=wrapText(g,CW-14);
+        gLines.forEach(line=>{checkPage(4);pdf.text(line,ML+10,y);y+=4;});
+        y+=2;
+      });
+      drawRect(ML,igStart,1.2,y-igStart,BLUE);
+      y+=5;
+    }
+
+    // ── Conclusion ─────────────────────────────────────────────
+    if(r.conclusion){
+      checkPage(18);
+      const clStart=y;
+      drawRect(ML,y,CW,0,LGRAY);
+      pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+      pdf.text('CONCLUSION',ML+5,y+4);y+=10;
+      pdf.setFontSize(10);pdf.setFont('helvetica','bolditalic');pdf.setTextColor(NAVY);
+      const clLines=wrapText(r.conclusion,CW-10);
+      clLines.forEach(line=>{checkPage(5);pdf.text(line,ML+5,y);y+=5;});
+      y+=3;
+      const clH=y-clStart;
+      drawRect(ML,clStart,1.2,clH,NAVY);
+      drawRect(ML+1.2,clStart,CW-1.2,clH,LGRAY);
+      // Re-render text over background (jsPDF draws in order)
+      let cy2=clStart;
+      pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(NAVY);
+      pdf.text('CONCLUSION',ML+5,cy2+4);cy2+=10;
+      pdf.setFontSize(10);pdf.setFont('helvetica','bolditalic');pdf.setTextColor(NAVY);
+      clLines.forEach(line=>{pdf.text(line,ML+5,cy2);cy2+=5;});
+    }
+
+    // ── Footer on each page ────────────────────────────────────
+    const pages=pdf.internal.getNumberOfPages();
+    for(let p=1;p<=pages;p++){
+      pdf.setPage(p);
+      pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.setTextColor(SGRAY);
+      pdf.text('ALTO \u00B7 Strategic Insights',ML,H-10);
+      pdf.text(`${p} / ${pages}`,W-MR,H-10,{align:'right'});
+      drawRect(ML,H-13,CW,0.3,'#E0E3E5');
+    }
+
     pdf.save('Informe_ALTO_'+new Date().toISOString().slice(0,10)+'.pdf');
     flash('\u2713 PDF descargado');
   }catch(err){showError('Error PDF: '+err.message);}

@@ -223,7 +223,21 @@ REGLAS OBLIGATORIAS:
     function addNote(sl,text){if(text)sl.addNotes(text);}
 
     function soWhatBox(sl,text,y){ /* no-op */ }
-    function srcNote(sl,t){if(t)sl.addText(tp('source')+': '+t,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true});}
+    function srcNote(sl,t){if(t)sl.addText(tp('source')+': '+t,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});}
+    function chartFallback(sl,s,cy,eLW){
+      // Show body_text/bullets when chart data is missing
+      const parts=[];
+      if(s.body_text) parts.push({text:s.body_text,options:{fontSize:12,color:A.BODY}});
+      if(s.bullets&&s.bullets.length){
+        if(parts.length) parts.push({text:'\n\n',options:{fontSize:5}});
+        s.bullets.forEach((b,j)=>{
+          if(j>0) parts.push({text:'\n',options:{fontSize:4}});
+          parts.push({text:'\u25B8 ',options:{fontSize:11,color:A.RED,bold:true}});
+          parts.push({text:b,options:{fontSize:11,color:A.BODY}});
+        });
+      }
+      if(parts.length) sl.addText(parts,{x:M,y:cy,w:eLW,h:7.5-cy-0.8,fontFace:'Calibri',lineSpacingMultiple:1.5,valign:'top',shrinkText:true});
+    }
 
     const slides=slideData.slides||[];
 
@@ -322,7 +336,7 @@ REGLAS OBLIGATORIAS:
           sl.addText(String(actualNum),{x:M+listW-0.8,y:iy,w:0.7,h:titleH,fontSize:titleFontSize-1,fontFace:'Calibri',color:A.SGRAY,bold:false,align:'right',valign:'middle'});
           // Description — only when there's room
           if(showDesc&&item.description){
-            sl.addText(item.description,{x:M+0.45,y:iy+titleH,w:listW-1.2,h:rowH*0.4,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:false,valign:'top'});
+            sl.addText(item.description,{x:M+0.45,y:iy+titleH,w:listW-1.2,h:rowH*0.4,fontSize:8,fontFace:'Calibri',color:A.SGRAY,italic:false,valign:'top',shrinkText:true});
           }
           if(i<items.length-1){
             sl.addShape('rect',{x:M,y:iy+rowH-0.02,w:listW,h:0.008,fill:{color:A.MGRAY}});
@@ -337,7 +351,7 @@ REGLAS OBLIGATORIAS:
         if(s.tagline){
           sl.addText(s.tagline,{x:panelX+0.22,y:1.2,w:panelW-0.38,h:panelH-0.4,
             fontSize:13,fontFace:'Calibri',color:A.NAVY,italic:false,
-            lineSpacingMultiple:1.7,valign:'middle',bold:false});
+            lineSpacingMultiple:1.7,valign:'middle',bold:false,shrinkText:true});
         }
         return;
       }
@@ -351,12 +365,12 @@ REGLAS OBLIGATORIAS:
         if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
         // Section label (subheading)
         if(s.subheading)sl.addText(s.subheading.toUpperCase(),{x:0.55,y:2.15,w:dRX-0.8,h:0.3,fontSize:9,fontFace:'Calibri',color:A.RED,bold:true,charSpacing:4});
-        // Large section title — navy on light background (ends at 4.95 max, lines at 5.3)
-        sl.addText(s.action_title||'',{x:0.55,y:2.55,w:dRX-0.8,h:2.4,fontSize:34,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
+        // Large section title — navy on light background
+        sl.addText(s.action_title||'',{x:0.55,y:2.55,w:dRX-0.8,h:2.6,fontSize:32,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
         // Red accent lines
         sl.addShape('rect',{x:0.55,y:5.3,w:2.2,h:0.05,fill:{color:A.RED}});
         sl.addShape('rect',{x:0.55,y:5.45,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
-        if(s.body_text)sl.addText(s.body_text,{x:0.55,y:5.65,w:dRX-0.8,h:0.5,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true});
+        if(s.body_text)sl.addText(s.body_text,{x:0.55,y:5.65,w:dRX-0.8,h:0.5,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
         // Right side — navy block (same as cover)
         sl.addShape('rect',{x:dRX,y:0,w:dRW,h:7.5,fill:{color:A.NAVY}});
         sl.addShape('rect',{x:dRX,y:0,w:0.08,h:7.5,fill:{color:A.RED}});
@@ -374,7 +388,7 @@ REGLAS OBLIGATORIAS:
       let cy=1.02;
       const LW=SX-M-0.25; // left content width (when SO WHAT panel present)
       const eLW=s.so_what?LW:CW; // effective content width — full when no SO WHAT
-      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:eLW,h:0.35,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'middle'});cy+=0.42;}
+      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:eLW,h:0.35,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'middle',shrinkText:true});cy+=0.42;}
 
       // ========== LAYOUT: STAT CALLOUTS ==========
       if(vis==='stat_callouts' && s.data_points&&s.data_points.length){
@@ -409,7 +423,7 @@ REGLAS OBLIGATORIAS:
         const {cats,series:barSeries}=normalizeChartData(s.chart_data);
         const normBar=barSeries.slice(0,3);
         const chartH=5.0;const chartW=LW*0.95;
-        if(normBar.length&&cats.length){
+        if(normBar.length&&cats.length&&cats.length>0){
           const singleSeries=normBar.length===1;
           sl.addChart(pptx.charts.BAR,normBar,{
             x:M,y:cy,w:chartW,h:chartH,
@@ -428,7 +442,7 @@ REGLAS OBLIGATORIAS:
             showLegend:!singleSeries,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
             showTitle:false
           });
-        }
+        } else { chartFallback(sl,s,cy,eLW); }
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: LINE CHART ==========
@@ -449,7 +463,7 @@ REGLAS OBLIGATORIAS:
             showLegend:normLine.length>1,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
             showTitle:false,dataLabelFontSize:8,showDataLabel:false
           });
-        }
+        } else { chartFallback(sl,s,cy,eLW); }
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: HORIZONTAL BAR ==========
@@ -474,13 +488,13 @@ REGLAS OBLIGATORIAS:
             showLegend:!singleH,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
             showTitle:false
           });
-        }
+        } else { chartFallback(sl,s,cy,eLW); }
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: DONUT CHART ==========
       } else if(vis==='donut_chart' && s.data_points&&s.data_points.length){
         const dp=s.data_points.slice(0,6).filter(d=>d&&d.label);
-        if(!dp.length){soWhatPanel(sl,s.so_what);return;}
+        if(!dp.length){chartFallback(sl,s,cy,eLW);soWhatPanel(sl,s.so_what);return;}
         const vals=dp.map(d=>parseFloat(String(d.value).replace(/[^0-9.]/g,''))||1);
         const lbls=dp.map(d=>d.label||'');
         const donutColors=[A.NAVY,A.RED,A.TBLUE,'74777D','1A2B3C','C4C6CD'];
