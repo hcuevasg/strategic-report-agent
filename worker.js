@@ -845,6 +845,14 @@ export default {
       return jsonResponse(403, { error: 'Origin not allowed' }, env, requestOrigin);
     }
 
+    // ── App token authentication ─────────────────────────
+    if (env.APP_SECRET) {
+      const token = request.headers.get('X-App-Token') || '';
+      if (token !== env.APP_SECRET) {
+        return jsonResponse(401, { error: 'Unauthorized' }, env, requestOrigin);
+      }
+    }
+
     // ── Rate limiting ─────────────────────────────────────
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
     const limitPerHour = parseInt(env.RATE_LIMIT_PER_HOUR || '30', 10);
