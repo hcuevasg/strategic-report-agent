@@ -77,11 +77,13 @@ tailwind.config={theme:{extend:{colors:{
         <div class="space-y-1.5">
           <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">Tipo de Informe</label>
           <div class="flex flex-wrap gap-2" id="reportTypeChips">
-            <button data-type="market_analysis" onclick="setReportType(this)" class="rtype-chip active">Análisis de Mercado</button>
-            <button data-type="strategic_plan" onclick="setReportType(this)" class="rtype-chip">Plan Estratégico</button>
-            <button data-type="due_diligence" onclick="setReportType(this)" class="rtype-chip">Due Diligence</button>
-            <button data-type="competitive" onclick="setReportType(this)" class="rtype-chip">Análisis Competitivo</button>
-            <button data-type="general" onclick="setReportType(this)" class="rtype-chip">General</button>
+            <button data-type="strategic" onclick="setReportType(this)" class="rtype-chip active" title="Análisis estratégico con hallazgos, riesgos, oportunidades y recomendaciones por horizonte">Estratégico</button>
+            <button data-type="financial" onclick="setReportType(this)" class="rtype-chip" title="Enfoque en impacto financiero, ROI, métricas de rentabilidad y proyecciones">Financiero</button>
+            <button data-type="operational" onclick="setReportType(this)" class="rtype-chip" title="Diagnóstico de procesos, eficiencia operacional, cuellos de botella y mejoras">Operacional</button>
+            <button data-type="risk" onclick="setReportType(this)" class="rtype-chip" title="Matriz de riesgos, probabilidad e impacto, mitigación y planes de contingencia">Riesgos</button>
+            <button data-type="competitive" onclick="setReportType(this)" class="rtype-chip" title="Benchmarking competitivo, posicionamiento, ventajas y brechas vs competencia">Competitivo</button>
+            <button data-type="due_diligence" onclick="setReportType(this)" class="rtype-chip" title="Due diligence: evaluación de viabilidad, red flags, fortalezas y riesgos">Due Diligence</button>
+            <button data-type="general" onclick="setReportType(this)" class="rtype-chip" title="Análisis general sin enfoque específico">General</button>
           </div>
         </div>
         <div class="space-y-1.5">

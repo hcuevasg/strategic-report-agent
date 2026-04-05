@@ -1131,11 +1131,25 @@ export default {
 
         // Language preference override
         const langPref = body.outputLanguage && body.outputLanguage !== 'auto' && LANG_NAMES[body.outputLanguage]
-          ? `\nIMPORTANTE: Redacta TODO el informe en ${LANG_NAMES[body.outputLanguage]}, independientemente del idioma del contenido fuente.\n\n`
+          ? `\nIMPORTANTE: Redacta TODO el informe en ${LANG_NAMES[body.outputLanguage]}, independientemente del idioma del contenido fuente.\n`
           : '';
+
+        // Report type instructions
+        const REPORT_TEMPLATES = {
+          strategic: 'ENFOQUE ESTRATÉGICO: Prioriza visión de largo plazo, posicionamiento competitivo, alineación con objetivos corporativos. Los hallazgos deben traducirse en implicancias estratégicas. Las recomendaciones deben organizarse por horizonte temporal (corto/mediano/largo plazo) con impacto estratégico claro.',
+          financial: 'ENFOQUE FINANCIERO: Prioriza impacto económico, métricas de rentabilidad, ROI, márgenes, flujo de caja y proyecciones. Cuantifica cada hallazgo en términos monetarios cuando sea posible. Las recomendaciones deben incluir estimación de costo/beneficio. Los riesgos deben valorarse por exposición financiera.',
+          operational: 'ENFOQUE OPERACIONAL: Prioriza eficiencia de procesos, cuellos de botella, capacidad operativa, tiempos de ciclo y calidad. Los hallazgos deben identificar causas raíz de ineficiencias. Las recomendaciones deben ser tácticas y ejecutables con métricas operativas claras (KPIs, SLAs).',
+          risk: 'ENFOQUE DE RIESGOS: Prioriza identificación exhaustiva de riesgos, clasificados por probabilidad e impacto. Incluye riesgos operacionales, financieros, regulatorios, reputacionales y estratégicos. Las recomendaciones deben ser planes de mitigación y contingencia específicos con responsables sugeridos.',
+          competitive: 'ENFOQUE COMPETITIVO: Prioriza benchmarking, posicionamiento relativo, ventajas/desventajas competitivas, barreras de entrada, amenazas de sustitutos. Los hallazgos deben comparar explícitamente vs competidores cuando hay datos. Las recomendaciones deben apuntar a cerrar brechas o ampliar ventajas.',
+          due_diligence: 'ENFOQUE DUE DILIGENCE: Prioriza evaluación crítica de viabilidad, red flags, consistencia de datos, riesgos ocultos y fortalezas verificables. Distingue hechos verificados de claims no soportados. Las recomendaciones deben incluir condiciones, caveats y puntos que requieren investigación adicional.',
+          general: '',
+        };
+        const templateInstr = REPORT_TEMPLATES[body.reportType] || '';
+        const typePref = templateInstr ? `\n${templateInstr}\n` : '';
 
         // Build messages — support vision (images array)
         const userBlocks = [];
+        const promptPrefix = langPref + typePref + 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n';
         if (body.images && Array.isArray(body.images) && body.images.length > 0) {
           body.images.forEach(img => {
             userBlocks.push({
@@ -1145,12 +1159,12 @@ export default {
           });
           userBlocks.push({
             type: 'text',
-            text: langPref + 'Transforma el siguiente documento fuente (incluye imágenes del documento) en el informe ejecutivo solicitado. Analiza las imágenes para extraer datos, gráficos y tablas relevantes. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
+            text: promptPrefix + '(incluye imágenes del documento — analiza las imágenes para extraer datos, gráficos y tablas relevantes)\n\n' + (body.userContent || ''),
           });
         } else {
           userBlocks.push({
             type: 'text',
-            text: langPref + 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n' + (body.userContent || ''),
+            text: promptPrefix + (body.userContent || ''),
           });
         }
 

@@ -327,7 +327,7 @@ function updateCharCount(el){const n=el.value.length;const c=document.getElement
 // ============================================================
 // REPORT TYPE SELECTOR
 // ============================================================
-let currentReportType='market_analysis';
+let currentReportType='strategic';
 function setReportType(el){
   document.querySelectorAll('#reportTypeChips .rtype-chip').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
