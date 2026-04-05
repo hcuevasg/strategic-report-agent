@@ -277,7 +277,7 @@ REGLAS OBLIGATORIAS:
         // Left side
         if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
         sl.addText(s.action_title||'Gracias',{x:0.55,y:1.6,w:cRX-0.8,h:3.0,fontSize:36,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
-        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.75,w:cRX-1.0,h:0.5,fontSize:12,fontFace:'Calibri',color:A.SGRAY,italic:true});
+        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.5,w:cRX-1.0,h:0.4,fontSize:12,fontFace:'Calibri',color:A.SGRAY,italic:true});
         sl.addShape('rect',{x:0.55,y:5.0,w:2.2,h:0.05,fill:{color:A.RED}});
         sl.addShape('rect',{x:0.55,y:5.15,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
         sl.addText('Preparado por',{x:0.72,y:5.45,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
