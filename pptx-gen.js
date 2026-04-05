@@ -247,8 +247,8 @@ REGLAS OBLIGATORIAS:
         if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
         // Main title — large extrabold (shrinkText prevents overlap with subtitle)
         sl.addText(s.action_title||result.title,{x:0.55,y:1.45,w:leftW-0.8,h:3.5,fontSize:32,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
-        // Subtitle italic — positioned below title area
-        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:5.1,w:leftW-1.0,h:0.4,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true});
+        // Subtitle italic — positioned below title area with clearance before "Preparado por"
+        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.85,w:leftW-1.0,h:0.4,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
         // Presented by / date row
         sl.addShape('rect',{x:0.55,y:5.55,w:0.03,h:0.7,fill:{color:A.MGRAY}});
         sl.addText('Preparado por',{x:0.72,y:5.55,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
@@ -351,9 +351,9 @@ REGLAS OBLIGATORIAS:
         if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
         // Section label (subheading)
         if(s.subheading)sl.addText(s.subheading.toUpperCase(),{x:0.55,y:2.15,w:dRX-0.8,h:0.3,fontSize:9,fontFace:'Calibri',color:A.RED,bold:true,charSpacing:4});
-        // Large section title — navy on light background
-        sl.addText(s.action_title||'',{x:0.55,y:2.55,w:dRX-0.8,h:2.6,fontSize:34,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
-        // Red accent lines — same position as cover
+        // Large section title — navy on light background (ends at 4.95 max, lines at 5.3)
+        sl.addText(s.action_title||'',{x:0.55,y:2.55,w:dRX-0.8,h:2.4,fontSize:34,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
+        // Red accent lines
         sl.addShape('rect',{x:0.55,y:5.3,w:2.2,h:0.05,fill:{color:A.RED}});
         sl.addShape('rect',{x:0.55,y:5.45,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
         if(s.body_text)sl.addText(s.body_text,{x:0.55,y:5.65,w:dRX-0.8,h:0.5,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true});
@@ -702,9 +702,13 @@ REGLAS OBLIGATORIAS:
           cy+=2.35;
         }
         if(s.bullets&&s.bullets.length){
+          const maxBulletY=s.data_points&&s.data_points.length?5.2:6.5; // leave room for data_points or footer
+          const bulletH=Math.min(0.44,(maxBulletY-cy)/s.bullets.length);
+          const bulletStep=Math.min(0.5,bulletH+0.06);
           s.bullets.forEach(b=>{
-            sl.addText([{text:'\u25B8 ',options:{fontSize:13,fontFace:'Calibri',color:accentColor,bold:true}},{text:b,options:{fontSize:12,fontFace:'Calibri',color:A.BODY}}],{x:M+0.15,y:cy,w:eLW-0.2,h:0.44,valign:'top',lineSpacingMultiple:1.3,shrinkText:true});
-            cy+=0.5;
+            if(cy>maxBulletY)return;
+            sl.addText([{text:'\u25B8 ',options:{fontSize:13,fontFace:'Calibri',color:accentColor,bold:true}},{text:b,options:{fontSize:12,fontFace:'Calibri',color:A.BODY}}],{x:M+0.15,y:cy,w:eLW-0.2,h:bulletH,valign:'top',lineSpacingMultiple:1.3,shrinkText:true});
+            cy+=bulletStep;
           });
           cy+=0.1;
         }
