@@ -2,6 +2,7 @@
 // Worker URL — hardcoded, no user input needed
 // ============================================================
 const WORKER_URL = 'https://strategic-report-proxy.hcuevas.workers.dev';
+const APP_TOKEN = '586c0de4f25d4b06167a789cd67c2674e17dcce02b2d0639';
 
 // ============================================================
 // i18n — Multi-language labels
@@ -508,7 +509,7 @@ async function handleMagicLink(){
 // WORKER FETCH — soporta streaming SSE y JSON legado
 // ============================================================
 async function fetchFromWorker(url, body, onChunk, onPhase){
-  const headers = {'Content-Type':'application/json'};
+  const headers = {'Content-Type':'application/json','X-App-Token':APP_TOKEN};
   if(window._sessionToken) headers['X-Session-Token'] = window._sessionToken;
   const timeoutMs = body.userContent==='__PPTX_MODE__' ? 180000 : 120000;
   const controller = new AbortController();
