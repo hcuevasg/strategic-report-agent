@@ -178,6 +178,7 @@ REGLAS OBLIGATORIAS:
     // --- SLIDE MASTER ---
     pptx.defineSlideMaster({title:'ALTO_MASTER',background:{color:A.WHITE},objects:[
       {text:{text:tp('confidential')+' | ALTO Strategy | '+new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),options:{x:M,y:7.25,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false}}},
+      {text:{text:'BORRADOR',options:{x:9.8,y:7.25,w:1.6,h:0.2,fontSize:7,fontFace:'Calibri',color:A.RED,bold:true,align:'right',charSpacing:2}}},
     ],slideNumber:{x:11.5,y:7.25,w:1.5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,align:'right'}});
 
     // --- HELPER FUNCTIONS ---
