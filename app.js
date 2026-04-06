@@ -1994,7 +1994,7 @@ async function generateMinuta() {
         if (!line.startsWith('data:')) return;
         try {
           const ev = JSON.parse(line.slice(5));
-          if (ev.type === 'text') accumulated += ev.text;
+          if (ev.text) accumulated += ev.text;
         } catch(e) {}
       });
     }
