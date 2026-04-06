@@ -1855,13 +1855,17 @@ async function sendChat() {
 function addChatBubble(role, text) {
   const container = document.getElementById('chatMessages');
   const div = document.createElement('div');
-  div.className = role === 'user'
-    ? 'flex justify-end'
-    : 'flex justify-start';
+  div.style.cssText = role === 'user' ? 'display:flex;justify-content:flex-end' : 'display:flex;justify-content:flex-start;gap:8px;align-items:flex-start';
+  if(role === 'assistant'){
+    const avatar = document.createElement('div');
+    avatar.style.cssText = 'width:24px;height:24px;background:#BB0014;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px';
+    avatar.innerHTML = '<span class="material-symbols-outlined" style="font-size:13px;color:#fff;font-variation-settings:\'FILL\' 1">smart_toy</span>';
+    div.appendChild(avatar);
+  }
   const bubble = document.createElement('div');
-  bubble.className = role === 'user'
-    ? 'bg-[#041627] text-white font-[Inter] text-sm px-4 py-3 max-w-[85%] whitespace-pre-wrap'
-    : 'bg-[#F2F4F6] border-l-4 border-[#BB0014] text-[#191C1E] font-[Inter] text-sm px-4 py-3 max-w-[85%] whitespace-pre-wrap';
+  bubble.style.cssText = role === 'user'
+    ? 'background:#041627;color:#fff;font-family:Inter,sans-serif;font-size:13px;padding:10px 14px;border-radius:10px 10px 2px 10px;max-width:85%;white-space:pre-wrap;line-height:1.5'
+    : 'background:#fff;border:1px solid #E0E3E5;border-left:3px solid #BB0014;color:#191C1E;font-family:Inter,sans-serif;font-size:13px;padding:10px 14px;border-radius:2px 10px 10px 10px;max-width:85%;white-space:pre-wrap;line-height:1.5';
   bubble.textContent = text;
   div.appendChild(bubble);
   container.appendChild(div);

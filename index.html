@@ -303,16 +303,37 @@ tailwind.config={theme:{extend:{colors:{
     </div>
 
     <!-- Chat -->
-    <div id="chatSection" class="hidden mt-8 bg-white border-l-4 border-[#041627] overflow-hidden" style="box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-      <div class="px-6 py-3 bg-[#041627] flex items-center gap-2">
-        <span class="material-symbols-outlined text-white text-base">forum</span>
-        <span class="font-['Manrope'] text-[10px] uppercase tracking-widest text-white font-bold" data-i18n="uiChatHeader">Consultar sobre el informe</span>
+    <div id="chatSection" class="hidden mt-8 overflow-hidden" style="border:1.5px solid #E0E3E5;border-radius:12px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+      <!-- Header -->
+      <div style="background:#041627;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:28px;height:28px;background:#BB0014;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span class="material-symbols-outlined" style="font-size:16px;color:#fff;font-variation-settings:'FILL' 1">smart_toy</span>
+          </div>
+          <div>
+            <div style="font-family:Manrope,sans-serif;font-size:12px;font-weight:800;color:#fff;letter-spacing:.05em">Asistente IA</div>
+            <div style="font-family:Inter,sans-serif;font-size:10px;color:rgba(255,255,255,0.45);margin-top:1px">Consulta o modifica el informe con lenguaje natural</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <div style="background:rgba(255,255,255,0.08);border-radius:20px;padding:4px 10px;font-family:Inter,sans-serif;font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:.05em">ENTER para enviar</div>
+        </div>
       </div>
-      <div id="chatMessages" class="p-5 space-y-3 max-h-80 overflow-y-auto"></div>
-      <div class="p-5 border-t border-outline-variant/20 flex gap-3">
-        <input id="chatInput" type="text" class="flex-1 bg-transparent border-0 border-b border-outline-variant h-10 px-0 text-[#191C1E] placeholder:text-slate-400 focus:border-[#041627] transition-all font-['Inter'] text-sm" placeholder="Ej: Profundiza el hallazgo 3, agrega análisis financiero, reformula para el CFO..." data-i18n-placeholder="uiChatPlaceholder" onkeydown="if(event.key==='Enter')sendChat()"/>
-        <button onclick="sendChat()" class="bg-[#BB0014] hover:bg-red-800 text-white font-bold px-5 flex items-center gap-2 transition-all disabled:opacity-40" id="btnChat">
-          <span class="material-symbols-outlined text-base">send</span>
+      <!-- Suggestion chips -->
+      <div style="padding:10px 16px 0;display:flex;flex-wrap:wrap;gap:6px;background:#FAFBFC;border-bottom:1px solid #F0F0F0">
+        <button onclick="document.getElementById('chatInput').value=this.dataset.q;document.getElementById('chatInput').focus()" data-q="Profundiza el hallazgo más importante" style="font-family:Inter,sans-serif;font-size:10px;color:#041627;background:#fff;border:1px solid #E0E3E5;border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='#BB0014';this.style.color='#BB0014'" onmouseout="this.style.borderColor='#E0E3E5';this.style.color='#041627'">💡 Profundiza hallazgo</button>
+        <button onclick="document.getElementById('chatInput').value=this.dataset.q;document.getElementById('chatInput').focus()" data-q="Reformula las recomendaciones para el CFO" style="font-family:Inter,sans-serif;font-size:10px;color:#041627;background:#fff;border:1px solid #E0E3E5;border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='#BB0014';this.style.color='#BB0014'" onmouseout="this.style.borderColor='#E0E3E5';this.style.color='#041627'">🎯 Tono para CFO</button>
+        <button onclick="document.getElementById('chatInput').value=this.dataset.q;document.getElementById('chatInput').focus()" data-q="Agrega un análisis de riesgos más detallado" style="font-family:Inter,sans-serif;font-size:10px;color:#041627;background:#fff;border:1px solid #E0E3E5;border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='#BB0014';this.style.color='#BB0014'" onmouseout="this.style.borderColor='#E0E3E5';this.style.color='#041627'">⚠️ Ampliar riesgos</button>
+        <button onclick="document.getElementById('chatInput').value=this.dataset.q;document.getElementById('chatInput').focus()" data-q="Resume el informe en 3 puntos clave para una presentación ejecutiva" style="font-family:Inter,sans-serif;font-size:10px;color:#041627;background:#fff;border:1px solid #E0E3E5;border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='#BB0014';this.style.color='#BB0014'" onmouseout="this.style.borderColor='#E0E3E5';this.style.color='#041627'">📋 Resumen ejecutivo</button>
+      </div>
+      <!-- Messages -->
+      <div id="chatMessages" style="padding:16px;display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;background:#FAFBFC"></div>
+      <!-- Input -->
+      <div style="padding:12px 16px;background:#fff;border-top:1px solid #F0F0F0;display:flex;gap:10px;align-items:center">
+        <span class="material-symbols-outlined" style="font-size:18px;color:#BB0014;flex-shrink:0;font-variation-settings:'FILL' 1">smart_toy</span>
+        <input id="chatInput" type="text" style="flex:1;border:none;outline:none;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;background:transparent" placeholder="Ej: Agrega un riesgo sobre regulación, reformula para el directorio..." onkeydown="if(event.key==='Enter')sendChat()"/>
+        <button onclick="sendChat()" id="btnChat" style="background:#BB0014;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:Manrope,sans-serif;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;letter-spacing:.05em" onmouseover="this.style.background='#990010'" onmouseout="this.style.background='#BB0014'">
+          <span class="material-symbols-outlined" style="font-size:15px">send</span> Enviar
         </button>
       </div>
     </div>
