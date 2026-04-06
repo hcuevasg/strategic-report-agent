@@ -386,15 +386,16 @@ REGLAS OBLIGATORIAS:
         // Red accent lines
         sl.addShape('rect',{x:0.55,y:5.3,w:2.2,h:0.05,fill:{color:A.RED}});
         sl.addShape('rect',{x:0.55,y:5.45,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
-        if(s.body_text)sl.addText(s.body_text,{x:0.55,y:5.65,w:dRX-0.8,h:0.5,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
+        let divFootY=5.55;
+        if(s.body_text){sl.addText(s.body_text,{x:0.55,y:divFootY,w:dRX-0.8,h:0.45,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});divFootY+=0.5;}
         // Section progress indicator
         if(s.section_number&&s.total_sections){
           const progText='Sección '+s.section_number+' de '+s.total_sections;
-          sl.addText(progText,{x:0.55,y:5.65,w:dRX-0.8,h:0.25,fontSize:8,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
+          sl.addText(progText,{x:0.55,y:divFootY,w:dRX-0.8,h:0.25,fontSize:8,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});divFootY+=0.3;
         }
         // Mini-TOC items
         if(s.items&&s.items.length){
-          const miniY=s.section_number?6.05:5.8;
+          const miniY=divFootY+0.15;
           s.items.forEach((item,i)=>{
             sl.addText((i+1)+'. '+(typeof item==='string'?item:item.title||''),{x:0.72,y:miniY+i*0.28,w:dRX-1.2,h:0.26,fontSize:9,fontFace:'Calibri',color:A.SGRAY,valign:'middle',shrinkText:true});
           });
@@ -479,7 +480,7 @@ REGLAS OBLIGATORIAS:
       } else if(vis==='bar_chart' && s.chart_data){
         const {cats,series:barSeries}=normalizeChartData(s.chart_data);
         const normBar=barSeries.slice(0,3);
-        const chartH=5.0;const chartW=LW*0.95;
+        const chartH=5.0;const chartW=eLW*0.95;
         if(normBar.length&&cats.length&&cats.length>0){
           const singleSeries=normBar.length===1;
           sl.addChart(pptx.charts.BAR,normBar,{
@@ -510,7 +511,7 @@ REGLAS OBLIGATORIAS:
       } else if(vis==='line_chart' && s.chart_data){
         const {cats:lineCats,series:lineSeries}=normalizeChartData(s.chart_data);
         const normLine=lineSeries.slice(0,4);
-        const chartH=4.8;const chartW=LW*0.95;
+        const chartH=4.8;const chartW=eLW*0.95;
         if(normLine.length&&lineCats.length){
           sl.addChart(pptx.charts.LINE,normLine,{
             x:M,y:cy,w:chartW,h:chartH,
@@ -877,23 +878,21 @@ REGLAS OBLIGATORIAS:
         const barH=(funnelH-(n-1)*0.12)/n;
         const maxBarW=eLW*0.82;
         const levelColors=[A.NAVY,A.TBLUE,'4A7FB5','5E90C4','7AA8D0','94BEE0',A.MGRAY];
-        const labelColW=eLW*0.18;
         pts.forEach((pt,i)=>{
           // Each bar gets progressively narrower
           const fraction=1-(i*(0.65/(n-1||1)));
           const barW=maxBarW*fraction;
-          const bx=M+labelColW+(maxBarW-barW)/2;
+          const bx=M+(maxBarW-barW)/2;
           const by=cy+(i*(barH+0.12));
           sl.addShape('rect',{x:bx,y:by,w:barW,h:barH,fill:{color:levelColors[i%7]}});
-          // Value label left side
-          sl.addText(String(pt.value||''),{x:M,y:by,w:labelColW-0.08,h:barH,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true,align:'right',valign:'middle',shrinkText:true});
-          // Category label on bar or right side
-          const labelX=bx+barW+0.1;const labelW=eLW-(labelX-M)-0.05;
-          sl.addText(pt.label||'',{x:labelX,y:by,w:labelW,h:barH,fontSize:10,fontFace:'Calibri',color:A.BODY,valign:'middle',shrinkText:true});
-          // Percentage of top if data available
+          // Value label on bar (left side, white text)
+          sl.addText(String(pt.value||''),{x:bx+0.12,y:by,w:Math.min(1.2,barW*0.3),h:barH,fontSize:11,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',shrinkText:true});
+          // Category label centered on bar
+          sl.addText(pt.label||'',{x:bx+barW*0.25,y:by,w:barW*0.5,h:barH,fontSize:10,fontFace:'Calibri',color:A.WHITE,align:'center',valign:'middle',shrinkText:true});
+          // Percentage on right side of bar
           if(i>0&&pts[0].value){
             const pct=Math.round((Number(pt.value)||0)/(Number(pts[0].value)||1)*100);
-            if(!isNaN(pct))sl.addText(pct+'%',{x:bx+barW*0.02,y:by,w:barW*0.96,h:barH,fontSize:9,fontFace:'Calibri',color:A.WHITE,bold:false,align:'right',valign:'middle',shrinkText:true});
+            if(!isNaN(pct))sl.addText(pct+'%',{x:bx+barW*0.7,y:by,w:barW*0.25,h:barH,fontSize:9,fontFace:'Calibri',color:A.WHITE,bold:false,align:'right',valign:'middle',shrinkText:true});
           }
         });
         soWhatPanel(sl,s.so_what);
@@ -902,8 +901,9 @@ REGLAS OBLIGATORIAS:
       } else if(vis==='split'){
         // Two-column split: left text (60%) + right navy highlight (40%)
         const splitGap=0.25;
-        const leftColW=LW*0.58;
-        const rightColW=LW-leftColW-splitGap;
+        const splitLW=s.so_what?LW:CW;
+        const leftColW=splitLW*0.58;
+        const rightColW=splitLW-leftColW-splitGap;
         const rightColX=M+leftColW+splitGap;
         const contentTop=cy;
         const contentH=7.5-contentTop-0.6;
