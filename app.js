@@ -563,16 +563,48 @@ function showValidationWarning(fields){
 // ============================================================
 // REGENERAR SECCIÓN
 // ============================================================
+function startFakeProgress(onUpdate){
+  let pct=0;
+  const iv=setInterval(()=>{
+    const inc=pct<25?5:pct<55?3:pct<78?1.5:0.4;
+    pct=Math.min(pct+inc,88);
+    onUpdate(Math.round(pct));
+  },350);
+  return{
+    complete(){clearInterval(iv);onUpdate(100);},
+    cancel(){clearInterval(iv);}
+  };
+}
+
 async function regenSection(sectionKey,idx,btn){
   const wUrl=WORKER_URL;
   if(!wUrl||!result)return;
-  if(btn){btn.disabled=true;const ic=btn.querySelector('.material-symbols-outlined');if(ic)ic.textContent='hourglass_empty';}
   const labels={findings:'hallazgos',analysis_blocks:'bloque de análisis '+(idx!==undefined?idx+1:''),recommendations:'recomendaciones',risks:'riesgos',opportunities:'oportunidades',executive_summary:'resumen ejecutivo',key_messages:'mensajes clave',context:'contexto',conclusion:'conclusión'};
   const label=labels[sectionKey]||sectionKey;
+
+  // Build inline progress UI inside the button
+  let btnOrigHTML='';
+  let sectionEl=null;
+  if(btn){
+    btnOrigHTML=btn.innerHTML;
+    btn.disabled=true;
+    btn.innerHTML=`<div class="regen-progress-wrap"><div class="regen-progress-label">Regenerando ${label}… <span class="regen-pct">0%</span></div><div class="regen-progress-bar"><div class="regen-progress-fill" style="width:0%"></div></div></div>`;
+    // Dim the section body
+    sectionEl=btn.closest('[class*="px-10"]')||btn.closest('div[class]');
+    if(sectionEl) sectionEl.classList.add('section-regen-loading');
+  }
+  const progress=startFakeProgress(pct=>{
+    if(!btn)return;
+    const fill=btn.querySelector('.regen-progress-fill');
+    const pctEl=btn.querySelector('.regen-pct');
+    if(fill) fill.style.width=pct+'%';
+    if(pctEl) pctEl.textContent=pct+'%';
+  });
+
   try{
-    flash('Regenerando '+label+'...');
     const prompt=`Este es el informe ejecutivo actual en JSON:\n\n${JSON.stringify(result,null,2)}\n\nPor favor regenera ${idx!==undefined?'el ítem '+idx+' de ':''}la sección "${sectionKey}" con contenido fresco y de mayor calidad. Responde con el JSON completo actualizado precedido de __JSON_UPDATE__ en línea separada.`;
     const reply=await fetchFromWorker(wUrl,{userContent:'__CHAT_MODE__',chatMessages:[{role:'user',content:prompt}]},null);
+    progress.complete();
     if(reply.includes('__JSON_UPDATE__')){
       const parts=reply.split('__JSON_UPDATE__');
       const jsonPart=parts[1].replace(/```json|```/g,'').trim();
@@ -587,9 +619,13 @@ async function regenSection(sectionKey,idx,btn){
     } else {
       throw new Error('El Worker no devolvió JSON actualizado');
     }
-    renderPreview(result);flash('✓ '+label+' regenerado');
-  }catch(e){showError('Error regenerando: '+e.message);}
-  finally{if(btn){btn.disabled=false;const ic=btn.querySelector('.material-symbols-outlined');if(ic)ic.textContent='refresh';}}
+    setTimeout(()=>{renderPreview(result);flash('✓ '+label+' regenerado');},300);
+  }catch(e){
+    progress.cancel();
+    showError('Error regenerando: '+e.message);
+    if(btn){btn.disabled=false;btn.innerHTML=btnOrigHTML;}
+    if(sectionEl) sectionEl.classList.remove('section-regen-loading');
+  }
 }
 
 // ============================================================
@@ -1819,12 +1855,21 @@ async function sendChat() {
   if (!msg || !result || !wUrl) return;
 
   input.value = '';
+  input.disabled = true;
   addChatBubble('user', msg);
 
   const btn = document.getElementById('btnChat');
   btn.disabled = true;
 
-  // Build context with current report state
+  // Show typing indicator
+  const container = document.getElementById('chatMessages');
+  const typingEl = document.createElement('div');
+  typingEl.id = 'chatTyping';
+  typingEl.style.cssText = 'display:flex;align-items:flex-start;gap:8px';
+  typingEl.innerHTML = `<div style="width:24px;height:24px;background:#BB0014;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px"><span class="material-symbols-outlined" style="font-size:13px;color:#fff;font-variation-settings:'FILL' 1">smart_toy</span></div><div class="typing-bubble"><span></span><span></span><span></span></div>`;
+  container.appendChild(typingEl);
+  container.scrollTop = container.scrollHeight;
+
   chatHistory.push({ role: 'user', content: msg });
 
   try {
@@ -1834,6 +1879,8 @@ async function sendChat() {
         { role: 'user', content: `Este es el informe ejecutivo actual en JSON:\n\n${JSON.stringify(result, null, 2)}\n\nEl usuario tiene una consulta sobre este informe. Responde de forma concisa y profesional. Si el usuario pide modificar el informe, responde con el JSON actualizado completo precedido de la etiqueta __JSON_UPDATE__ en una línea separada. Si solo pide información o aclaración, responde en texto normal.\n\nConsulta del usuario: ${msg}` },
       ],
     }, null);
+
+    typingEl.remove();
 
     // Check if response includes a JSON update
     if (reply.includes('__JSON_UPDATE__')) {
@@ -1854,9 +1901,12 @@ async function sendChat() {
 
     chatHistory.push({ role: 'assistant', content: reply });
   } catch(err) {
+    typingEl.remove();
     addChatBubble('assistant', '❌ Error: ' + err.message);
   } finally {
     btn.disabled = false;
+    input.disabled = false;
+    input.focus();
   }
 }
 
