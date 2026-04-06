@@ -124,6 +124,15 @@ const i18n = {
     uiBack: 'Volver a Informes',
     uiNavMinutas: 'Minutas',
     uiNavInformes: 'Informes',
+    // Dashboard
+    uiReportsStrategic: 'Informes Estratégicos',
+    uiReportsSubtitle: 'Gestión de análisis crítico y reportes ejecutivos trimestrales.',
+    uiNewReport: 'Nuevo Informe',
+    uiNoReportsSaved: 'Sin informes guardados aún.',
+    uiCreateFirst: 'Crear primer informe',
+    uiIntelCenter: 'Central de Inteligencia',
+    uiIntelDesc: 'Acceda a los dashboards interactivos para profundizar en los datos de cada reporte operativo.',
+    uiViewDashboards: 'Ver Dashboards',
     // AI panel
     uiAiAssistant: 'Asistente IA',
     uiAiDesc: 'Consulta o modifica el informe',
@@ -331,6 +340,15 @@ const i18n = {
     uiBack: 'Back to Reports',
     uiNavMinutas: 'Minutes',
     uiNavInformes: 'Reports',
+    // Dashboard
+    uiReportsStrategic: 'Strategic Reports',
+    uiReportsSubtitle: 'Management of critical analysis and quarterly executive reports.',
+    uiNewReport: 'New Report',
+    uiNoReportsSaved: 'No reports saved yet.',
+    uiCreateFirst: 'Create first report',
+    uiIntelCenter: 'Intelligence Center',
+    uiIntelDesc: 'Access interactive dashboards to dive deeper into the data of each operational report.',
+    uiViewDashboards: 'View Dashboards',
     // AI panel
     uiAiAssistant: 'AI Assistant',
     uiAiDesc: 'Ask or modify the report',

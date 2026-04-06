@@ -133,11 +133,11 @@ tailwind.config={theme:{extend:{colors:{
       <header class="mb-10 flex items-start justify-between">
         <div>
           <span class="font-['Inter'] text-[#BB0014] font-bold tracking-[0.25em] uppercase text-[10px] mb-2 block" data-i18n="uiConsulting">Consultoría Estratégica</span>
-          <h1 class="font-['Manrope'] text-4xl md:text-5xl font-extrabold text-[#041627] tracking-tight leading-none">Informes Estratégicos</h1>
-          <p class="font-['Inter'] text-[#74777D] text-sm mt-2 font-medium">Gestión de análisis crítico y reportes ejecutivos trimestrales.</p>
+          <h1 class="font-['Manrope'] text-4xl md:text-5xl font-extrabold text-[#041627] tracking-tight leading-none" data-i18n="uiReportsStrategic">Informes Estratégicos</h1>
+          <p class="font-['Inter'] text-[#74777D] text-sm mt-2 font-medium" data-i18n="uiReportsSubtitle">Gestión de análisis crítico y reportes ejecutivos trimestrales.</p>
         </div>
         <button onclick="nuevoInforme()" class="flex items-center gap-2 bg-gradient-to-br from-[#BB0014] to-[#8e000c] text-white px-5 py-2.5 font-['Manrope'] font-bold text-[11px] uppercase tracking-wider rounded-lg shadow-md hover:opacity-90 active:scale-95 transition-all mt-1 shrink-0">
-          <span class="material-symbols-outlined text-sm">add</span>Nuevo Informe
+          <span class="material-symbols-outlined text-sm">add</span><span data-i18n="uiNewReport">Nuevo Informe</span>
         </button>
       </header>
       <!-- Reports grid (populated by JS) -->
@@ -145,18 +145,18 @@ tailwind.config={theme:{extend:{colors:{
       <!-- Empty state -->
       <div id="informesEmpty" class="hidden text-center py-16">
         <span class="material-symbols-outlined text-5xl text-outline-variant block mb-3">folder_open</span>
-        <p class="font-['Inter'] text-sm text-outline italic mb-6">Sin informes guardados aún.</p>
+        <p class="font-['Inter'] text-sm text-outline italic mb-6" data-i18n="uiNoReportsSaved">Sin informes guardados aún.</p>
         <button onclick="nuevoInforme()" class="inline-flex items-center gap-2 bg-[#041627] text-white px-5 py-2.5 font-['Manrope'] font-bold text-[11px] uppercase tracking-wider hover:bg-[#1A2B3C] transition-all rounded-lg">
-          <span class="material-symbols-outlined text-sm">add</span>Crear primer informe
+          <span class="material-symbols-outlined text-sm">add</span><span data-i18n="uiCreateFirst">Crear primer informe</span>
         </button>
       </div>
       <!-- Central de Inteligencia banner -->
       <div class="mt-4 bg-surface-container-low rounded-xl overflow-hidden relative flex items-center px-10 py-8">
         <div class="relative z-10">
-          <h4 class="font-['Manrope'] text-base font-bold text-[#041627] mb-1">Central de Inteligencia</h4>
-          <p class="font-['Inter'] text-[#74777D] text-sm">Acceda a los dashboards interactivos para profundizar en los datos de cada reporte operativo.</p>
+          <h4 class="font-['Manrope'] text-base font-bold text-[#041627] mb-1" data-i18n="uiIntelCenter">Central de Inteligencia</h4>
+          <p class="font-['Inter'] text-[#74777D] text-sm" data-i18n="uiIntelDesc">Acceda a los dashboards interactivos para profundizar en los datos de cada reporte operativo.</p>
           <button onclick="openDashboard()" class="mt-3 text-[#BB0014] font-['Manrope'] font-bold text-[10px] flex items-center hover:translate-x-1 transition-transform uppercase tracking-wider">
-            Ver Dashboards <span class="material-symbols-outlined text-sm ml-1">arrow_forward</span>
+            <span data-i18n="uiViewDashboards">Ver Dashboards</span> <span class="material-symbols-outlined text-sm ml-1">arrow_forward</span>
           </button>
         </div>
       </div>
