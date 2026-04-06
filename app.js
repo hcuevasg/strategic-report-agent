@@ -2265,52 +2265,110 @@ function buildMinutaCardHTML(r, isPreview) {
 async function downloadMinutaDocx(btn) {
   let r;
   try { r = JSON.parse(btn.dataset.minuta); } catch(e) { return; }
-  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } = docx;
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle, AlignmentType } = docx;
+
+  const F = 'Calibri';
+  const NAVY = '041627', RED = 'BB0014', GRAY = '44474C', LGRAY = 'F2F4F6', WHITE = 'FFFFFF';
+
+  const sectionHeader = label => new Paragraph({
+    children: [new TextRun({ text: label, bold: true, size: 18, color: RED, font: F })],
+    spacing: { before: 300, after: 120 },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: 'DDDDDD' } },
+  });
+
+  const prioLabel = p => p==='high'?'CRÍTICA':p==='medium'?'MEDIA':'BAJA';
+  const prioColor = p => p==='high'?'FEE2E2':p==='medium'?'FEF3C7':'F3F4F6';
+
   const children = [];
-  children.push(new Paragraph({ children:[new TextRun({text:r.title||'Minuta',bold:true,size:36,color:'041627',font:'Calibri'})], spacing:{after:200} }));
-  if(r.date) children.push(new Paragraph({ children:[new TextRun({text:'Fecha: '+r.date,size:22,color:'44474C',font:'Calibri'})], spacing:{after:100} }));
-  if(r.attendees?.length) children.push(new Paragraph({ children:[new TextRun({text:'Asistentes: '+r.attendees.join(', '),size:22,color:'44474C',font:'Calibri'})], spacing:{after:300} }));
-  if(r.summary) {
-    children.push(new Paragraph({ children:[new TextRun({text:'RESUMEN',bold:true,size:20,color:'BB0014',font:'Calibri'})], spacing:{before:200,after:100} }));
-    children.push(new Paragraph({ children:[new TextRun({text:r.summary,size:22,font:'Calibri'})], spacing:{after:300} }));
+
+  // ── Header ──
+  children.push(new Paragraph({
+    children: [new TextRun({ text: r.title || 'Minuta de Reunión', bold: true, size: 40, color: NAVY, font: F })],
+    spacing: { after: 120 },
+  }));
+  const metaRuns = [];
+  if (r.date) metaRuns.push(new TextRun({ text: `Fecha: ${r.date}`, size: 20, color: GRAY, font: F }));
+  if (r.attendees?.length) {
+    if (metaRuns.length) metaRuns.push(new TextRun({ text: '   ·   ', size: 20, color: 'AAAAAA', font: F }));
+    metaRuns.push(new TextRun({ text: `Asistentes: ${r.attendees.join(', ')}`, size: 20, color: GRAY, font: F }));
   }
-  if(r.commitments?.length) {
-    children.push(new Paragraph({ children:[new TextRun({text:'COMPROMISOS',bold:true,size:20,color:'BB0014',font:'Calibri'})], spacing:{before:200,after:200} }));
-    const rows = [new TableRow({children:[
-      new TableCell({children:[new Paragraph({children:[new TextRun({text:'Tarea',bold:true,size:18,font:'Calibri'})]})], shading:{fill:'041627'}}),
-      new TableCell({children:[new Paragraph({children:[new TextRun({text:'Responsable',bold:true,size:18,font:'Calibri'})]})], shading:{fill:'041627'}}),
-      new TableCell({children:[new Paragraph({children:[new TextRun({text:'Fecha',bold:true,size:18,font:'Calibri'})]})], shading:{fill:'041627'}}),
-      new TableCell({children:[new Paragraph({children:[new TextRun({text:'Prioridad',bold:true,size:18,font:'Calibri'})]})], shading:{fill:'041627'}}),
-    ]})];
-    r.commitments.forEach(c => {
-      rows.push(new TableRow({children:[
-        new TableCell({children:[new Paragraph({children:[new TextRun({text:c.task||'',size:18,font:'Calibri'})]})] }),
-        new TableCell({children:[new Paragraph({children:[new TextRun({text:c.responsible||'',size:18,font:'Calibri'})]})] }),
-        new TableCell({children:[new Paragraph({children:[new TextRun({text:c.deadline||'',size:18,font:'Calibri'})]})] }),
-        new TableCell({children:[new Paragraph({children:[new TextRun({text:c.priority||'',size:18,font:'Calibri'})]})] }),
-      ]}));
-    });
-    children.push(new Table({rows, width:{size:100,type:WidthType.PERCENTAGE}}));
-    children.push(new Paragraph({children:[],spacing:{after:300}}));
+  if (metaRuns.length) children.push(new Paragraph({ children: metaRuns, spacing: { after: 80 } }));
+  if (r.facilitator) children.push(new Paragraph({ children: [new TextRun({ text: `Facilitador: ${r.facilitator}`, size: 20, color: GRAY, font: F, italics: true })], spacing: { after: 200 } }));
+
+  // ── Summary ──
+  if (r.summary) {
+    children.push(sectionHeader('RESUMEN EJECUTIVO'));
+    children.push(new Paragraph({ children: [new TextRun({ text: r.summary, size: 22, font: F, color: GRAY })], spacing: { after: 200 }, indent: { left: 240 } }));
   }
-  if(r.decisions?.length) {
-    children.push(new Paragraph({ children:[new TextRun({text:'DECISIONES',bold:true,size:20,color:'BB0014',font:'Calibri'})], spacing:{before:200,after:100} }));
+
+  // ── Objectives ──
+  if (r.objectives?.length) {
+    children.push(sectionHeader('OBJETIVOS DE LA REUNIÓN'));
+    r.objectives.forEach(o => children.push(new Paragraph({ children: [new TextRun({ text: `• ${o}`, size: 22, font: F, color: GRAY })], spacing: { after: 80 }, indent: { left: 240 } })));
+    children.push(new Paragraph({ children: [], spacing: { after: 120 } }));
+  }
+
+  // ── Commitments table ──
+  if (r.commitments?.length) {
+    children.push(sectionHeader('PLAN DE ACCIÓN & COMPROMISOS'));
+    const headerRow = new TableRow({ children: [
+      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'TAREA', bold: true, size: 18, color: WHITE, font: F })] })], shading: { fill: NAVY, type: ShadingType.SOLID }, width: { size: 45, type: WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'RESPONSABLE', bold: true, size: 18, color: WHITE, font: F })] })], shading: { fill: NAVY, type: ShadingType.SOLID }, width: { size: 20, type: WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'FECHA LÍMITE', bold: true, size: 18, color: WHITE, font: F })] })], shading: { fill: NAVY, type: ShadingType.SOLID }, width: { size: 20, type: WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'PRIORIDAD', bold: true, size: 18, color: WHITE, font: F })] })], shading: { fill: NAVY, type: ShadingType.SOLID }, width: { size: 15, type: WidthType.PERCENTAGE } }),
+    ]});
+    const dataRows = r.commitments.map((c, i) => new TableRow({ children: [
+      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: c.task||'', size: 20, font: F })] })], shading: { fill: i%2===0?'FFFFFF':'F8F9FB', type: ShadingType.SOLID } }),
+      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: c.responsible||'', size: 20, font: F, color: GRAY })] })], shading: { fill: i%2===0?'FFFFFF':'F8F9FB', type: ShadingType.SOLID } }),
+      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: c.deadline||'', size: 20, font: F, color: GRAY })] })], shading: { fill: i%2===0?'FFFFFF':'F8F9FB', type: ShadingType.SOLID } }),
+      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: prioLabel(c.priority), bold: true, size: 18, font: F })] })], shading: { fill: prioColor(c.priority), type: ShadingType.SOLID } }),
+    ]}));
+    children.push(new Table({ rows: [headerRow, ...dataRows], width: { size: 100, type: WidthType.PERCENTAGE } }));
+    children.push(new Paragraph({ children: [], spacing: { after: 200 } }));
+  }
+
+  // ── Decisions ──
+  if (r.decisions?.length) {
+    children.push(sectionHeader('DECISIONES'));
     r.decisions.forEach(d => {
-      children.push(new Paragraph({ children:[new TextRun({text:'• '+d.decision,bold:true,size:22,font:'Calibri'})], spacing:{after:60} }));
-      if(d.rationale) children.push(new Paragraph({ children:[new TextRun({text:'  '+d.rationale,size:20,color:'44474C',font:'Calibri'})], spacing:{after:100} }));
+      children.push(new Paragraph({ children: [new TextRun({ text: `• ${d.decision}`, bold: true, size: 22, font: F, color: NAVY })], spacing: { after: 60 }, indent: { left: 240 } }));
+      if (d.rationale) children.push(new Paragraph({ children: [new TextRun({ text: `  ${d.rationale}`, size: 20, font: F, color: GRAY, italics: true })], spacing: { after: 60 }, indent: { left: 480 } }));
+      if (d.owner) children.push(new Paragraph({ children: [new TextRun({ text: `  Responsable: ${d.owner}`, size: 18, font: F, color: '4279B0', bold: true })], spacing: { after: 120 }, indent: { left: 480 } }));
     });
   }
-  if(r.open_issues?.length) {
-    children.push(new Paragraph({ children:[new TextRun({text:'PENDIENTES',bold:true,size:20,color:'BB0014',font:'Calibri'})], spacing:{before:200,after:100} }));
-    r.open_issues.forEach(i => {
-      children.push(new Paragraph({ children:[new TextRun({text:'• '+i,size:22,font:'Calibri'})], spacing:{after:80} }));
+
+  // ── Key topics ──
+  if (r.key_topics?.length) {
+    children.push(sectionHeader('TEMAS TRATADOS'));
+    r.key_topics.forEach(t => {
+      children.push(new Paragraph({ children: [new TextRun({ text: t.topic, bold: true, size: 22, font: F, color: NAVY })], spacing: { after: 60 }, indent: { left: 240 } }));
+      if (t.summary) children.push(new Paragraph({ children: [new TextRun({ text: t.summary, size: 20, font: F, color: GRAY })], spacing: { after: 60 }, indent: { left: 480 } }));
+      if (t.outcome) children.push(new Paragraph({ children: [new TextRun({ text: `→ ${t.outcome}`, size: 20, font: F, color: '16A34A', bold: true })], spacing: { after: 120 }, indent: { left: 480 } }));
     });
   }
-  const doc = new Document({sections:[{children}]});
+
+  // ── Open issues ──
+  if (r.open_issues?.length) {
+    children.push(sectionHeader('PENDIENTES'));
+    r.open_issues.forEach(i => children.push(new Paragraph({ children: [new TextRun({ text: `⚠ ${i}`, size: 22, font: F, color: 'D97706' })], spacing: { after: 80 }, indent: { left: 240 } })));
+    children.push(new Paragraph({ children: [], spacing: { after: 120 } }));
+  }
+
+  // ── Next meeting ──
+  if (r.next_meeting?.date || r.next_meeting?.objectives?.length) {
+    children.push(sectionHeader('PRÓXIMA REUNIÓN'));
+    if (r.next_meeting.date) children.push(new Paragraph({ children: [new TextRun({ text: `Fecha: ${r.next_meeting.date}`, bold: true, size: 22, font: F, color: NAVY })], spacing: { after: 80 }, indent: { left: 240 } }));
+    r.next_meeting.objectives?.forEach(o => children.push(new Paragraph({ children: [new TextRun({ text: `• ${o}`, size: 20, font: F, color: GRAY })], spacing: { after: 60 }, indent: { left: 480 } })));
+  }
+
+  // ── Footer note ──
+  children.push(new Paragraph({ children: [new TextRun({ text: `Generado por ALTO Strategic Report Agent · ${new Date().toLocaleDateString('es-CL')}`, size: 16, color: 'AAAAAA', font: F, italics: true })], spacing: { before: 400 }, alignment: AlignmentType.RIGHT }));
+
+  const doc = new Document({ sections: [{ children }] });
   const blob = await Packer.toBlob(doc);
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url;
-  a.download=`Minuta_ALTO_${new Date().toISOString().slice(0,10)}.docx`;
+  const a = document.createElement('a'); a.href = url;
+  a.download = `Minuta_ALTO_${new Date().toISOString().slice(0,10)}.docx`;
   a.click(); URL.revokeObjectURL(url);
 }
 
