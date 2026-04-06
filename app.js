@@ -124,6 +124,34 @@ const i18n = {
     uiBack: 'Volver a Informes',
     uiNavMinutas: 'Minutas',
     uiNavInformes: 'Informes',
+    // Minutas
+    uiMeetingMgmt: 'Gestión de Reuniones',
+    uiMinutas: 'Minutas',
+    uiSearchMinuta: 'Buscar minuta...',
+    uiNewMinuta: 'Nueva Minuta',
+    uiMeetingNotes: 'Notas de la Reunión',
+    uiMinutaPlaceholder: 'Pega las notas de la reunión, transcripción o resumen...',
+    uiGenerateMinuta: 'Generar Minuta',
+    uiCancel: 'Cancelar',
+    uiAnalyzingMeeting: 'Analizando reunión...',
+    uiGeneratingMinuta: 'Generando minuta...',
+    uiNoMinutas: 'Sin minutas guardadas aún. Crea tu primera minuta.',
+    uiAttendees: 'Asistentes',
+    uiActionPlan: 'Plan de Acción & Compromisos',
+    uiDecisions: 'Decisiones',
+    uiTopics: 'Temas Tratados',
+    uiOpenIssues: 'Pendientes',
+    uiNextMeeting: 'Próxima Reunión',
+    uiTask: 'Tarea',
+    uiResponsible: 'Responsable',
+    uiDeadline: 'Fecha Límite',
+    uiPriority: 'Prioridad',
+    uiPriorityCritical: 'CRÍTICA',
+    uiPriorityMedium: 'MEDIA',
+    uiPriorityLow: 'BAJA',
+    uiExport: 'Exportar',
+    uiAttendeesSuffix: 'asistentes',
+    uiNewBadge: 'Nueva',
     // Dashboard
     uiReportsStrategic: 'Informes Estratégicos',
     uiReportsSubtitle: 'Gestión de análisis crítico y reportes ejecutivos trimestrales.',
@@ -223,6 +251,13 @@ const i18n = {
     dashLoading: 'Cargando datos...',
     dashTokenError: 'Token inválido. Inténtalo de nuevo.',
     dashFetchError: 'Error obteniendo datos.',
+    // Extra UI strings
+    uiConfidentialInternal: 'Confidencial · Uso interno',
+    uiSaved: 'Guardado',
+    uiNoDescription: 'Sin descripción',
+    uiSections: 'secciones',
+    uiView: 'Ver',
+    uiResponsibleColon: 'Responsable:',
   },
   en: {
     analysisLabel: 'Strategic Analysis',
@@ -340,6 +375,34 @@ const i18n = {
     uiBack: 'Back to Reports',
     uiNavMinutas: 'Minutes',
     uiNavInformes: 'Reports',
+    // Minutas
+    uiMeetingMgmt: 'Meeting Management',
+    uiMinutas: 'Minutes',
+    uiSearchMinuta: 'Search minutes...',
+    uiNewMinuta: 'New Minutes',
+    uiMeetingNotes: 'Meeting Notes',
+    uiMinutaPlaceholder: 'Paste meeting notes, transcript or summary here...',
+    uiGenerateMinuta: 'Generate Minutes',
+    uiCancel: 'Cancel',
+    uiAnalyzingMeeting: 'Analyzing meeting...',
+    uiGeneratingMinuta: 'Generating minutes...',
+    uiNoMinutas: 'No minutes saved yet. Create your first minutes.',
+    uiAttendees: 'Attendees',
+    uiActionPlan: 'Action Plan & Commitments',
+    uiDecisions: 'Decisions',
+    uiTopics: 'Key Topics',
+    uiOpenIssues: 'Open Issues',
+    uiNextMeeting: 'Next Meeting',
+    uiTask: 'Task',
+    uiResponsible: 'Owner',
+    uiDeadline: 'Deadline',
+    uiPriority: 'Priority',
+    uiPriorityCritical: 'CRITICAL',
+    uiPriorityMedium: 'MEDIUM',
+    uiPriorityLow: 'LOW',
+    uiExport: 'Export',
+    uiAttendeesSuffix: 'attendees',
+    uiNewBadge: 'New',
     // Dashboard
     uiReportsStrategic: 'Strategic Reports',
     uiReportsSubtitle: 'Management of critical analysis and quarterly executive reports.',
@@ -439,6 +502,13 @@ const i18n = {
     dashLoading: 'Loading data...',
     dashTokenError: 'Invalid token. Please try again.',
     dashFetchError: 'Error fetching data.',
+    // Extra UI strings
+    uiConfidentialInternal: 'Confidential · Internal use',
+    uiSaved: 'Saved',
+    uiNoDescription: 'No description',
+    uiSections: 'sections',
+    uiView: 'View',
+    uiResponsibleColon: 'Owner:',
   },
 };
 
@@ -487,7 +557,7 @@ const STEPS=[
   {pct:94,msg:'Aplicando estándar consultoría...'},{pct:97,msg:'Validando estructura MECE...'},
 ];
 function startProgress(){const s=document.getElementById('progressSection'),f=document.getElementById('progressFill'),st=document.getElementById('progressStep'),p=document.getElementById('progressPct');s.classList.remove('hidden');let i=0;f.style.width='0%';progressTimer=setInterval(()=>{if(i<STEPS.length){f.style.width=STEPS[i].pct+'%';st.textContent=STEPS[i].msg;p.textContent=STEPS[i].pct+'%';i++;}},2200);}
-function stopProgress(ok){clearInterval(progressTimer);const f=document.getElementById('progressFill'),st=document.getElementById('progressStep'),p=document.getElementById('progressPct');if(ok){f.style.width='100%';st.textContent='Completado';p.textContent='100%';setTimeout(()=>document.getElementById('progressSection').classList.add('hidden'),1500);}else{document.getElementById('progressSection').classList.add('hidden');}}
+function stopProgress(ok){clearInterval(progressTimer);const f=document.getElementById('progressFill'),st=document.getElementById('progressStep'),p=document.getElementById('progressPct');if(ok){f.style.width='100%';st.textContent=t('uiCompleted');p.textContent='100%';setTimeout(()=>document.getElementById('progressSection').classList.add('hidden'),1500);}else{document.getElementById('progressSection').classList.add('hidden');}}
 
 // ============================================================
 // FILE UPLOAD
@@ -497,16 +567,16 @@ const dz=document.getElementById('dropZone');
 ['dragleave','drop'].forEach(e=>{dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove('drag-over');});});
 dz.addEventListener('drop',ev=>{const f=ev.dataTransfer.files[0];if(f)processFile(f);});
 function handleFile(ev){const f=ev.target.files[0];if(f)processFile(f);}
-async function processFile(file){const ext=file.name.split('.').pop().toLowerCase();showStatus('Leyendo: '+file.name+'...');try{let t='';window._pendingImages=null;
+async function processFile(file){const ext=file.name.split('.').pop().toLowerCase();showStatus(t('uiReading')+': '+file.name+'...');try{let txt='';window._pendingImages=null;
   if(['txt','md','csv'].includes(ext)){
-    t=await file.text();
+    txt=await file.text();
   }else if(['png','jpg','jpeg','gif','webp'].includes(ext)){
     // Direct image upload — send as vision input
     const ab=await file.arrayBuffer();
     const base64=btoa(String.fromCharCode(...new Uint8Array(ab)));
     const mimeType=ext==='jpg'?'image/jpeg':ext==='png'?'image/png':ext==='gif'?'image/gif':'image/webp';
     window._pendingImages=[{media_type:mimeType,data:base64}];
-    t='[Imagen subida: '+file.name+' — analizar visualmente]';
+    txt='[Imagen subida: '+file.name+' — analizar visualmente]';
   }else if(ext==='pdf'){
     const ab=await file.arrayBuffer();
     if(typeof pdfjsLib==='undefined')throw new Error('Librería PDF no cargada, recarga la página');
@@ -534,23 +604,23 @@ async function processFile(file){const ext=file.name.split('.').pop().toLowerCas
         }catch(imgErr){console.warn('Page image extraction failed:',imgErr);}
       }
     }
-    t=pp.join('\n\n');
+    txt=pp.join('\n\n');
     if(images.length>0) window._pendingImages=images;
   }else if(['docx','doc'].includes(ext)){
     const ab=await file.arrayBuffer();
     if(typeof mammoth==='undefined')throw new Error('Librería DOCX no cargada, recarga la página');
     const r=await mammoth.extractRawText({arrayBuffer:ab});
-    t=r.value;
+    txt=r.value;
   }else{throw new Error('Formato no soportado');}
-  document.getElementById('inputText').value=t;
+  document.getElementById('inputText').value=txt;
   document.getElementById('fileInfo').classList.remove('hidden');
   const imgCount=window._pendingImages?window._pendingImages.length:0;
   const imgLabel=imgCount>0?' + '+imgCount+' '+t('imagesDetected'):'';
-  document.getElementById('fileName').textContent=file.name+' ('+(t.length/1000).toFixed(1)+'K chars'+imgLabel+')';
-  showStatus('Archivo cargado'+(imgCount?' — '+imgCount+' '+t('imagesDetected'):''));
+  document.getElementById('fileName').textContent=file.name+' ('+(txt.length/1000).toFixed(1)+'K chars'+imgLabel+')';
+  showStatus(t('uiFileLoaded')+(imgCount?' — '+imgCount+' '+t('imagesDetected'):''));
 }catch(e){showError('Error: '+e.message);}}
 function clearFile(){document.getElementById('inputText').value='';document.getElementById('fileInfo').classList.add('hidden');document.getElementById('fileInput').value='';updateCharCount({value:''});}
-function updateCharCount(el){const n=el.value.length;const c=document.getElementById('charCount');if(!c)return;if(n===0){c.textContent='';return;}const k=(n/1000).toFixed(1);if(n>60000){c.textContent=k+'K caracteres — ⚠ muy largo, puede afectar calidad';c.style.color='#BB0014';c.style.fontWeight='600';}else{c.textContent=k+'K caracteres';c.style.color=n>30000?'#44474C':'#94a3b8';c.style.fontWeight='400';}}
+function updateCharCount(el){const n=el.value.length;const c=document.getElementById('charCount');if(!c)return;if(n===0){c.textContent='';return;}const k=(n/1000).toFixed(1);if(n>60000){c.textContent=k+'K '+t('uiChars')+' — ⚠ '+t('uiTooLong');c.style.color='#BB0014';c.style.fontWeight='600';}else{c.textContent=k+'K '+t('uiChars');c.style.color=n>30000?'#44474C':'#94a3b8';c.style.fontWeight='400';}}
 
 // ============================================================
 // REPORT TYPE SELECTOR
@@ -616,6 +686,8 @@ function updateUI(){
   });
   // Re-render JS-generated UI that contains translated strings
   renderHistory();
+  renderInformesDashboard();
+  renderMinutasList();
 }
 
 // ============================================================
@@ -778,10 +850,11 @@ function renderHistory(){
 // ============================================================
 // INFORMES DASHBOARD — grid view of saved reports
 // ============================================================
-const INFORME_TYPE_LABELS = {
-  strategic:'Estratégico', financial:'Financiero', operational:'Operacional',
-  risk:'Riesgos', competitive:'Competitivo', due_diligence:'Due Diligence', general:'General'
+const INFORME_TYPE_I18N_KEYS = {
+  strategic:'uiStrategic', financial:'uiFinancial', operational:'uiOperational',
+  risk:'uiRisks', competitive:'uiCompetitive', due_diligence:'uiDueDiligence', general:'uiGeneral'
 };
+function getInformeTypeLabel(type){ return t(INFORME_TYPE_I18N_KEYS[type] || 'uiGeneral'); }
 const INFORME_TYPE_COLORS = {
   strategic: {bg:'#FEE2E2',text:'#991B1B'},
   financial: {bg:'#FEF3C7',text:'#92400E'},
@@ -810,7 +883,7 @@ function renderInformesDashboard() {
     try { r = JSON.parse(h.data); } catch(e) {}
     const type   = r?.type || 'general';
     const colors = INFORME_TYPE_COLORS[type] || INFORME_TYPE_COLORS.general;
-    const label  = INFORME_TYPE_LABELS[type] || 'General';
+    const label  = getInformeTypeLabel(type);
     const subtitle = h.subtitle || r?.subtitle || '';
     const sections = r ? ['findings','recommendations','risks','opportunities','analysis'].filter(k => Array.isArray(r[k]) && r[k].length).length : 0;
     return `<div style="background:#fff;border-radius:12px;padding:28px;border:1px solid #f0f0f0;transition:all .2s;cursor:default"
@@ -821,24 +894,24 @@ function renderInformesDashboard() {
           <span style="display:inline-block;padding:2px 10px;border-radius:20px;background:${colors.bg};color:${colors.text};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">${label}</span>
           <h3 style="font-family:Manrope,sans-serif;font-size:17px;font-weight:800;color:#041627;line-height:1.3;margin:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(h.title)}</h3>
         </div>
-        <span style="padding:4px 12px;border-radius:20px;background:#f0fdf4;color:#16a34a;font-size:11px;font-weight:600;white-space:nowrap;margin-left:12px;flex-shrink:0">Guardado</span>
+        <span style="padding:4px 12px;border-radius:20px;background:#f0fdf4;color:#16a34a;font-size:11px;font-weight:600;white-space:nowrap;margin-left:12px;flex-shrink:0">${t('uiSaved')}</span>
       </div>
       ${subtitle
         ? `<p style="font-family:Inter,sans-serif;font-size:13px;color:#6b7280;line-height:1.5;margin:0 0 20px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(subtitle)}</p>`
-        : `<p style="font-family:Inter,sans-serif;font-size:13px;color:#9ca3af;line-height:1.5;margin:0 0 20px;font-style:italic">Sin descripción</p>`}
+        : `<p style="font-family:Inter,sans-serif;font-size:13px;color:#9ca3af;line-height:1.5;margin:0 0 20px;font-style:italic">${t('uiNoDescription')}</p>`}
       <div style="display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid #f3f4f6">
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#6b7280;background:#F2F4F6;padding:4px 8px;border-radius:4px">
             <span class="material-symbols-outlined" style="font-size:12px">calendar_today</span>${esc(h.date)}
           </span>
           ${sections > 0 ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#6b7280;background:#F2F4F6;padding:4px 8px;border-radius:4px">
-            <span class="material-symbols-outlined" style="font-size:12px">layers</span>${sections} secciones
+            <span class="material-symbols-outlined" style="font-size:12px">layers</span>${sections} ${t('uiSections')}
           </span>` : ''}
         </div>
         <button onclick="openInformeFromGrid(${h.id})" style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:#374151;cursor:pointer;transition:all .15s"
                 onmouseover="this.style.background='#041627';this.style.color='#fff';this.style.borderColor='#041627'"
                 onmouseout="this.style.background='#fff';this.style.color='#374151';this.style.borderColor='#e5e7eb'">
-          <span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>Ver
+          <span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>${t('uiView')}
         </button>
       </div>
     </div>`;
@@ -2122,7 +2195,7 @@ async function generateMinuta() {
   btn.disabled = true;
   prog.style.display = 'flex';
   progFill.style.width = '15%';
-  progLabel.textContent = 'Analizando reunión...';
+  progLabel.textContent = t('uiAnalyzingMeeting');
 
   let token;
   try {
@@ -2142,7 +2215,7 @@ async function generateMinuta() {
 
   try {
     progFill.style.width = '40%';
-    progLabel.textContent = 'Generando minuta...';
+    progLabel.textContent = t('uiGeneratingMinuta');
 
     const res = await fetch(WORKER_URL, {
       method: 'POST',
@@ -2246,7 +2319,7 @@ function renderMinutasList() {
     list = list.filter(m => m.title.toLowerCase().includes(_minutasFilter) || (m.date||'').includes(_minutasFilter));
   }
   if (!list.length) {
-    container.innerHTML = `<p style="font-family:Inter,sans-serif;font-size:13px;color:#9ca3af;padding:32px 0;text-align:center;font-style:italic">Sin minutas guardadas aún. Crea tu primera minuta.</p>`;
+    container.innerHTML = `<p style="font-family:Inter,sans-serif;font-size:13px;color:#9ca3af;padding:32px 0;text-align:center;font-style:italic">${t('uiNoMinutas')}</p>`;
     return;
   }
   container.innerHTML = list.map((m, idx) => {
@@ -2264,7 +2337,7 @@ function renderMinutasList() {
             <div style="font-family:Manrope,sans-serif;font-size:15px;font-weight:800;color:#041627;line-height:1.3">${esc(m.title)}</div>
             <div style="font-family:Inter,sans-serif;font-size:12px;color:#74777D;margin-top:4px;display:flex;align-items:center;gap:6px">
               <span class="material-symbols-outlined" style="font-size:13px;color:#BB0014">calendar_today</span>
-              ${esc(savedDate)}${attendees ? ` &nbsp;·&nbsp; <span class="material-symbols-outlined" style="font-size:13px">group</span> ${attendees} asistentes` : ''}
+              ${esc(savedDate)}${attendees ? ` &nbsp;·&nbsp; <span class="material-symbols-outlined" style="font-size:13px">group</span> ${attendees} ${t('uiAttendeesSuffix')}` : ''}
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
@@ -2301,21 +2374,21 @@ function buildMinutaBodyHTML(r) {
     medium: 'background:#FEF3C7;color:#92400E;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;font-family:Inter,sans-serif',
     low:    'background:#F3F4F6;color:#374151;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;font-family:Inter,sans-serif',
   }[p] || 'background:#F3F4F6;color:#374151;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;font-family:Inter,sans-serif');
-  const priorityLabel = p => p==='high'?'CRÍTICA':p==='medium'?'MEDIA':'BAJA';
+  const priorityLabel = p => p==='high'?t('uiPriorityCritical'):p==='medium'?t('uiPriorityMedium'):t('uiPriorityLow');
   const sectionHead = label => `<div style="${S.section}">${label}<div style="${S.sectionLine}"></div></div>`;
 
   let html = `<div style="${S.body};border-top:2px solid #F2F4F6">`;
 
   // Summary
   if (r.summary) {
-    html += sectionHead('Resumen Ejecutivo');
+    html += sectionHead(t('execSummary'));
     html += `<p style="font-family:Inter,sans-serif;font-size:13px;color:#44474C;line-height:1.6;margin:0 0 4px;background:#F8F9FB;border-left:3px solid #041627;padding:12px 14px">${esc(r.summary)}</p>`;
   }
 
   // Attendees
   if (r.attendees?.length) {
     const avatarColors = ['#BB0014','#4279B0','#16a34a','#7c3aed','#ea580c','#0891b2'];
-    html += sectionHead('Asistentes');
+    html += sectionHead(t('uiAttendees'));
     html += `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">`;
     r.attendees.slice(0,8).forEach((a, i) => {
       const initials = a.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
@@ -2330,14 +2403,14 @@ function buildMinutaBodyHTML(r) {
 
   // Commitments table
   if (r.commitments?.length) {
-    html += sectionHead('Plan de Acción &amp; Compromisos');
+    html += sectionHead(t('uiActionPlan'));
     html += `<table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead>
         <tr style="background:#041627">
-          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Tarea</th>
-          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap">Responsable</th>
-          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap">Fecha Límite</th>
-          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Prioridad</th>
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">${t('uiTask')}</th>
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap">${t('uiResponsible')}</th>
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap">${t('uiDeadline')}</th>
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">${t('uiPriority')}</th>
         </tr>
       </thead>
       <tbody>`;
@@ -2354,31 +2427,31 @@ function buildMinutaBodyHTML(r) {
 
   // Decisions
   if (r.decisions?.length) {
-    html += sectionHead('Decisiones');
+    html += sectionHead(t('uiDecisions'));
     r.decisions.forEach(d => {
       html += `<div style="border-left:3px solid #041627;padding:8px 12px;background:#F8F9FB;margin-bottom:8px">
         <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#041627">${esc(d.decision)}</div>
         ${d.rationale ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;margin-top:3px">${esc(d.rationale)}</div>` : ''}
-        ${d.owner ? `<div style="font-family:Inter,sans-serif;font-size:10px;color:#4279B0;margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Responsable: ${esc(d.owner)}</div>` : ''}
+        ${d.owner ? `<div style="font-family:Inter,sans-serif;font-size:10px;color:#4279B0;margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">${t('uiResponsibleColon')} ${esc(d.owner)}</div>` : ''}
       </div>`;
     });
   }
 
   // Key topics
   if (r.key_topics?.length) {
-    html += sectionHead('Temas Tratados');
-    r.key_topics.forEach(t => {
+    html += sectionHead(t('uiTopics'));
+    r.key_topics.forEach(topic => {
       html += `<div style="margin-bottom:8px;padding:8px 12px;border-left:3px solid #BB0014;background:#FFF8F8">
-        <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#041627">${esc(t.topic)}</div>
-        ${t.summary ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;margin-top:2px">${esc(t.summary)}</div>` : ''}
-        ${t.outcome ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#16a34a;margin-top:3px;font-weight:600">→ ${esc(t.outcome)}</div>` : ''}
+        <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#041627">${esc(topic.topic)}</div>
+        ${topic.summary ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;margin-top:2px">${esc(topic.summary)}</div>` : ''}
+        ${topic.outcome ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#16a34a;margin-top:3px;font-weight:600">→ ${esc(topic.outcome)}</div>` : ''}
       </div>`;
     });
   }
 
   // Open issues
   if (r.open_issues?.length) {
-    html += sectionHead('Pendientes');
+    html += sectionHead(t('uiOpenIssues'));
     html += `<div style="background:#FFFBEB;border:1px solid #FDE68A;padding:12px 14px">`;
     r.open_issues.forEach(i => {
       html += `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-family:Inter,sans-serif;font-size:12px;color:#374151">
@@ -2390,7 +2463,7 @@ function buildMinutaBodyHTML(r) {
 
   // Next meeting
   if (r.next_meeting?.date || r.next_meeting?.objectives?.length) {
-    html += sectionHead('Próxima Reunión');
+    html += sectionHead(t('uiNextMeeting'));
     if (r.next_meeting.date) html += `<div style="font-family:Inter,sans-serif;font-size:12px;color:#041627;font-weight:600;margin-bottom:4px">📅 ${esc(r.next_meeting.date)}</div>`;
     r.next_meeting.objectives?.forEach(o => {
       html += `<div style="font-family:Inter,sans-serif;font-size:12px;color:#44474C;margin-bottom:3px">• ${esc(o)}</div>`;
@@ -2400,7 +2473,7 @@ function buildMinutaBodyHTML(r) {
   // Export row
   const minutaData = JSON.stringify(r).replace(/'/g,"&#39;");
   html += `<div style="display:flex;align-items:center;gap:10px;margin-top:20px;padding-top:14px;border-top:2px solid #F2F4F6">
-    <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#74777D;text-transform:uppercase;letter-spacing:.1em">Exportar</span>
+    <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#74777D;text-transform:uppercase;letter-spacing:.1em">${t('uiExport')}</span>
     <button onclick="downloadMinutaDocx(this)" data-minuta='${minutaData}' style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#041627;border:none;color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;letter-spacing:.05em;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
       <span class="material-symbols-outlined" style="font-size:14px">description</span>DOCX
     </button>
@@ -2416,9 +2489,9 @@ function buildMinutaCardHTML(r, isPreview) {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
         <div>
           <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#111827">${esc(r.title)}</div>
-          <div style="font-family:Inter,sans-serif;font-size:12px;color:#9ca3af;margin-top:3px">${r.date || ''} ${r.attendees?.length ? '· '+r.attendees.length+' asistentes' : ''}</div>
+          <div style="font-family:Inter,sans-serif;font-size:12px;color:#9ca3af;margin-top:3px">${r.date || ''} ${r.attendees?.length ? '· '+r.attendees.length+' '+t('uiAttendeesSuffix') : ''}</div>
         </div>
-        <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#dbeafe;color:#1d4ed8">Nueva</span>
+        <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#dbeafe;color:#1d4ed8">${t('uiNewBadge')}</span>
       </div>
       ${r.summary ? `<p style="font-family:Inter,sans-serif;font-size:13px;color:#374151;line-height:1.5;margin:0 0 12px">${esc(r.summary)}</p>` : ''}
     </div>
