@@ -232,6 +232,12 @@ tailwind.config={theme:{extend:{colors:{
             <span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform" style="font-variation-settings:'FILL'1;">psychology</span>
             <span class="text-xs uppercase tracking-[0.2em]" data-i18n="uiGenerate">Generar Informe Ejecutivo</span>
           </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Export buttons — shown whenever a report is available -->
+    <div id="exportBtnsRow" class="flex flex-col sm:flex-row gap-3 mt-4">
 <div class="tooltip-wrap"><span class="tooltip" data-i18n="uiExportPdf">Exportar PDF</span><button id="btnPdf" onclick="downloadPdf()" class="hidden bg-[#BB0014] hover:bg-red-800 text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
             <span class="material-symbols-outlined text-base">picture_as_pdf</span> PDF
           </button></div>
@@ -244,9 +250,7 @@ tailwind.config={theme:{extend:{colors:{
           <div class="tooltip-wrap"><span class="tooltip" data-i18n="uiBrief">Brief 1 página</span><button id="btnBrief" onclick="downloadBrief()" class="hidden bg-[#F2F4F6] hover:bg-[#E0E3E5] text-[#041627] border border-[#C4C6CD] font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex" title="">
             <span class="material-symbols-outlined text-base">bolt</span> Brief
           </button></div>
-        </div>
-      </div>
-    </section>
+    </div>
 
     <!-- Status & error -->
     <div id="statusMsg" class="mt-4 font-['Inter'] text-sm text-[#BB0014] font-medium hidden"></div>
