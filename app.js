@@ -2090,21 +2090,21 @@ function renderMinutasList() {
     const savedDate   = m.date || new Date(m.saved_at).toLocaleDateString('es-CL');
     const attendees   = r?.attendees?.length || 0;
     return `
-    <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.07),0 2px 12px rgba(0,0,0,0.04);margin-bottom:12px;overflow:hidden">
-      <div style="padding:16px 20px;cursor:pointer" onclick="toggleMinutaCard(${m.id})">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
-          <div>
-            <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#111827">${esc(m.title)}</div>
-            <div style="font-family:Inter,sans-serif;font-size:12px;color:#9ca3af;margin-top:3px">${esc(savedDate)}${attendees ? ' · ' + attendees + ' asistentes' : ''}</div>
+    <div style="background:#fff;border-left:4px solid #041627;box-shadow:0 2px 12px rgba(4,22,39,0.06);margin-bottom:12px;overflow:hidden">
+      <div style="padding:18px 24px;cursor:pointer" onclick="toggleMinutaCard(${m.id})">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-family:Manrope,sans-serif;font-size:15px;font-weight:800;color:#041627;line-height:1.3">${esc(m.title)}</div>
+            <div style="font-family:Inter,sans-serif;font-size:12px;color:#74777D;margin-top:4px;display:flex;align-items:center;gap:6px">
+              <span class="material-symbols-outlined" style="font-size:13px;color:#BB0014">calendar_today</span>
+              ${esc(savedDate)}${attendees ? ` &nbsp;·&nbsp; <span class="material-symbols-outlined" style="font-size:13px">group</span> ${attendees} asistentes` : ''}
+            </div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#dcfce7;color:#16a34a">Finalizada</span>
-            <span id="chevron-${m.id}" style="font-family:Material Symbols Outlined;font-size:18px;color:#9ca3af;transition:transform .2s">expand_more</span>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            ${commitCount ? `<span style="font-size:10px;font-weight:700;padding:3px 10px;background:#F0FDF4;color:#16a34a;letter-spacing:.05em;text-transform:uppercase">✓ ${commitCount}</span>` : ''}
+            ${pending ? `<span style="font-size:10px;font-weight:700;padding:3px 10px;background:#FFFBEB;color:#D97706;letter-spacing:.05em;text-transform:uppercase">⚠ ${pending}</span>` : ''}
+            <span id="chevron-${m.id}" class="material-symbols-outlined" style="font-size:20px;color:#74777D;transition:transform .2s">expand_more</span>
           </div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${commitCount ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;background:#f0fdf4;color:#16a34a">✓ ${commitCount} compromisos</span>` : ''}
-          ${pending ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;background:#fffbeb;color:#d97706">⚠ ${pending} pendientes</span>` : ''}
         </div>
       </div>
       <div id="minuta-body-${m.id}" style="display:none">
@@ -2124,79 +2124,118 @@ function toggleMinutaCard(id) {
 }
 
 function buildMinutaBodyHTML(r) {
-  const priorityDot = p => {
-    const colors = { high: '#BB0014', medium: '#f59e0b', low: '#22c55e' };
-    return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${colors[p]||'#9ca3af'};margin-right:4px"></span>`;
+  const S = {
+    section: 'font-family:Inter,sans-serif;font-size:9px;font-weight:800;color:#BB0014;text-transform:uppercase;letter-spacing:.18em;margin:20px 0 10px;display:flex;align-items:center;gap:8px',
+    sectionLine: 'flex:1;height:1px;background:#BB0014;opacity:.25',
+    body: 'padding:0 24px 20px',
   };
+  const priorityStyle = p => ({
+    high:   'background:#FEE2E2;color:#991B1B;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;font-family:Inter,sans-serif',
+    medium: 'background:#FEF3C7;color:#92400E;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;font-family:Inter,sans-serif',
+    low:    'background:#F3F4F6;color:#374151;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;font-family:Inter,sans-serif',
+  }[p] || 'background:#F3F4F6;color:#374151;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;font-family:Inter,sans-serif');
+  const priorityLabel = p => p==='high'?'CRÍTICA':p==='medium'?'MEDIA':'BAJA';
+  const sectionHead = label => `<div style="${S.section}">${label}<div style="${S.sectionLine}"></div></div>`;
 
-  let html = '<div style="padding:0 20px 18px;border-top:1px solid #f3f4f6">';
+  let html = `<div style="${S.body};border-top:2px solid #F2F4F6">`;
+
+  // Summary
+  if (r.summary) {
+    html += sectionHead('Resumen Ejecutivo');
+    html += `<p style="font-family:Inter,sans-serif;font-size:13px;color:#44474C;line-height:1.6;margin:0 0 4px;background:#F8F9FB;border-left:3px solid #041627;padding:12px 14px">${esc(r.summary)}</p>`;
+  }
 
   // Attendees
   if (r.attendees?.length) {
     const avatarColors = ['#BB0014','#4279B0','#16a34a','#7c3aed','#ea580c','#0891b2'];
-    html += `<div style="display:flex;align-items:center;gap:6px;padding:14px 0 12px">
-      <span style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af;font-weight:500;margin-right:4px;text-transform:uppercase;letter-spacing:.05em">Asistentes</span>`;
-    r.attendees.slice(0,6).forEach((a, i) => {
+    html += sectionHead('Asistentes');
+    html += `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">`;
+    r.attendees.slice(0,8).forEach((a, i) => {
       const initials = a.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-      html += `<div title="${esc(a)}" style="width:26px;height:26px;border-radius:50%;background:${avatarColors[i%avatarColors.length]};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;border:2px solid #fff">${initials}</div>`;
-    });
-    if (r.attendees.length > 6) html += `<span style="font-size:11px;color:#9ca3af">+${r.attendees.length-6}</span>`;
-    html += `</div>`;
-  }
-
-  // Decisions
-  if (r.decisions?.length) {
-    html += `<div style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Decisiones</div>`;
-    html += `<div style="margin-bottom:14px">`;
-    r.decisions.forEach(d => {
-      html += `<div style="padding:8px 12px;background:#f8fafc;border-left:3px solid #041627;margin-bottom:6px;border-radius:0 6px 6px 0">
-        <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:600;color:#111827">${esc(d.decision)}</div>
-        ${d.rationale ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#6b7280;margin-top:2px">${esc(d.rationale)}</div>` : ''}
-        ${d.owner ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#4279B0;margin-top:2px">👤 ${esc(d.owner)}</div>` : ''}
+      html += `<div title="${esc(a)}" style="display:flex;align-items:center;gap:6px;background:#F2F4F6;border-radius:4px;padding:4px 10px 4px 6px">
+        <div style="width:22px;height:22px;border-radius:50%;background:${avatarColors[i%avatarColors.length]};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">${initials}</div>
+        <span style="font-family:Inter,sans-serif;font-size:11px;color:#374151;font-weight:500">${esc(a)}</span>
       </div>`;
     });
+    if (r.attendees.length > 8) html += `<span style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af">+${r.attendees.length-8} más</span>`;
     html += `</div>`;
   }
 
   // Commitments table
   if (r.commitments?.length) {
-    html += `<div style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Compromisos</div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px">
+    html += sectionHead('Plan de Acción &amp; Compromisos');
+    html += `<table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead>
-        <tr>
-          <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f3f4f6">Tarea</th>
-          <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f3f4f6">Responsable</th>
-          <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f3f4f6">Fecha</th>
-          <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f3f4f6">Prioridad</th>
+        <tr style="background:#041627">
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Tarea</th>
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap">Responsable</th>
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap">Fecha Límite</th>
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">Prioridad</th>
         </tr>
       </thead>
       <tbody>`;
-    r.commitments.forEach(c => {
-      html += `<tr>
-        <td style="padding:8px;color:#374151;border-bottom:1px solid #f9fafb;font-family:Inter,sans-serif">${esc(c.task)}</td>
-        <td style="padding:8px;color:#374151;border-bottom:1px solid #f9fafb;font-family:Inter,sans-serif"><span style="display:inline-flex;align-items:center;background:#f3f4f6;border-radius:20px;padding:2px 8px;font-size:11px">${esc(c.responsible)}</span></td>
-        <td style="padding:8px;color:#374151;border-bottom:1px solid #f9fafb;font-family:Inter,sans-serif;font-size:11px">${esc(c.deadline)}</td>
-        <td style="padding:8px;color:#374151;border-bottom:1px solid #f9fafb;font-family:Inter,sans-serif">${priorityDot(c.priority)}${c.priority==='high'?'Alta':c.priority==='medium'?'Media':'Baja'}</td>
+    r.commitments.forEach((c, i) => {
+      html += `<tr style="background:${i%2===0?'#fff':'#F8F9FB'}">
+        <td style="padding:9px 10px;color:#191C1E;border-bottom:1px solid #F2F4F6;font-family:Inter,sans-serif;font-size:12px;font-weight:500">${esc(c.task)}</td>
+        <td style="padding:9px 10px;color:#44474C;border-bottom:1px solid #F2F4F6;font-family:Inter,sans-serif;font-size:12px;white-space:nowrap">${esc(c.responsible)}</td>
+        <td style="padding:9px 10px;color:#44474C;border-bottom:1px solid #F2F4F6;font-family:Inter,sans-serif;font-size:11px;white-space:nowrap">${esc(c.deadline)}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #F2F4F6"><span style="${priorityStyle(c.priority)}">${priorityLabel(c.priority)}</span></td>
       </tr>`;
     });
     html += `</tbody></table>`;
   }
 
+  // Decisions
+  if (r.decisions?.length) {
+    html += sectionHead('Decisiones');
+    r.decisions.forEach(d => {
+      html += `<div style="border-left:3px solid #041627;padding:8px 12px;background:#F8F9FB;margin-bottom:8px">
+        <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#041627">${esc(d.decision)}</div>
+        ${d.rationale ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;margin-top:3px">${esc(d.rationale)}</div>` : ''}
+        ${d.owner ? `<div style="font-family:Inter,sans-serif;font-size:10px;color:#4279B0;margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Responsable: ${esc(d.owner)}</div>` : ''}
+      </div>`;
+    });
+  }
+
+  // Key topics
+  if (r.key_topics?.length) {
+    html += sectionHead('Temas Tratados');
+    r.key_topics.forEach(t => {
+      html += `<div style="margin-bottom:8px;padding:8px 12px;border-left:3px solid #BB0014;background:#FFF8F8">
+        <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#041627">${esc(t.topic)}</div>
+        ${t.summary ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;margin-top:2px">${esc(t.summary)}</div>` : ''}
+        ${t.outcome ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#16a34a;margin-top:3px;font-weight:600">→ ${esc(t.outcome)}</div>` : ''}
+      </div>`;
+    });
+  }
+
   // Open issues
   if (r.open_issues?.length) {
-    html += `<div style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Pendientes</div>
-    <ul style="margin:0 0 14px 0;padding-left:16px">`;
+    html += sectionHead('Pendientes');
+    html += `<div style="background:#FFFBEB;border:1px solid #FDE68A;padding:12px 14px">`;
     r.open_issues.forEach(i => {
-      html += `<li style="font-family:Inter,sans-serif;font-size:12px;color:#374151;margin-bottom:4px">${esc(i)}</li>`;
+      html += `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-family:Inter,sans-serif;font-size:12px;color:#374151">
+        <span style="color:#D97706;font-weight:700;margin-top:1px">⚠</span>${esc(i)}
+      </div>`;
     });
-    html += `</ul>`;
+    html += `</div>`;
+  }
+
+  // Next meeting
+  if (r.next_meeting?.date || r.next_meeting?.objectives?.length) {
+    html += sectionHead('Próxima Reunión');
+    if (r.next_meeting.date) html += `<div style="font-family:Inter,sans-serif;font-size:12px;color:#041627;font-weight:600;margin-bottom:4px">📅 ${esc(r.next_meeting.date)}</div>`;
+    r.next_meeting.objectives?.forEach(o => {
+      html += `<div style="font-family:Inter,sans-serif;font-size:12px;color:#44474C;margin-bottom:3px">• ${esc(o)}</div>`;
+    });
   }
 
   // Export row
-  html += `<div style="display:flex;align-items:center;gap:10px;padding-top:14px;border-top:1px solid #f3f4f6">
-    <span style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af;font-weight:500">Exportar</span>
-    <button onclick="downloadMinutaDocx(this)" data-minuta='${JSON.stringify(r).replace(/'/g,"&#39;")}' style="display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;font-size:11px;font-weight:500;color:#6b7280;cursor:pointer;font-family:Inter,sans-serif">
-      <span class="material-symbols-outlined" style="font-size:14px">description</span> DOCX
+  const minutaData = JSON.stringify(r).replace(/'/g,"&#39;");
+  html += `<div style="display:flex;align-items:center;gap:10px;margin-top:20px;padding-top:14px;border-top:2px solid #F2F4F6">
+    <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#74777D;text-transform:uppercase;letter-spacing:.1em">Exportar</span>
+    <button onclick="downloadMinutaDocx(this)" data-minuta='${minutaData}' style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#041627;border:none;color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;letter-spacing:.05em;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      <span class="material-symbols-outlined" style="font-size:14px">description</span>DOCX
     </button>
   </div>`;
 
