@@ -754,8 +754,6 @@ function nuevoInforme() {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
   });
-  const chatSection = document.getElementById('chatSection');
-  if (chatSection) chatSection.classList.add('hidden');
   const statusMsg = document.getElementById('statusMsg');
   if (statusMsg) statusMsg.classList.add('hidden');
   const errorBox = document.getElementById('errorBox');
@@ -764,6 +762,12 @@ function nuevoInforme() {
   if (validationWarn) validationWarn.classList.add('hidden');
   const chatMessages = document.getElementById('chatMessages');
   if (chatMessages) chatMessages.innerHTML = '';
+  // Hide floating AI panel
+  const floatBtn = document.getElementById('aiFloatBtn');
+  const floatPanel = document.getElementById('aiFloatPanel');
+  if (floatBtn) floatBtn.style.display = 'none';
+  if (floatPanel) { floatPanel.classList.remove('open'); floatPanel.style.display = 'none'; }
+  if (typeof _aiPanelOpen !== 'undefined') window._aiPanelOpen = false;
   showNuevoInformeForm();
 }
 
@@ -1797,7 +1801,11 @@ function showStatus(m){const e=document.getElementById('statusMsg');e.textConten
 function showError(m){const b=document.getElementById('errorBox');b.textContent=m;b.classList.remove('hidden');document.getElementById('statusMsg').classList.add('hidden');}
 function hideError(){document.getElementById('errorBox').classList.add('hidden');}
 function hidePreview(){document.getElementById('previewCard').classList.add('hidden');document.getElementById('editBanner').classList.add('hidden');document.getElementById('methodCards').classList.remove('hidden');}
-function showExportBtns(){['btnDocx','btnPdf','btnPptx','btnBrief'].forEach(id=>document.getElementById(id).classList.remove('hidden'));document.getElementById('chatSection').classList.remove('hidden');}
+function showExportBtns(){
+  ['btnDocx','btnPdf','btnPptx','btnBrief'].forEach(id=>document.getElementById(id).classList.remove('hidden'));
+  const floatBtn = document.getElementById('aiFloatBtn');
+  if(floatBtn) floatBtn.style.display = 'flex';
+}
 
 // ============================================================
 // MEJORA #8: FOLLOW-UP CHAT
@@ -1870,6 +1878,11 @@ function addChatBubble(role, text) {
   div.appendChild(bubble);
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
+  // Show notif dot on button if panel is collapsed and it's an AI response
+  if(role === 'assistant' && !window._aiPanelOpen){
+    const notif = document.getElementById('aiFloatNotif');
+    if(notif) notif.style.display = 'block';
+  }
 }
 function setDot(s){
   const d=document.getElementById('statusDot'),l=document.getElementById('statusDotLabel');
