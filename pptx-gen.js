@@ -120,7 +120,7 @@ async function downloadPptx(){if(!result)return;
 - "process": flujo de pasos secuenciales (3-5 pasos). USA columns:[{title,items}] — cada columna es un paso.
 - "timeline": roadmap o fases temporales. USA columns:[{title,items}] — cada columna es una fase.
 - "matrix": clasificar 4 conceptos en cuadrantes 2x2. USA columns:[{title,items}] — TL, TR, BL, BR. Incluye etiquetas de ejes en subheading.
-- "waterfall": gráfico waterfall McKinsey para acumulaciones o descomposiciones. USA data_points:[{value:number,label,type}] donde type es "positive","negative" o "total". Ordena lógicamente (inicio → componentes → total).
+- "waterfall": gráfico waterfall McKinsey para descomposiciones de un total en sus componentes. USA data_points:[{value:number,label,type}] donde type es "positive","negative" o "total". IMPORTANTE: Los componentes deben sumar al total. Ej: Revenue 100 = Product 60 + Services 30 + Other 10. El primer punto suele ser el total (type:"total"), luego los componentes positivos/negativos que lo explican. NO pongas un valor enorme + componentes diminutos — los componentes deben ser proporcionales y visualmente comparables.
 - "traffic_light": tabla de estado con semáforos. USA rows:[{label,status,detail}] donde status es "green","yellow","red". Ideal para scorecards, riesgos, KPIs de seguimiento.
 - "stacked_bar": composición o desglose porcentual por categoría. USA chart_data:{categories,series} con múltiples series que se apilan.
 - "icon_grid": grilla de puntos clave numerados. USA items:[{title,description}]. Máximo 9 items. Ideal para "factores críticos", "próximos pasos", "conclusiones clave".
@@ -737,12 +737,14 @@ REGLAS OBLIGATORIAS:
       } else if(vis==='waterfall' && s.data_points&&s.data_points.length){
         const pts=s.data_points.slice(0,10);
         const n=pts.length;
-        const chartH=Math.min(4.8,7.5-cy-0.9);
+        const chartH=Math.min(4.2,7.5-cy-1.2);
         const chartW=eLW;
         const chartBottom=cy+chartH;
-        const barGap=0.08;
-        const barW=(chartW-barGap*(n+1))/n;
-        // Determine scale: find min/max of running total and individual negatives
+        const barGap=0.12;
+        const barW=Math.min(1.2,(chartW-barGap*(n+1))/n);
+        const totalBarsW=n*barW+(n+1)*barGap;
+        const chartOffsetX=M+(chartW-totalBarsW)/2; // center bars
+        // Determine scale: find min/max of running total
         let running=0;const tops=[];const bots=[];
         pts.forEach(pt=>{
           const v=Number(pt.value)||0;
@@ -752,10 +754,10 @@ REGLAS OBLIGATORIAS:
         const allVals=[...tops,...bots];
         const dataMin=Math.min(0,...allVals);const dataMax=Math.max(...allVals);
         const dataRange=dataMax-dataMin||1;
-        const scale=chartH/dataRange;
+        const scale=(chartH-0.6)/dataRange; // leave 0.6 padding for labels
         // Baseline (zero line)
         const baselineY=chartBottom-(0-dataMin)*scale;
-        sl.addShape('rect',{x:M,y:baselineY,w:chartW,h:0.025,fill:{color:A.NAVY}});
+        sl.addShape('rect',{x:M,y:baselineY,w:chartW,h:0.02,fill:{color:A.NAVY}});
         // Draw bars
         let runVal=0;
         pts.forEach((pt,i)=>{
@@ -763,20 +765,26 @@ REGLAS OBLIGATORIAS:
           const bColor=pt.type==='total'?A.TBLUE:v>=0?A.NAVY:A.RED;
           const barTop=pt.type==='total'?Math.max(v,0):Math.max(runVal,runVal+v);
           const barBot=pt.type==='total'?Math.min(v,0):Math.min(runVal,runVal+v);
-          const barH=Math.max((barTop-barBot)*scale,0.05);
-          const bx=M+barGap+i*(barW+barGap);
-          const by=chartBottom-(barTop-dataMin)*scale;
+          const rawH=(barTop-barBot)*scale;
+          const barH=Math.max(rawH,0.18); // minimum visible bar height
+          const bx=chartOffsetX+barGap+i*(barW+barGap);
+          const by=chartBottom-(barTop-dataMin)*scale-(barH>rawH?(barH-rawH)/2:0);
           sl.addShape('rect',{x:bx,y:by,w:barW,h:barH,fill:{color:bColor}});
-          // Value label on top
-          const labelY=v>=0?by-0.22:by+barH+0.02;
-          sl.addText((v>=0?'+':'')+v,{x:bx,y:labelY,w:barW,h:0.22,fontSize:9,fontFace:'Calibri',color:bColor,bold:true,align:'center',valign:'middle',shrinkText:true});
-          // Category label below baseline
-          sl.addText(pt.label||'',{x:bx,y:chartBottom+0.06,w:barW,h:0.35,fontSize:8,fontFace:'Calibri',color:A.BODY,align:'center',valign:'top',lineSpacingMultiple:1.1,shrinkText:true});
-          // Dashed connector line between consecutive bars at running total level
+          // Value label: inside bar if tall enough, above/below if small
+          const valStr=pt.type==='total'?String(v):(v>=0?'+':'')+v;
+          if(barH>=0.4){
+            sl.addText(valStr,{x:bx,y:by+0.05,w:barW,h:0.28,fontSize:11,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle',shrinkText:true});
+          } else {
+            const labelY=v>=0?by-0.25:by+barH+0.03;
+            sl.addText(valStr,{x:bx-0.1,y:labelY,w:barW+0.2,h:0.22,fontSize:9,fontFace:'Calibri',color:bColor,bold:true,align:'center',valign:'middle',shrinkText:true});
+          }
+          // Category label below chart
+          sl.addText(pt.label||'',{x:bx-0.1,y:chartBottom+0.08,w:barW+0.2,h:0.45,fontSize:8,fontFace:'Calibri',color:A.BODY,align:'center',valign:'top',lineSpacingMultiple:1.1,shrinkText:true});
+          // Connector line between consecutive bars
           if(i>0 && pt.type!=='total'){
             const connY=chartBottom-(runVal-dataMin)*scale;
-            const prevBx=M+barGap+(i-1)*(barW+barGap);
-            sl.addShape('rect',{x:prevBx+barW,y:connY-0.01,w:bx-(prevBx+barW),h:0.02,fill:{color:A.SGRAY}});
+            const prevBx=chartOffsetX+barGap+(i-1)*(barW+barGap);
+            sl.addShape('rect',{x:prevBx+barW,y:connY-0.008,w:bx-(prevBx+barW),h:0.016,fill:{color:A.SGRAY}});
           }
           if(pt.type!=='total') runVal+=v;
         });
