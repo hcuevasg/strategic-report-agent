@@ -631,6 +631,9 @@ function loadFromHistory(id){
   const entry = history.find(h=>h.id===id);
   if(!entry)return;
   showNuevoInformeForm();
+  // Viewing a saved report — hide the new-report input form
+  const inputCard = document.getElementById('newReportInputCard');
+  if (inputCard) inputCard.style.display = 'none';
   try{
     result = JSON.parse(entry.data);
     originalResult = JSON.parse(entry.data);
@@ -739,6 +742,8 @@ function showNuevoInformeForm() {
   const form = document.getElementById('informesNewSection');
   if (dash) dash.style.display = 'none';
   if (form) form.style.display = 'block';
+  const inputCard = document.getElementById('newReportInputCard');
+  if (inputCard) inputCard.style.display = '';
 }
 
 function nuevoInforme() {
