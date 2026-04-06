@@ -273,16 +273,19 @@ REGLAS OBLIGATORIAS:
         const titleText=s.action_title||result.title;
         const titleLen=titleText.length;
         const titleFontSize=titleLen>120?22:titleLen>80?24:titleLen>50?28:32;
-        sl.addText(titleText,{x:0.55,y:1.45,w:leftW-0.8,h:3.0,fontSize:titleFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
-        // Subtitle italic — positioned below title area with clearance
-        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.5,w:leftW-1.0,h:0.4,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
+        const coverTitleH=titleLen>80?2.8:2.5;
+        sl.addText(titleText,{x:0.55,y:1.45,w:leftW-0.8,h:coverTitleH,fontSize:titleFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
+        // Subtitle italic — positioned dynamically below title area
+        const coverSubY=1.45+coverTitleH+0.15;
+        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:coverSubY,w:leftW-1.0,h:0.4,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
         // Presented by / date row
-        sl.addShape('rect',{x:0.55,y:5.2,w:0.03,h:0.7,fill:{color:A.MGRAY}});
-        sl.addText('Preparado por',{x:0.72,y:5.2,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
-        sl.addText('ALTO Strategy',{x:0.72,y:5.4,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
-        sl.addShape('rect',{x:3.1,y:5.2,w:0.03,h:0.7,fill:{color:A.MGRAY}});
-        sl.addText('Fecha',{x:3.28,y:5.2,w:1.5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
-        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:3.28,y:5.4,w:3,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        const coverMetaY=Math.max(coverSubY+0.5,5.0);
+        sl.addShape('rect',{x:0.55,y:coverMetaY,w:0.03,h:0.7,fill:{color:A.MGRAY}});
+        sl.addText('Preparado por',{x:0.72,y:coverMetaY,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
+        sl.addText('ALTO Strategy',{x:0.72,y:coverMetaY+0.2,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addShape('rect',{x:3.1,y:coverMetaY,w:0.03,h:0.7,fill:{color:A.MGRAY}});
+        sl.addText('Fecha',{x:3.28,y:coverMetaY,w:1.5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
+        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:3.28,y:coverMetaY+0.2,w:3,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
         // CONFIDENCIAL small
         sl.addText(tp('confidential'),{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,letterSpacing:3});
         // Right side — asymmetric navy shape (simulated with tall rect from 60% to right edge)
@@ -303,13 +306,20 @@ REGLAS OBLIGATORIAS:
         const cRX=7.8;const cRW=W-cRX;
         // Left side
         if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
-        sl.addText(s.action_title||'Gracias',{x:0.55,y:1.6,w:cRX-0.8,h:3.0,fontSize:36,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
-        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.5,w:cRX-1.0,h:0.4,fontSize:12,fontFace:'Calibri',color:A.SGRAY,italic:true});
-        sl.addShape('rect',{x:0.55,y:5.0,w:2.2,h:0.05,fill:{color:A.RED}});
-        sl.addShape('rect',{x:0.55,y:5.15,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
-        sl.addText('Preparado por',{x:0.72,y:5.45,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
-        sl.addText('ALTO Strategy',{x:0.72,y:5.65,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
-        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:0.72,y:6.0,w:3,h:0.3,fontSize:10,fontFace:'Calibri',color:A.SGRAY});
+        // Auto-size closing title based on length (same logic as cover)
+        const closingTitle=s.action_title||'Gracias';
+        const cTitleLen=closingTitle.length;
+        const cTitleFontSize=cTitleLen>120?22:cTitleLen>80?24:cTitleLen>50?28:34;
+        const cTitleH=cTitleLen>80?2.8:2.5;
+        sl.addText(closingTitle,{x:0.55,y:1.6,w:cRX-0.8,h:cTitleH,fontSize:cTitleFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
+        const cSubY=1.6+cTitleH+0.15;
+        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:cSubY,w:cRX-1.0,h:0.4,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
+        const cLineY=Math.max(cSubY+0.5,5.0);
+        sl.addShape('rect',{x:0.55,y:cLineY,w:2.2,h:0.05,fill:{color:A.RED}});
+        sl.addShape('rect',{x:0.55,y:cLineY+0.15,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
+        sl.addText('Preparado por',{x:0.72,y:cLineY+0.35,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
+        sl.addText('ALTO Strategy',{x:0.72,y:cLineY+0.55,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:0.72,y:cLineY+0.9,w:3,h:0.3,fontSize:10,fontFace:'Calibri',color:A.SGRAY});
         sl.addText(tp('confidential'),{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,charSpacing:3});
         // Right side — navy block
         sl.addShape('rect',{x:cRX,y:0,w:cRW,h:7.5,fill:{color:A.NAVY}});
@@ -423,14 +433,12 @@ REGLAS OBLIGATORIAS:
           sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:0.08,fill:{color:cardColors[i%4]}});
           // Big number centred in top ~45% of card
           sl.addText(val,{x:cx+0.12,y:cy+0.25,w:colW-0.24,h:cardH*0.44,fontSize:numFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle',shrinkText:true});
-          // Trend arrow (if present) + trend description below
+          // Trend arrow + description — single text block to avoid overlap
           if(d.trend){
             const tChar=d.trend==='up'?'▲':d.trend==='down'?'▼':'—';
             const tColor=d.trend==='up'?A.TBLUE:d.trend==='down'?A.RED:A.SGRAY;
-            sl.addText(tChar,{x:cx+0.12,y:cy+cardH*0.44,w:colW-0.24,h:0.3,fontSize:13,fontFace:'Calibri',color:tColor,bold:true,align:'center',valign:'middle'});
-            if(d.trend_description){
-              sl.addText(d.trend_description,{x:cx+0.12,y:cy+cardH*0.44+0.28,w:colW-0.24,h:0.22,fontSize:8,fontFace:'Calibri',color:tColor,align:'center',valign:'middle',italic:true,shrinkText:true});
-            }
+            const trendText=d.trend_description?tChar+' '+d.trend_description:tChar;
+            sl.addText(trendText,{x:cx+0.12,y:cy+cardH*0.42,w:colW-0.24,h:0.45,fontSize:9,fontFace:'Calibri',color:tColor,bold:false,align:'center',valign:'middle',italic:true,shrinkText:true});
           }
           // Label below thicker divider line
           sl.addShape('rect',{x:cx+0.25,y:cy+cardH*0.54,w:colW-0.5,h:0.055,fill:{color:A.MGRAY}});
@@ -526,12 +534,12 @@ REGLAS OBLIGATORIAS:
         // Truncate long labels to prevent clipping
         const truncLbls=lbls.map(l=>l.length>35?l.substring(0,34)+'…':l);
         sl.addChart(pptx.charts.DOUGHNUT,[{name:'',labels:truncLbls,values:vals}],{
-          x:M+0.3,y:cy,w:eLW*0.7,h:4.2,
-          holeSize:55,
-          showLabel:false,showValue:false,showPercent:true,dataLabelPosition:'outEnd',
-          dataLabelFontSize:9,dataLabelFontBold:true,dataLabelColor:A.NAVY,
+          x:M+0.1,y:cy,w:eLW*0.75,h:4.4,
+          holeSize:50,
+          showLabel:false,showValue:false,showPercent:true,dataLabelPosition:'bestFit',
+          dataLabelFontSize:11,dataLabelFontBold:true,dataLabelColor:'FFFFFF',
           chartColors:donutColors,
-          showLegend:true,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
+          showLegend:true,legendPos:'b',legendFontSize:9,legendFontFace:'Calibri',
           legendColor:A.BODY,
           showTitle:false,plotAreaBorderColor:A.WHITE
         });
