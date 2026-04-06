@@ -130,7 +130,13 @@ async function downloadPptx(){if(!result)return;
 
 REGLAS OBLIGATORIAS:
 - Slide 2 SIEMPRE type:"toc" con items:[{title,description}] y campo "tagline".
-- USA type:"divider" (sin visual_suggestion) para separar secciones principales — slide navy oscuro con solo el título de la sección. Incluye el número de sección en subheading ("Sección 1", "Sección 2", etc).
+- Slide 3 SIEMPRE type:"storyline" con body_text (tesis central, 1 oración poderosa) y bullets (3-4 líneas argumentales). Visual_suggestion:"none".
+- Cada slide de contenido DEBE incluir section_label:"SECCIÓN N · NOMBRE DE SECCIÓN" para el breadcrumb tracker.
+- Executive summary slides DEBEN incluir key_messages:["assertion 1","assertion 2","assertion 3"] — cada una es un insight independiente, no una descripción.
+- Para slides con charts, incluye chart_annotation:"insight principal, ej: ▲ +40% vs trimestre anterior" cuando haya un dato destacable.
+- type:"divider" debe incluir section_number (número), total_sections (total), y items:[{title}] con 2-4 temas de la sección. Incluye el número de sección en subheading ("Sección 1", "Sección 2", etc).
+- Subheadings deben conectar narrativamente con el slide anterior (ej: "Habiendo dimensionado el impacto operativo, evaluamos la respuesta legal").
+- USA type:"divider" (sin visual_suggestion) para separar secciones principales — slide navy oscuro con solo el título de la sección.
 - INCLUYE AL MENOS: 1x stat_callouts, 1x line_chart o bar_chart, 1x process o timeline, 1x comparison o pillars.
 - USA los nuevos layouts cuando corresponda: waterfall para análisis financiero de componentes, traffic_light para dashboards de estado, stacked_bar para composición, icon_grid para próximos pasos o factores clave, funnel para embudos o pipelines.
 - NO repitas el mismo visual_suggestion más de 2 slides seguidos.
@@ -171,8 +177,8 @@ REGLAS OBLIGATORIAS:
 
     // --- SLIDE MASTER ---
     pptx.defineSlideMaster({title:'ALTO_MASTER',background:{color:A.WHITE},objects:[
-      {text:{text:tp('confidential')+' · ALTO',options:{x:M,y:7.25,w:5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false}}},
-    ],slideNumber:{x:12.0,y:7.25,w:1.0,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,align:'right'}});
+      {text:{text:tp('confidential')+' | ALTO Strategy | '+new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),options:{x:M,y:7.25,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false}}},
+    ],slideNumber:{x:11.5,y:7.25,w:1.5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,align:'right'}});
 
     // --- HELPER FUNCTIONS ---
     function addLogo(sl){if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:12.1,y:0.1,w:1.0,h:0.39});}
@@ -233,7 +239,7 @@ REGLAS OBLIGATORIAS:
     function addNote(sl,text){if(text)sl.addNotes(text);}
 
     function soWhatBox(sl,text,y){ /* no-op */ }
-    function srcNote(sl,t){if(!t)return;let src=String(t).trim();if(src.toLowerCase().startsWith('fuente:'))src=src.substring(7).trim();if(src.toLowerCase().startsWith('source:'))src=src.substring(7).trim();sl.addText(tp('source')+': '+src,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});}
+    function srcNote(sl,t){if(t)sl.addText(tp('source')+': '+t,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});}
     function chartFallback(sl,s,cy,eLW){
       // Show body_text/bullets when chart data is missing
       const parts=[];
@@ -269,23 +275,17 @@ REGLAS OBLIGATORIAS:
         const leftW=7.8;
         // Logo color (top left)
         if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
-        // Main title — auto-size based on length to prevent overflow
-        const titleText=s.action_title||result.title;
-        const titleLen=titleText.length;
-        const titleFontSize=titleLen>120?22:titleLen>80?24:titleLen>50?28:32;
-        const coverTitleH=titleLen>80?2.8:2.5;
-        sl.addText(titleText,{x:0.55,y:1.45,w:leftW-0.8,h:coverTitleH,fontSize:titleFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
-        // Subtitle italic — positioned dynamically below title area
-        const coverSubY=1.45+coverTitleH+0.15;
-        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:coverSubY,w:leftW-1.0,h:0.4,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
+        // Main title — constrained to avoid overlapping metadata below
+        sl.addText(s.action_title||result.title,{x:0.55,y:1.45,w:leftW-0.8,h:2.8,fontSize:28,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
+        // Subtitle italic
+        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.35,w:leftW-1.0,h:0.4,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
         // Presented by / date row
-        const coverMetaY=Math.max(coverSubY+0.5,5.0);
-        sl.addShape('rect',{x:0.55,y:coverMetaY,w:0.03,h:0.7,fill:{color:A.MGRAY}});
-        sl.addText('Preparado por',{x:0.72,y:coverMetaY,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
-        sl.addText('ALTO Strategy',{x:0.72,y:coverMetaY+0.2,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
-        sl.addShape('rect',{x:3.1,y:coverMetaY,w:0.03,h:0.7,fill:{color:A.MGRAY}});
-        sl.addText('Fecha',{x:3.28,y:coverMetaY,w:1.5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
-        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:3.28,y:coverMetaY+0.2,w:3,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addShape('rect',{x:0.55,y:5.55,w:0.03,h:0.7,fill:{color:A.MGRAY}});
+        sl.addText('Preparado por',{x:0.72,y:5.55,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
+        sl.addText('ALTO Strategy',{x:0.72,y:5.75,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addShape('rect',{x:3.1,y:5.55,w:0.03,h:0.7,fill:{color:A.MGRAY}});
+        sl.addText('Fecha',{x:3.28,y:5.55,w:1.5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
+        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:3.28,y:5.75,w:3,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
         // CONFIDENCIAL small
         sl.addText(tp('confidential'),{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,letterSpacing:3});
         // Right side — asymmetric navy shape (simulated with tall rect from 60% to right edge)
@@ -306,20 +306,13 @@ REGLAS OBLIGATORIAS:
         const cRX=7.8;const cRW=W-cRX;
         // Left side
         if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
-        // Auto-size closing title based on length (same logic as cover)
-        const closingTitle=s.action_title||'Gracias';
-        const cTitleLen=closingTitle.length;
-        const cTitleFontSize=cTitleLen>120?22:cTitleLen>80?24:cTitleLen>50?28:34;
-        const cTitleH=cTitleLen>80?2.8:2.5;
-        sl.addText(closingTitle,{x:0.55,y:1.6,w:cRX-0.8,h:cTitleH,fontSize:cTitleFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
-        const cSubY=1.6+cTitleH+0.15;
-        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:cSubY,w:cRX-1.0,h:0.4,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
-        const cLineY=Math.max(cSubY+0.5,5.0);
-        sl.addShape('rect',{x:0.55,y:cLineY,w:2.2,h:0.05,fill:{color:A.RED}});
-        sl.addShape('rect',{x:0.55,y:cLineY+0.15,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
-        sl.addText('Preparado por',{x:0.72,y:cLineY+0.35,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
-        sl.addText('ALTO Strategy',{x:0.72,y:cLineY+0.55,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
-        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:0.72,y:cLineY+0.9,w:3,h:0.3,fontSize:10,fontFace:'Calibri',color:A.SGRAY});
+        sl.addText(s.action_title||'Gracias',{x:0.55,y:1.6,w:cRX-0.8,h:2.5,fontSize:28,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
+        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.0,w:cRX-1.0,h:0.4,fontSize:12,fontFace:'Calibri',color:A.SGRAY,italic:true});
+        sl.addShape('rect',{x:0.55,y:5.0,w:2.2,h:0.05,fill:{color:A.RED}});
+        sl.addShape('rect',{x:0.55,y:5.15,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
+        sl.addText('Preparado por',{x:0.72,y:5.45,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
+        sl.addText('ALTO Strategy',{x:0.72,y:5.65,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:0.72,y:6.0,w:3,h:0.3,fontSize:10,fontFace:'Calibri',color:A.SGRAY});
         sl.addText(tp('confidential'),{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,charSpacing:3});
         // Right side — navy block
         sl.addShape('rect',{x:cRX,y:0,w:cRW,h:7.5,fill:{color:A.NAVY}});
@@ -394,6 +387,18 @@ REGLAS OBLIGATORIAS:
         sl.addShape('rect',{x:0.55,y:5.3,w:2.2,h:0.05,fill:{color:A.RED}});
         sl.addShape('rect',{x:0.55,y:5.45,w:1.2,h:0.04,fill:{color:'B0B6B8'}});
         if(s.body_text)sl.addText(s.body_text,{x:0.55,y:5.65,w:dRX-0.8,h:0.5,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
+        // Section progress indicator
+        if(s.section_number&&s.total_sections){
+          const progText='Sección '+s.section_number+' de '+s.total_sections;
+          sl.addText(progText,{x:0.55,y:5.8,w:dRX-0.8,h:0.25,fontSize:8,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
+        }
+        // Mini-TOC items
+        if(s.items&&s.items.length){
+          const miniY=s.body_text?6.2:5.8;
+          s.items.forEach((item,i)=>{
+            sl.addText((i+1)+'. '+(typeof item==='string'?item:item.title||''),{x:0.72,y:miniY+i*0.28,w:dRX-1.2,h:0.26,fontSize:9,fontFace:'Calibri',color:A.SGRAY,valign:'middle',shrinkText:true});
+          });
+        }
         // Right side — navy block (same as cover)
         sl.addShape('rect',{x:dRX,y:0,w:dRW,h:7.5,fill:{color:A.NAVY}});
         sl.addShape('rect',{x:dRX,y:0,w:0.08,h:7.5,fill:{color:A.RED}});
@@ -412,6 +417,30 @@ REGLAS OBLIGATORIAS:
       const LW=SX-M-0.25; // left content width (when SO WHAT panel present)
       const eLW=s.so_what?LW:CW; // effective content width — full when no SO WHAT
       if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:eLW,h:0.35,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'middle',shrinkText:true});cy+=0.42;}
+      if(s.section_label){sl.addText(s.section_label.toUpperCase(),{x:M,y:0.98,w:eLW,h:0.22,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:true,charSpacing:3,valign:'middle'});cy+=0.22;}
+
+      // ========== LAYOUT: STORYLINE ==========
+      if(s.type==='storyline') {
+        sl.addShape('rect',{x:M,y:cy,w:eLW,h:2.2,fill:{color:A.LGRAY}});
+        sl.addShape('rect',{x:M,y:cy,w:eLW,h:0.06,fill:{color:A.RED}});
+        sl.addText(s.body_text||'',{x:M+0.3,y:cy+0.2,w:eLW-0.6,h:1.8,fontSize:20,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.3,valign:'middle',shrinkText:true});
+        const argY=cy+2.5;
+        const args=s.bullets||[];
+        const argCols=Math.min(args.length,4)||1;
+        const argW=eLW/argCols;
+        args.slice(0,4).forEach((arg,i)=>{
+          const ax=M+i*argW;
+          sl.addShape('rect',{x:ax+0.06,y:argY,w:argW-0.12,h:3.2,fill:{color:A.WHITE},line:{color:A.MGRAY,width:0.5}});
+          sl.addShape('rect',{x:ax+0.06,y:argY,w:argW-0.12,h:0.06,fill:{color:i===0?A.RED:A.NAVY}});
+          sl.addShape('ellipse',{x:ax+argW/2-0.18,y:argY+0.2,w:0.36,h:0.36,fill:{color:i===0?A.RED:A.NAVY}});
+          sl.addText(String(i+1),{x:ax+argW/2-0.18,y:argY+0.2,w:0.36,h:0.36,fontSize:12,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+          sl.addText(arg,{x:ax+0.15,y:argY+0.7,w:argW-0.3,h:2.4,fontSize:11,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.35,valign:'top',shrinkText:true});
+        });
+        soWhatPanel(sl,s.so_what);
+        srcNote(sl,s.source_note);
+        addNote(sl,s.so_what);
+        return;
+      }
 
       // ========== LAYOUT: STAT CALLOUTS ==========
       if(vis==='stat_callouts' && s.data_points&&s.data_points.length){
@@ -433,12 +462,14 @@ REGLAS OBLIGATORIAS:
           sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:0.08,fill:{color:cardColors[i%4]}});
           // Big number centred in top ~45% of card
           sl.addText(val,{x:cx+0.12,y:cy+0.25,w:colW-0.24,h:cardH*0.44,fontSize:numFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle',shrinkText:true});
-          // Trend arrow + description — single text block to avoid overlap
+          // Trend arrow (if present) + trend description below
           if(d.trend){
             const tChar=d.trend==='up'?'▲':d.trend==='down'?'▼':'—';
             const tColor=d.trend==='up'?A.TBLUE:d.trend==='down'?A.RED:A.SGRAY;
-            const trendText=d.trend_description?tChar+' '+d.trend_description:tChar;
-            sl.addText(trendText,{x:cx+0.12,y:cy+cardH*0.42,w:colW-0.24,h:0.45,fontSize:9,fontFace:'Calibri',color:tColor,bold:false,align:'center',valign:'middle',italic:true,shrinkText:true});
+            sl.addText(tChar,{x:cx+0.12,y:cy+cardH*0.44,w:colW-0.24,h:0.3,fontSize:13,fontFace:'Calibri',color:tColor,bold:true,align:'center',valign:'middle'});
+            if(d.trend_description){
+              sl.addText(d.trend_description,{x:cx+0.12,y:cy+cardH*0.44+0.28,w:colW-0.24,h:0.22,fontSize:8,fontFace:'Calibri',color:tColor,align:'center',valign:'middle',italic:true,shrinkText:true});
+            }
           }
           // Label below thicker divider line
           sl.addShape('rect',{x:cx+0.25,y:cy+cardH*0.54,w:colW-0.5,h:0.055,fill:{color:A.MGRAY}});
@@ -471,6 +502,10 @@ REGLAS OBLIGATORIAS:
             showTitle:false
           });
         } else { chartFallback(sl,s,cy,eLW); }
+        if(s.chart_annotation){
+          sl.addShape('rect',{x:M+0.3,y:cy+5.2,w:2.8,h:0.45,fill:{color:'FFF8E1'},line:{color:'F9A825',width:0.75},rectRadius:0.04});
+          sl.addText(s.chart_annotation,{x:M+0.4,y:cy+5.2,w:2.6,h:0.45,fontSize:9,fontFace:'Calibri',color:A.DGRAY,bold:true,valign:'middle',shrinkText:true});
+        }
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: LINE CHART ==========
@@ -492,36 +527,39 @@ REGLAS OBLIGATORIAS:
             showTitle:false,dataLabelFontSize:8,showDataLabel:false
           });
         } else { chartFallback(sl,s,cy,eLW); }
+        if(s.chart_annotation){
+          sl.addShape('rect',{x:M+0.3,y:cy+5.0,w:2.8,h:0.45,fill:{color:'FFF8E1'},line:{color:'F9A825',width:0.75},rectRadius:0.04});
+          sl.addText(s.chart_annotation,{x:M+0.4,y:cy+5.0,w:2.6,h:0.45,fontSize:9,fontFace:'Calibri',color:A.DGRAY,bold:true,valign:'middle',shrinkText:true});
+        }
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: HORIZONTAL BAR ==========
       } else if(vis==='horizontal_bar' && s.chart_data){
         const {cats:hCats,series:hSeries}=normalizeChartData(s.chart_data);
         const normH=hSeries.slice(0,3);
-        const chartH=Math.min(5.4,7.5-cy-0.8);const chartW=LW*0.95;
+        const chartH=Math.min(5.4,7.5-cy-0.8);const chartW=eLW*0.85;
         if(normH.length&&hCats.length){
           const singleH=normH.length===1;
-          // Truncate long category labels to prevent vertical overflow
-          const maxLabelLen=40;
-          const truncCats=hCats.map(c=>c.length>maxLabelLen?c.substring(0,maxLabelLen-1)+'…':c);
-          const truncH=normH.map(sr=>({...sr,labels:truncCats}));
-          sl.addChart(pptx.charts.BAR,truncH.length?truncH:normH,{
+          sl.addChart(pptx.charts.BAR,normH,{
             x:M,y:cy,w:chartW,h:chartH,
             barDir:'bar',barGapWidthPct:40,
             catAxisLabelColor:A.NAVY,valAxisLabelColor:A.BODY,
             catAxisLabelFontFace:'Calibri',valAxisLabelFontFace:'Calibri',
-            catAxisLabelFontSize:8,valAxisLabelFontSize:8,
-            catAxisMaxLabelLen:maxLabelLen,
-            dataLabelFontSize:8,dataLabelFontBold:true,dataLabelColor:A.WHITE,
-            showDataLabel:true,dataLabelPosition:'ctr',
+            catAxisLabelFontSize:11,valAxisLabelFontSize:9,
+            dataLabelFontSize:9,dataLabelFontBold:true,dataLabelColor:A.WHITE,
+            showDataLabel:true,dataLabelPosition:'inEnd',
             catGridLine:{style:'none'},valGridLine:{color:A.MGRAY,style:'dash',size:0.5},
-            plotAreaBorderColor:A.WHITE,valAxisHidden:true,
+            plotAreaBorderColor:A.WHITE,
             chartColors:singleH?[A.NAVY,A.RED,A.NAVY,A.RED,A.NAVY,A.RED,A.NAVY,A.RED]:[A.NAVY,A.RED,A.TBLUE],
             varyColors:singleH,
             showLegend:!singleH,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
             showTitle:false
           });
         } else { chartFallback(sl,s,cy,eLW); }
+        if(s.chart_annotation){
+          sl.addShape('rect',{x:M+0.3,y:cy+Math.min(5.4,7.5-cy-0.8)+0.2,w:2.8,h:0.45,fill:{color:'FFF8E1'},line:{color:'F9A825',width:0.75},rectRadius:0.04});
+          sl.addText(s.chart_annotation,{x:M+0.4,y:cy+Math.min(5.4,7.5-cy-0.8)+0.2,w:2.6,h:0.45,fontSize:9,fontFace:'Calibri',color:A.DGRAY,bold:true,valign:'middle',shrinkText:true});
+        }
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: DONUT CHART ==========
@@ -531,18 +569,21 @@ REGLAS OBLIGATORIAS:
         const vals=dp.map(d=>parseFloat(String(d.value).replace(/[^0-9.]/g,''))||1);
         const lbls=dp.map(d=>d.label||'');
         const donutColors=[A.NAVY,A.RED,A.TBLUE,'74777D','1A2B3C','C4C6CD'];
-        // Truncate long labels to prevent clipping
-        const truncLbls=lbls.map(l=>l.length>35?l.substring(0,34)+'…':l);
-        sl.addChart(pptx.charts.DOUGHNUT,[{name:'',labels:truncLbls,values:vals}],{
-          x:M+0.1,y:cy,w:eLW*0.75,h:4.4,
-          holeSize:50,
-          showLabel:false,showValue:false,showPercent:true,dataLabelPosition:'bestFit',
-          dataLabelFontSize:11,dataLabelFontBold:true,dataLabelColor:'FFFFFF',
+        sl.addChart(pptx.charts.DOUGHNUT,[{name:'',labels:lbls,values:vals}],{
+          x:M+0.5,y:cy,w:eLW*0.65,h:4.6,
+          holeSize:55,
+          showLabel:true,showValue:false,showPercent:true,dataLabelPosition:'bestFit',
+          dataLabelFontSize:10,dataLabelFontBold:true,dataLabelColor:A.WHITE,
           chartColors:donutColors,
           showLegend:true,legendPos:'b',legendFontSize:9,legendFontFace:'Calibri',
           legendColor:A.BODY,
           showTitle:false,plotAreaBorderColor:A.WHITE
         });
+        // Center number in donut hole
+        const centerVal=dp[0]?String(dp[0].value):'';
+        const donutCenterY=cy+4.6/2-0.3;
+        const donutCenterX=M+0.5+(eLW*0.65)/2-0.6;
+        sl.addText(centerVal,{x:donutCenterX,y:donutCenterY,w:1.2,h:0.6,fontSize:28,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle'});
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: PROCESS FLOW ==========
@@ -733,11 +774,11 @@ REGLAS OBLIGATORIAS:
           sl.addText((v>=0?'+':'')+v,{x:bx,y:labelY,w:barW,h:0.22,fontSize:9,fontFace:'Calibri',color:bColor,bold:true,align:'center',valign:'middle',shrinkText:true});
           // Category label below baseline
           sl.addText(pt.label||'',{x:bx,y:chartBottom+0.06,w:barW,h:0.35,fontSize:8,fontFace:'Calibri',color:A.BODY,align:'center',valign:'top',lineSpacingMultiple:1.1,shrinkText:true});
-          // Connector line from previous bar top to this bar bottom (except totals and first bar)
+          // Dashed connector line between consecutive bars at running total level
           if(i>0 && pt.type!=='total'){
-            const prevTop=pts[i-1].type==='total'?Number(pts[i-1].value)||0:Math.max(runVal,runVal); // runVal already includes i-1
             const connY=chartBottom-(runVal-dataMin)*scale;
-            sl.addShape('rect',{x:bx-barGap,y:connY-0.01,w:barGap,h:0.02,fill:{color:A.MGRAY}});
+            const prevBx=M+barGap+(i-1)*(barW+barGap);
+            sl.addShape('rect',{x:prevBx+barW,y:connY-0.01,w:bx-(prevBx+barW),h:0.02,fill:{color:A.SGRAY}});
           }
           if(pt.type!=='total') runVal+=v;
         });
@@ -752,9 +793,9 @@ REGLAS OBLIGATORIAS:
         const statusColors={green:'2E7D32',yellow:'F9A825',red:A.RED};
         // Table header bar
         sl.addShape('rect',{x:M,y:cy,w:tableW,h:0.32,fill:{color:A.NAVY}});
-        sl.addText('STATUS',{x:M+0.08,y:cy,w:0.7,h:0.32,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:1});
-        sl.addText('INDICADOR',{x:M+0.8,y:cy,w:tableW*0.35,h:0.32,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:1});
-        sl.addText('DETALLE',{x:M+tableW*0.4,y:cy,w:tableW*0.58,h:0.32,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:1});
+        sl.addText('STATUS',{x:M+0.08,y:cy,w:0.8,h:0.32,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:1});
+        sl.addText('INDICADOR',{x:M+0.9,y:cy,w:tableW*0.35,h:0.32,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:2});
+        sl.addText('DETALLE',{x:M+0.9+tableW*0.35,y:cy,w:tableW*0.55,h:0.32,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:2});
         cy+=0.32;
         rows.forEach((row,i)=>{
           const ry=cy+(i*rowH);
@@ -764,11 +805,11 @@ REGLAS OBLIGATORIAS:
           // Bottom separator
           if(i<rows.length-1) sl.addShape('rect',{x:M,y:ry+rowH-0.01,w:tableW,h:0.01,fill:{color:'DDDFE2'}});
           // Status circle
-          sl.addShape('ellipse',{x:M+0.2,y:ry+(rowH-0.22)/2,w:0.22,h:0.22,fill:{color:sc}});
+          sl.addShape('ellipse',{x:M+0.25,y:ry+(rowH-0.22)/2,w:0.22,h:0.22,fill:{color:sc}});
           // Label (bold)
-          sl.addText(row.label||'',{x:M+0.6,y:ry,w:tableW*0.32,h:rowH,fontSize:9,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle',shrinkText:true});
+          sl.addText(row.label||'',{x:M+0.9,y:ry,w:tableW*0.35,h:rowH,fontSize:10,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle',shrinkText:true});
           // Detail text
-          sl.addText(row.detail||'',{x:M+tableW*0.38,y:ry,w:tableW*0.6,h:rowH,fontSize:9,fontFace:'Calibri',color:A.BODY,valign:'middle',lineSpacingMultiple:1.2,shrinkText:true});
+          sl.addText(row.detail||'',{x:M+0.9+tableW*0.35,y:ry,w:tableW*0.55,h:rowH,fontSize:9,fontFace:'Calibri',color:A.BODY,valign:'middle',lineSpacingMultiple:1.2,shrinkText:true});
         });
         soWhatPanel(sl,s.so_what);
 
@@ -900,12 +941,28 @@ REGLAS OBLIGATORIAS:
 
       // ========== LAYOUT: DEFAULT ==========
       } else {
-        if(s.type==='executive_summary' && s.body_text){
-          const exH=Math.min(4.5,Math.max(1.5,s.body_text.length/100+1.0));
-          sl.addShape('rect',{x:M,y:cy,w:eLW,h:exH,fill:{color:A.LGRAY}});
-          sl.addShape('rect',{x:M,y:cy,w:0.06,h:exH,fill:{color:A.NAVY}});
-          sl.addText(s.body_text,{x:M+0.25,y:cy+0.15,w:eLW-0.4,h:exH-0.25,fontSize:12,fontFace:'Calibri',color:A.DGRAY,italic:true,lineSpacingMultiple:1.5,valign:'top',shrinkText:true});
-          cy+=exH+0.2;
+        if(s.type==='executive_summary'){
+          const msgs=s.key_messages||[];
+          if(msgs.length>=2){
+            const msgCount=Math.min(msgs.length,4);
+            const msgW=eLW/msgCount;
+            const msgH=7.5-cy-0.8;
+            msgs.slice(0,msgCount).forEach((msg,i)=>{
+              const mx=M+(i*msgW);
+              sl.addShape('ellipse',{x:mx+msgW/2-0.22,y:cy,w:0.44,h:0.44,fill:{color:i===0?A.RED:A.NAVY}});
+              sl.addText(String(i+1),{x:mx+msgW/2-0.22,y:cy,w:0.44,h:0.44,fontSize:14,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
+              const msgText=typeof msg==='string'?msg:(msg.message||msg.title||'');
+              sl.addText(msgText,{x:mx+0.1,y:cy+0.6,w:msgW-0.2,h:msgH-0.7,fontSize:12,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.4,valign:'top',shrinkText:true});
+              sl.addShape('rect',{x:mx+0.05,y:cy+0.55,w:0.04,h:msgH-0.6,fill:{color:i===0?A.RED:A.NAVY}});
+            });
+            cy+=4.5;
+          } else if(s.body_text){
+            const exH=Math.min(4.5,Math.max(1.5,s.body_text.length/100+1.0));
+            sl.addShape('rect',{x:M,y:cy,w:eLW,h:exH,fill:{color:A.LGRAY}});
+            sl.addShape('rect',{x:M,y:cy,w:0.06,h:exH,fill:{color:A.NAVY}});
+            sl.addText(s.body_text,{x:M+0.25,y:cy+0.15,w:eLW-0.4,h:exH-0.25,fontSize:12,fontFace:'Calibri',color:A.DGRAY,italic:true,lineSpacingMultiple:1.5,valign:'top',shrinkText:true});
+            cy+=exH+0.2;
+          }
         } else if(s.body_text && s.bullets && s.bullets.length){
           // Merge body + bullets into single block to prevent overlap
           const parts=[{text:s.body_text,options:{fontSize:12,color:A.BODY}}];
@@ -982,8 +1039,11 @@ REGLAS OBLIGATORIAS:
     // =================== APPENDIX: INFORMATION GAPS ===================
     if(result.information_gaps&&result.information_gaps.length){
       const sl=pptx.addSlide({masterName:'ALTO_MASTER'});
-      sl.background={color:'F8F9FB'};
+      sl.background={color:'F0F0F0'};
       addLogo(sl);
+      // BACKUP badge top-right
+      sl.addShape('rect',{x:W-2.2,y:0.15,w:1.8,h:0.35,fill:{color:A.MGRAY}});
+      sl.addText('BACKUP',{x:W-2.2,y:0.15,w:1.8,h:0.35,fontSize:8,fontFace:'Calibri',color:A.SGRAY,bold:true,align:'center',valign:'middle',charSpacing:3});
       // Navy left accent bar
       sl.addShape('rect',{x:0,y:0,w:0.08,h:7.5,fill:{color:A.NAVY}});
       // Header
