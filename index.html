@@ -131,7 +131,7 @@ tailwind.config={theme:{extend:{colors:{
           <h1 class="font-['Manrope'] text-4xl md:text-5xl font-extrabold text-[#041627] tracking-tight leading-none">Informes Estratégicos</h1>
           <p class="font-['Inter'] text-[#74777D] text-sm mt-2 font-medium">Gestión de análisis crítico y reportes ejecutivos trimestrales.</p>
         </div>
-        <button onclick="showNuevoInformeForm()" class="flex items-center gap-2 bg-gradient-to-br from-[#BB0014] to-[#8e000c] text-white px-5 py-2.5 font-['Manrope'] font-bold text-[11px] uppercase tracking-wider rounded-lg shadow-md hover:opacity-90 active:scale-95 transition-all mt-1 shrink-0">
+        <button onclick="nuevoInforme()" class="flex items-center gap-2 bg-gradient-to-br from-[#BB0014] to-[#8e000c] text-white px-5 py-2.5 font-['Manrope'] font-bold text-[11px] uppercase tracking-wider rounded-lg shadow-md hover:opacity-90 active:scale-95 transition-all mt-1 shrink-0">
           <span class="material-symbols-outlined text-sm">add</span>Nuevo Informe
         </button>
       </header>
@@ -141,7 +141,7 @@ tailwind.config={theme:{extend:{colors:{
       <div id="informesEmpty" class="hidden text-center py-16">
         <span class="material-symbols-outlined text-5xl text-outline-variant block mb-3">folder_open</span>
         <p class="font-['Inter'] text-sm text-outline italic mb-6">Sin informes guardados aún.</p>
-        <button onclick="showNuevoInformeForm()" class="inline-flex items-center gap-2 bg-[#041627] text-white px-5 py-2.5 font-['Manrope'] font-bold text-[11px] uppercase tracking-wider hover:bg-[#1A2B3C] transition-all rounded-lg">
+        <button onclick="nuevoInforme()" class="inline-flex items-center gap-2 bg-[#041627] text-white px-5 py-2.5 font-['Manrope'] font-bold text-[11px] uppercase tracking-wider hover:bg-[#1A2B3C] transition-all rounded-lg">
           <span class="material-symbols-outlined text-sm">add</span>Crear primer informe
         </button>
       </div>

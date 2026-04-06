@@ -741,6 +741,27 @@ function showNuevoInformeForm() {
   if (form) form.style.display = 'block';
 }
 
+function nuevoInforme() {
+  // Reset all form state before showing clean form
+  result = null; originalResult = null;
+  hidePreview();
+  ['btnDocx','btnPdf','btnPptx','btnBrief'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+  const chatSection = document.getElementById('chatSection');
+  if (chatSection) chatSection.classList.add('hidden');
+  const statusMsg = document.getElementById('statusMsg');
+  if (statusMsg) statusMsg.classList.add('hidden');
+  const errorBox = document.getElementById('errorBox');
+  if (errorBox) errorBox.classList.add('hidden');
+  const validationWarn = document.getElementById('validationWarn');
+  if (validationWarn) validationWarn.classList.add('hidden');
+  const chatMessages = document.getElementById('chatMessages');
+  if (chatMessages) chatMessages.innerHTML = '';
+  showNuevoInformeForm();
+}
+
 function hideNuevoInformeForm() {
   const dash = document.getElementById('informesDashboard');
   const form = document.getElementById('informesNewSection');
