@@ -233,7 +233,7 @@ REGLAS OBLIGATORIAS:
     function addNote(sl,text){if(text)sl.addNotes(text);}
 
     function soWhatBox(sl,text,y){ /* no-op */ }
-    function srcNote(sl,t){if(t)sl.addText(tp('source')+': '+t,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});}
+    function srcNote(sl,t){if(!t)return;let src=String(t).trim();if(src.toLowerCase().startsWith('fuente:'))src=src.substring(7).trim();if(src.toLowerCase().startsWith('source:'))src=src.substring(7).trim();sl.addText(tp('source')+': '+src,{x:M,y:6.9,w:8,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});}
     function chartFallback(sl,s,cy,eLW){
       // Show body_text/bullets when chart data is missing
       const parts=[];
@@ -269,17 +269,20 @@ REGLAS OBLIGATORIAS:
         const leftW=7.8;
         // Logo color (top left)
         if(logoBase64)sl.addImage({data:'image/png;base64,'+logoBase64,x:0.55,y:0.4,w:1.6,h:0.63});
-        // Main title — large extrabold (shrinkText prevents overlap with subtitle)
-        sl.addText(s.action_title||result.title,{x:0.55,y:1.45,w:leftW-0.8,h:3.5,fontSize:32,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
-        // Subtitle italic — positioned below title area with clearance before "Preparado por"
-        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.85,w:leftW-1.0,h:0.4,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
+        // Main title — auto-size based on length to prevent overflow
+        const titleText=s.action_title||result.title;
+        const titleLen=titleText.length;
+        const titleFontSize=titleLen>120?22:titleLen>80?24:titleLen>50?28:32;
+        sl.addText(titleText,{x:0.55,y:1.45,w:leftW-0.8,h:3.0,fontSize:titleFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.1,valign:'top',shrinkText:true});
+        // Subtitle italic — positioned below title area with clearance
+        if(s.subheading)sl.addText(s.subheading,{x:0.55,y:4.5,w:leftW-1.0,h:0.4,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,shrinkText:true});
         // Presented by / date row
-        sl.addShape('rect',{x:0.55,y:5.55,w:0.03,h:0.7,fill:{color:A.MGRAY}});
-        sl.addText('Preparado por',{x:0.72,y:5.55,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
-        sl.addText('ALTO Strategy',{x:0.72,y:5.75,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
-        sl.addShape('rect',{x:3.1,y:5.55,w:0.03,h:0.7,fill:{color:A.MGRAY}});
-        sl.addText('Fecha',{x:3.28,y:5.55,w:1.5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
-        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:3.28,y:5.75,w:3,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addShape('rect',{x:0.55,y:5.2,w:0.03,h:0.7,fill:{color:A.MGRAY}});
+        sl.addText('Preparado por',{x:0.72,y:5.2,w:2,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
+        sl.addText('ALTO Strategy',{x:0.72,y:5.4,w:2.5,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
+        sl.addShape('rect',{x:3.1,y:5.2,w:0.03,h:0.7,fill:{color:A.MGRAY}});
+        sl.addText('Fecha',{x:3.28,y:5.2,w:1.5,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:false,letterSpacing:2});
+        sl.addText(new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long'}),{x:3.28,y:5.4,w:3,h:0.3,fontSize:11,fontFace:'Calibri',color:A.NAVY,bold:true});
         // CONFIDENCIAL small
         sl.addText(tp('confidential'),{x:0.55,y:6.55,w:3,h:0.25,fontSize:8,fontFace:'Calibri',color:A.RED,bold:true,letterSpacing:3});
         // Right side — asymmetric navy shape (simulated with tall rect from 60% to right edge)
@@ -490,16 +493,21 @@ REGLAS OBLIGATORIAS:
         const chartH=Math.min(5.4,7.5-cy-0.8);const chartW=LW*0.95;
         if(normH.length&&hCats.length){
           const singleH=normH.length===1;
-          sl.addChart(pptx.charts.BAR,normH,{
+          // Truncate long category labels to prevent vertical overflow
+          const maxLabelLen=40;
+          const truncCats=hCats.map(c=>c.length>maxLabelLen?c.substring(0,maxLabelLen-1)+'…':c);
+          const truncH=normH.map(sr=>({...sr,labels:truncCats}));
+          sl.addChart(pptx.charts.BAR,truncH.length?truncH:normH,{
             x:M,y:cy,w:chartW,h:chartH,
             barDir:'bar',barGapWidthPct:40,
             catAxisLabelColor:A.NAVY,valAxisLabelColor:A.BODY,
             catAxisLabelFontFace:'Calibri',valAxisLabelFontFace:'Calibri',
-            catAxisLabelFontSize:11,valAxisLabelFontSize:9,
-            dataLabelFontSize:9,dataLabelFontBold:true,dataLabelColor:A.WHITE,
-            showDataLabel:true,dataLabelPosition:'inEnd',
+            catAxisLabelFontSize:8,valAxisLabelFontSize:8,
+            catAxisMaxLabelLen:maxLabelLen,
+            dataLabelFontSize:8,dataLabelFontBold:true,dataLabelColor:A.WHITE,
+            showDataLabel:true,dataLabelPosition:'ctr',
             catGridLine:{style:'none'},valGridLine:{color:A.MGRAY,style:'dash',size:0.5},
-            plotAreaBorderColor:A.WHITE,
+            plotAreaBorderColor:A.WHITE,valAxisHidden:true,
             chartColors:singleH?[A.NAVY,A.RED,A.NAVY,A.RED,A.NAVY,A.RED,A.NAVY,A.RED]:[A.NAVY,A.RED,A.TBLUE],
             varyColors:singleH,
             showLegend:!singleH,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
@@ -515,13 +523,15 @@ REGLAS OBLIGATORIAS:
         const vals=dp.map(d=>parseFloat(String(d.value).replace(/[^0-9.]/g,''))||1);
         const lbls=dp.map(d=>d.label||'');
         const donutColors=[A.NAVY,A.RED,A.TBLUE,'74777D','1A2B3C','C4C6CD'];
-        sl.addChart(pptx.charts.DOUGHNUT,[{name:'',labels:lbls,values:vals}],{
-          x:M,y:cy,w:eLW*0.75,h:4.6,
+        // Truncate long labels to prevent clipping
+        const truncLbls=lbls.map(l=>l.length>35?l.substring(0,34)+'…':l);
+        sl.addChart(pptx.charts.DOUGHNUT,[{name:'',labels:truncLbls,values:vals}],{
+          x:M+0.3,y:cy,w:eLW*0.7,h:4.2,
           holeSize:55,
-          showLabel:true,showValue:false,showPercent:true,dataLabelPosition:'bestFit',
-          dataLabelFontSize:10,dataLabelFontBold:true,dataLabelColor:A.WHITE,
+          showLabel:false,showValue:false,showPercent:true,dataLabelPosition:'outEnd',
+          dataLabelFontSize:9,dataLabelFontBold:true,dataLabelColor:A.NAVY,
           chartColors:donutColors,
-          showLegend:true,legendPos:'b',legendFontSize:9,legendFontFace:'Calibri',
+          showLegend:true,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
           legendColor:A.BODY,
           showTitle:false,plotAreaBorderColor:A.WHITE
         });
@@ -734,9 +744,9 @@ REGLAS OBLIGATORIAS:
         const statusColors={green:'2E7D32',yellow:'F9A825',red:A.RED};
         // Table header bar
         sl.addShape('rect',{x:M,y:cy,w:tableW,h:0.32,fill:{color:A.NAVY}});
-        sl.addText('STATUS',{x:M+0.08,y:cy,w:0.5,h:0.32,fontSize:8,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:2});
-        sl.addText('INDICADOR',{x:M+0.7,y:cy,w:tableW*0.42,h:0.32,fontSize:8,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:2});
-        sl.addText('DETALLE',{x:M+tableW*0.46,y:cy,w:tableW*0.52,h:0.32,fontSize:8,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:2});
+        sl.addText('STATUS',{x:M+0.08,y:cy,w:0.7,h:0.32,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:1});
+        sl.addText('INDICADOR',{x:M+0.8,y:cy,w:tableW*0.35,h:0.32,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:1});
+        sl.addText('DETALLE',{x:M+tableW*0.4,y:cy,w:tableW*0.58,h:0.32,fontSize:7,fontFace:'Calibri',color:A.WHITE,bold:true,valign:'middle',charSpacing:1});
         cy+=0.32;
         rows.forEach((row,i)=>{
           const ry=cy+(i*rowH);
@@ -746,11 +756,11 @@ REGLAS OBLIGATORIAS:
           // Bottom separator
           if(i<rows.length-1) sl.addShape('rect',{x:M,y:ry+rowH-0.01,w:tableW,h:0.01,fill:{color:'DDDFE2'}});
           // Status circle
-          sl.addShape('ellipse',{x:M+0.12,y:ry+(rowH-0.22)/2,w:0.22,h:0.22,fill:{color:sc}});
+          sl.addShape('ellipse',{x:M+0.2,y:ry+(rowH-0.22)/2,w:0.22,h:0.22,fill:{color:sc}});
           // Label (bold)
-          sl.addText(row.label||'',{x:M+0.5,y:ry,w:tableW*0.38,h:rowH,fontSize:10,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle',shrinkText:true});
+          sl.addText(row.label||'',{x:M+0.6,y:ry,w:tableW*0.32,h:rowH,fontSize:9,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle',shrinkText:true});
           // Detail text
-          sl.addText(row.detail||'',{x:M+tableW*0.42,y:ry,w:tableW*0.56,h:rowH,fontSize:9,fontFace:'Calibri',color:A.BODY,valign:'middle',lineSpacingMultiple:1.2,shrinkText:true});
+          sl.addText(row.detail||'',{x:M+tableW*0.38,y:ry,w:tableW*0.6,h:rowH,fontSize:9,fontFace:'Calibri',color:A.BODY,valign:'middle',lineSpacingMultiple:1.2,shrinkText:true});
         });
         soWhatPanel(sl,s.so_what);
 
