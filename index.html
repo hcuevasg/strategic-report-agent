@@ -53,22 +53,77 @@ tailwind.config={theme:{extend:{colors:{
 </header>
 
 <div class="flex min-h-screen pt-16">
-  <!-- Sidebar -->
-  <aside class="hidden md:flex flex-col w-64 bg-[#F2F4F6] border-r border-outline-variant/30 fixed left-0 top-16 bottom-0 z-40">
-    <div class="px-8 py-7 border-b border-outline-variant/20">
-      <h2 class="font-['Manrope'] font-bold text-[#041627] text-base tracking-tight">ALTO Strategy</h2>
-      <p class="font-['Inter'] text-[10px] text-slate-500 uppercase tracking-widest mt-1">Report Agent</p>
-    </div>
-    <div class="flex-1 overflow-y-auto">
-      <div class="px-6 pt-5 pb-2">
-        <span class="font-['Inter'] text-[9px] uppercase tracking-widest text-slate-400 font-semibold">Recientes</span>
+  <!-- Sidebar nav -->
+  <aside id="navSidebar" class="hidden md:flex flex-col w-64 bg-[#041627] fixed left-0 top-16 bottom-0 z-40" style="overflow-y:auto;scrollbar-width:none">
+    <!-- Nav tabs -->
+    <nav style="border-bottom:1px solid rgba(255,255,255,0.08);padding:10px 0">
+      <button id="navMinutas" onclick="switchNavTab('minutas')" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:#fff;background:rgba(187,0,20,0.12);border:none;border-left:3px solid #BB0014;cursor:pointer;text-align:left">
+        <span class="material-symbols-outlined" style="font-size:18px">event_note</span>
+        Minutas
+      </button>
+      <button id="navInformes" onclick="switchNavTab('informes')" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);background:transparent;border:none;border-left:3px solid transparent;cursor:pointer;text-align:left">
+        <span class="material-symbols-outlined" style="font-size:18px">bar_chart</span>
+        Informes
+      </button>
+    </nav>
+    <!-- Calendar (Minutas tab) -->
+    <div id="sidebarCalendar" style="padding:14px 12px;flex:1"></div>
+    <!-- History (Informes tab) -->
+    <div id="sidebarHistory" style="display:none;flex:1;overflow-y:auto">
+      <div style="padding:20px 24px 8px">
+        <span style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.4);font-weight:600">Recientes</span>
       </div>
-      <div id="historyList" class="px-3 pb-4 space-y-1"></div>
+      <div id="historyList" style="padding:0 12px 16px"></div>
     </div>
   </aside>
 
   <!-- Main Content -->
-  <main class="flex-grow md:ml-64 pb-24 px-6 md:px-12 pt-10">
+  <main class="flex-grow md:ml-64">
+
+    <!-- ── MINUTAS PANEL ── -->
+    <div id="minutasPanel" style="display:none;padding:40px 48px 96px">
+      <header style="margin-bottom:32px">
+        <span style="font-family:Inter,sans-serif;color:#BB0014;font-weight:700;letter-spacing:.25em;text-transform:uppercase;font-size:10px;display:block;margin-bottom:8px">Gestión de Reuniones</span>
+        <h1 style="font-family:Manrope,sans-serif;font-size:36px;font-weight:800;color:#041627;line-height:1">Minutas</h1>
+        <div style="width:64px;height:4px;background:#BB0014;margin-top:16px"></div>
+      </header>
+      <!-- Action bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:8px 14px;width:280px">
+          <span class="material-symbols-outlined" style="font-size:16px;color:#9ca3af">search</span>
+          <input id="minutaSearch" type="text" placeholder="Buscar minuta..." oninput="filterMinutas(this.value)" style="border:none;outline:none;font-family:Inter,sans-serif;font-size:13px;color:#374151;background:transparent;width:100%" />
+        </div>
+        <button onclick="showNuevaMinuta()" style="display:flex;align-items:center;gap:6px;background:#BB0014;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+          <span class="material-symbols-outlined" style="font-size:16px">add</span>
+          Nueva Minuta
+        </button>
+      </div>
+      <!-- New minuta input (hidden by default) -->
+      <div id="nuevaMinutaSection" style="display:none;background:#fff;border-left:4px solid #041627;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+        <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#BB0014;font-weight:700;display:block;margin-bottom:8px">Notas de la Reunión</label>
+        <textarea id="minutaInput" rows="6" placeholder="Pega las notas de la reunión, transcripción o resumen..." style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #C4C6CD;padding:16px;font-family:Inter,sans-serif;font-size:14px;color:#191C1E;resize:vertical;outline:none"></textarea>
+        <div style="display:flex;gap:12px;margin-top:16px;align-items:center">
+          <button onclick="generateMinuta()" id="btnGenerateMinuta" style="background:#041627;color:#fff;border:none;padding:12px 24px;font-family:Manrope,sans-serif;font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1">psychology</span>
+            Generar Minuta
+          </button>
+          <button onclick="document.getElementById('nuevaMinutaSection').style.display='none'" style="background:transparent;border:1px solid #C4C6CD;color:#6b7280;padding:12px 16px;font-family:Inter,sans-serif;font-size:12px;cursor:pointer">
+            Cancelar
+          </button>
+          <div id="minutaProgress" style="display:none;flex:1">
+            <div style="height:3px;background:#E0E3E5;border-radius:2px"><div id="minutaProgressFill" style="height:3px;background:#BB0014;border-radius:2px;width:0%;transition:width 0.3s"></div></div>
+            <span id="minutaProgressLabel" style="font-family:Inter,sans-serif;font-size:10px;color:#BB0014;text-transform:uppercase;letter-spacing:.1em;font-weight:600;display:block;margin-top:4px"></span>
+          </div>
+        </div>
+      </div>
+      <!-- Minuta preview (after generation) -->
+      <div id="minutaPreviewCard" style="display:none;margin-bottom:20px"></div>
+      <!-- Saved minutas list -->
+      <div id="minutasList"></div>
+    </div>
+
+    <!-- ── INFORMES PANEL ── -->
+    <div id="informesPanel" style="padding:40px 48px 96px">
 
     <!-- Page header -->
     <header class="mb-10">
@@ -237,6 +292,7 @@ tailwind.config={theme:{extend:{colors:{
       </div>
     </section>
 
+    </div><!-- /informesPanel -->
   </main>
 </div>
 

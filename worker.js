@@ -111,6 +111,60 @@ Responde SOLO con JSON válido (sin markdown, sin backticks):
   "conclusion": "Conclusión ejecutiva final"
 }`;
 
+const MINUTA_SYSTEM_PROMPT = `Eres un asistente especializado en generar minutas de reunión estructuradas y accionables a partir de notas, transcripciones o resúmenes de reuniones.
+
+Tu tarea es transformar el contenido recibido en una minuta ejecutiva clara, con todos los compromisos y decisiones identificados.
+
+INSTRUCCIONES:
+1. Extrae todos los compromisos, tareas y responsables mencionados.
+2. Identifica las decisiones tomadas con su justificación.
+3. Detecta los temas tratados y su resultado.
+4. Infiere fechas y plazos cuando se mencionan (relativos o absolutos).
+5. Asigna prioridad (high/medium/low) según urgencia, impacto o plazo.
+6. Si no se menciona un responsable, usa "Por definir".
+7. Si no se menciona una fecha, usa "A definir".
+8. Responde en el mismo idioma del contenido, salvo instrucción contraria.
+9. NO inventes compromisos ni decisiones que no estén en el contenido fuente.
+10. Si el contenido es escaso o ambiguo, extrae lo que puedas y marca open_issues con lo que falta.
+
+Responde SOLO con JSON válido (sin markdown, sin backticks):
+{
+  "language": "código ISO 639-1",
+  "title": "Minuta: [tema principal de la reunión]",
+  "date": "Fecha de la reunión si se menciona, si no: null",
+  "attendees": ["Nombre o rol 1", "Nombre o rol 2"],
+  "facilitator": "Facilitador si se menciona, si no: null",
+  "objectives": ["Objetivo 1 de la reunión"],
+  "decisions": [
+    {
+      "decision": "Decisión tomada",
+      "rationale": "Por qué se tomó (si se menciona)",
+      "owner": "Responsable de la decisión"
+    }
+  ],
+  "commitments": [
+    {
+      "task": "Descripción específica de la tarea",
+      "responsible": "Nombre o rol responsable",
+      "deadline": "Fecha o plazo (ej: '15 Abr', '2 semanas', 'A definir')",
+      "priority": "high | medium | low"
+    }
+  ],
+  "key_topics": [
+    {
+      "topic": "Tema tratado",
+      "summary": "Resumen de la discusión",
+      "outcome": "Resultado o acuerdo alcanzado"
+    }
+  ],
+  "open_issues": ["Tema pendiente que no se resolvió en la reunión"],
+  "next_meeting": {
+    "date": "Fecha sugerida para próxima reunión o null",
+    "objectives": ["Objetivo para próxima reunión"]
+  },
+  "summary": "Resumen ejecutivo de la reunión en 2-3 oraciones"
+}`;
+
 const PPTX_SYSTEM_PROMPT = `Eres un consultor senior de estrategia y diseñador de presentaciones ejecutivas McKinsey/BCG. Tu trabajo es transformar un informe ejecutivo en una estructura de slides de altísimo nivel visual y narrativo.
 
 PALETA CORPORATIVA ALTO — OBLIGATORIA:
@@ -1164,7 +1218,11 @@ export default {
           ? `\nIMPORTANTE: Redacta TODO el informe en ${LANG_NAMES[body.outputLanguage]}, independientemente del idioma del contenido fuente.\n`
           : '';
 
-        // Report type instructions
+        // Minuta mode: switch system prompt and use dedicated prompt
+        const isMinuta = body.reportType === 'minuta';
+        const activeSystemPrompt = isMinuta ? MINUTA_SYSTEM_PROMPT : SYSTEM_PROMPT;
+
+        // Report type instructions (only for non-minuta types)
         const REPORT_TEMPLATES = {
           strategic: 'ENFOQUE ESTRATÉGICO: Prioriza visión de largo plazo, posicionamiento competitivo, alineación con objetivos corporativos. Los hallazgos deben traducirse en implicancias estratégicas. Las recomendaciones deben organizarse por horizonte temporal (corto/mediano/largo plazo) con impacto estratégico claro.',
           financial: 'ENFOQUE FINANCIERO: Prioriza impacto económico, métricas de rentabilidad, ROI, márgenes, flujo de caja y proyecciones. Cuantifica cada hallazgo en términos monetarios cuando sea posible. Las recomendaciones deben incluir estimación de costo/beneficio. Los riesgos deben valorarse por exposición financiera.',
@@ -1174,13 +1232,15 @@ export default {
           due_diligence: 'ENFOQUE DUE DILIGENCE: Prioriza evaluación crítica de viabilidad, red flags, consistencia de datos, riesgos ocultos y fortalezas verificables. Distingue hechos verificados de claims no soportados. Las recomendaciones deben incluir condiciones, caveats y puntos que requieren investigación adicional.',
           general: '',
         };
-        const templateInstr = REPORT_TEMPLATES[body.reportType] || '';
+        const templateInstr = isMinuta ? '' : (REPORT_TEMPLATES[body.reportType] || '');
         const typePref = templateInstr ? `\n${templateInstr}\n` : '';
 
         // Build messages — support vision (images array)
         const userBlocks = [];
         const sanitizedContent = sanitizeInput(body.userContent || '');
-        const promptPrefix = langPref + typePref + 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n';
+        const promptPrefix = isMinuta
+          ? (langPref + 'Genera la minuta de reunión a partir del siguiente contenido. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n')
+          : (langPref + typePref + 'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n');
         if (body.images && Array.isArray(body.images) && body.images.length > 0) {
           body.images.forEach(img => {
             userBlocks.push({
@@ -1212,7 +1272,7 @@ export default {
             max_tokens: 16000,
             thinking: { type: 'enabled', budget_tokens: 4000 },
             stream: true,
-            system: SYSTEM_PROMPT,
+            system: activeSystemPrompt,
             messages: [{
               role: 'user',
               content: userBlocks,

@@ -660,7 +660,8 @@ function renderHistory(){
 // Init history on load
 document.addEventListener('DOMContentLoaded', () => {
   updateUI();
-  renderHistory();
+  buildCalendar();
+  switchNavTab('minutas');
   handleMagicLink();
 });
 
@@ -1706,6 +1707,440 @@ function setDot(s){
 }
 function flash(m){showStatus(m);setTimeout(()=>{if(result)showStatus('Informe listo — edita y exporta');},2500);}
 function loadSample(){document.getElementById('inputText').value=`Tenemos un problema con las tiendas de México. Los eventos de pérdida han bajado un 15% en Q1 2026 comparado con Q4 2025, pero no sabemos si es porque mejoró la prevención o porque dejaron de reportar.\n\nLas tiendas de Walmart concentran el 60% de los eventos. Los modus operandi más frecuentes son hurto hormiga y robo organizado. El equipo legal tiene 340 expedientes abiertos y solo 12 han llegado a sentencia este trimestre.\n\nEl área de operaciones reporta que hay 3 tiendas que concentran el 25% de los eventos pero no han tenido visita de auditoría en 6 meses. El equipo de analytics detectó que los eventos de "robo organizado" subieron un 40% en tiendas de formato grande.\n\nNecesitamos decidir si reasignar guardias, cambiar protocolos en ciertas tiendas, priorizar casos legales por monto, y definir un modelo de scoring de tiendas por riesgo.\n\nNota: la data de modus operandi tiene un 30% de registros sin clasificar. También hay discrepancias entre los datos del sistema legacy y la plataforma nueva.`;}
+// ============================================================
+// NAV SIDEBAR — Minutas / Informes tab switching
+// ============================================================
+function switchNavTab(tab) {
+  const minutasPanel   = document.getElementById('minutasPanel');
+  const informesPanel  = document.getElementById('informesPanel');
+  const navMinutas     = document.getElementById('navMinutas');
+  const navInformes    = document.getElementById('navInformes');
+  const calSection     = document.getElementById('sidebarCalendar');
+  const histSection    = document.getElementById('sidebarHistory');
+
+  const activeStyle   = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:#fff;background:rgba(187,0,20,0.12);border:none;border-left:3px solid #BB0014;cursor:pointer;text-align:left';
+  const inactiveStyle = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);background:transparent;border:none;border-left:3px solid transparent;cursor:pointer;text-align:left';
+
+  if (tab === 'minutas') {
+    minutasPanel.style.display  = 'block';
+    informesPanel.style.display = 'none';
+    navMinutas.style.cssText    = activeStyle;
+    navInformes.style.cssText   = inactiveStyle;
+    calSection.style.display    = 'block';
+    histSection.style.display   = 'none';
+    renderMinutasList();
+  } else {
+    minutasPanel.style.display  = 'none';
+    informesPanel.style.display = 'block';
+    navMinutas.style.cssText    = inactiveStyle;
+    navInformes.style.cssText   = activeStyle;
+    calSection.style.display    = 'none';
+    histSection.style.display   = 'block';
+    renderHistory();
+  }
+}
+
+// ============================================================
+// CALENDAR — 3-month planner in sidebar
+// ============================================================
+function buildCalendar() {
+  const container = document.getElementById('sidebarCalendar');
+  if (!container) return;
+  const now   = new Date();
+  const months = [-1, 0, 1].map(offset => {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    return { year: d.getFullYear(), month: d.getMonth() };
+  });
+  const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const todayY = now.getFullYear(), todayM = now.getMonth(), todayD = now.getDate();
+
+  let html = '';
+  months.forEach(({ year, month }, idx) => {
+    const isCurrent = year === todayY && month === todayM;
+    const firstDay  = new Date(year, month, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    html += `<div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:600;color:${isCurrent ? '#BB0014' : 'rgba(255,255,255,0.9)'};text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding:0 2px">${monthNames[month]} ${year}</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px">`;
+    ['D','L','M','X','J','V','S'].forEach(d => {
+      html += `<div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;padding:2px 0;font-weight:500">${d}</div>`;
+    });
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) {
+      html += `<div></div>`;
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const isToday = isCurrent && d === todayD;
+      const style = isToday
+        ? 'font-size:10px;text-align:center;padding:3px 1px;border-radius:50%;background:#BB0014;color:#fff;font-weight:600;cursor:pointer'
+        : 'font-size:10px;text-align:center;padding:3px 1px;border-radius:50%;color:rgba(255,255,255,0.55);cursor:pointer';
+      html += `<div style="${style}">${d}</div>`;
+    }
+    html += `</div></div>`;
+    if (idx < 2) html += `<div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0 12px"></div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ============================================================
+// MINUTAS — Show/hide input panel
+// ============================================================
+function showNuevaMinuta() {
+  document.getElementById('nuevaMinutaSection').style.display = 'block';
+  document.getElementById('minutaInput').focus();
+}
+
+// ============================================================
+// MINUTAS — Generate via Worker
+// ============================================================
+const MINUTAS_KEY = 'alto_minutas_history';
+
+async function generateMinuta() {
+  const input = (document.getElementById('minutaInput').value || '').trim();
+  if (!input) { flash('Ingresa las notas de la reunión'); return; }
+
+  const btn = document.getElementById('btnGenerateMinuta');
+  const prog = document.getElementById('minutaProgress');
+  const progFill = document.getElementById('minutaProgressFill');
+  const progLabel = document.getElementById('minutaProgressLabel');
+
+  btn.disabled = true;
+  prog.style.display = 'flex';
+  progFill.style.width = '15%';
+  progLabel.textContent = 'Analizando reunión...';
+
+  let token;
+  try {
+    const tokenRes = await fetch(`${WORKER_URL}/token`, { credentials: 'omit' });
+    if (tokenRes.ok) { const td = await tokenRes.json(); token = td.token; }
+  } catch(e) {}
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['X-Session-Token'] = token;
+
+  const sanitized = input.replace(/ignore\s+(previous\s+)?instructions?/gi,'')
+                         .replace(/system\s*:/gi,'').trim();
+  const body = { userContent: sanitized, reportType: 'minuta', outputLanguage };
+
+  let accumulated = '';
+  let minutaResult = null;
+
+  try {
+    progFill.style.width = '40%';
+    progLabel.textContent = 'Generando minuta...';
+
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      chunk.split('\n').forEach(line => {
+        if (!line.startsWith('data:')) return;
+        try {
+          const ev = JSON.parse(line.slice(5));
+          if (ev.type === 'text') accumulated += ev.text;
+        } catch(e) {}
+      });
+    }
+
+    progFill.style.width = '80%';
+    progLabel.textContent = 'Procesando resultado...';
+
+    const jsonMatch = accumulated.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No se recibió JSON válido');
+    minutaResult = JSON.parse(jsonMatch[0]);
+
+    progFill.style.width = '100%';
+    progLabel.textContent = '¡Listo!';
+    setTimeout(() => { prog.style.display = 'none'; progFill.style.width = '0%'; }, 1500);
+
+    saveMinuta(minutaResult);
+    renderMinutaPreview(minutaResult);
+    document.getElementById('nuevaMinutaSection').style.display = 'none';
+    renderMinutasList();
+
+  } catch(err) {
+    progLabel.textContent = 'Error: ' + err.message;
+    progLabel.style.color = '#BB0014';
+    setTimeout(() => { prog.style.display = 'none'; progLabel.style.color = '#BB0014'; }, 3000);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ============================================================
+// MINUTAS — Save & load from localStorage
+// ============================================================
+function saveMinuta(r) {
+  try {
+    const list = loadMinutasHistory();
+    const id = Date.now();
+    const entry = {
+      id,
+      title: r.title || 'Sin título',
+      date: r.date || new Date().toLocaleDateString('es-CL'),
+      saved_at: new Date().toISOString(),
+      data: JSON.stringify(r),
+    };
+    list.unshift(entry);
+    if (list.length > 20) list.splice(20);
+    localStorage.setItem(MINUTAS_KEY, JSON.stringify(list));
+  } catch(e) {}
+}
+
+function loadMinutasHistory() {
+  try { return JSON.parse(localStorage.getItem(MINUTAS_KEY) || '[]'); } catch(e) { return []; }
+}
+
+// ============================================================
+// MINUTAS — Render preview (after generation)
+// ============================================================
+function renderMinutaPreview(r) {
+  const container = document.getElementById('minutaPreviewCard');
+  if (!container) return;
+  container.style.display = 'block';
+  container.innerHTML = buildMinutaCardHTML(r, true);
+}
+
+// ============================================================
+// MINUTAS — Render saved list
+// ============================================================
+let _minutasFilter = '';
+function filterMinutas(q) { _minutasFilter = q.toLowerCase(); renderMinutasList(); }
+
+function renderMinutasList() {
+  const container = document.getElementById('minutasList');
+  if (!container) return;
+  let list = loadMinutasHistory();
+  if (_minutasFilter) {
+    list = list.filter(m => m.title.toLowerCase().includes(_minutasFilter) || (m.date||'').includes(_minutasFilter));
+  }
+  if (!list.length) {
+    container.innerHTML = `<p style="font-family:Inter,sans-serif;font-size:13px;color:#9ca3af;padding:32px 0;text-align:center;font-style:italic">Sin minutas guardadas aún. Crea tu primera minuta.</p>`;
+    return;
+  }
+  container.innerHTML = list.map((m, idx) => {
+    let r = null;
+    try { r = JSON.parse(m.data); } catch(e) {}
+    const commitCount = r?.commitments?.length || 0;
+    const pending     = r?.open_issues?.length || 0;
+    const savedDate   = m.date || new Date(m.saved_at).toLocaleDateString('es-CL');
+    const attendees   = r?.attendees?.length || 0;
+    return `
+    <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.07),0 2px 12px rgba(0,0,0,0.04);margin-bottom:12px;overflow:hidden">
+      <div style="padding:16px 20px;cursor:pointer" onclick="toggleMinutaCard(${m.id})">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#111827">${esc(m.title)}</div>
+            <div style="font-family:Inter,sans-serif;font-size:12px;color:#9ca3af;margin-top:3px">${esc(savedDate)}${attendees ? ' · ' + attendees + ' asistentes' : ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#dcfce7;color:#16a34a">Finalizada</span>
+            <span id="chevron-${m.id}" style="font-family:Material Symbols Outlined;font-size:18px;color:#9ca3af;transition:transform .2s">expand_more</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${commitCount ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;background:#f0fdf4;color:#16a34a">✓ ${commitCount} compromisos</span>` : ''}
+          ${pending ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;background:#fffbeb;color:#d97706">⚠ ${pending} pendientes</span>` : ''}
+        </div>
+      </div>
+      <div id="minuta-body-${m.id}" style="display:none">
+        ${r ? buildMinutaBodyHTML(r) : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMinutaCard(id) {
+  const body    = document.getElementById(`minuta-body-${id}`);
+  const chevron = document.getElementById(`chevron-${id}`);
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display    = open ? 'none' : 'block';
+  if (chevron) chevron.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function buildMinutaBodyHTML(r) {
+  const priorityDot = p => {
+    const colors = { high: '#BB0014', medium: '#f59e0b', low: '#22c55e' };
+    return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${colors[p]||'#9ca3af'};margin-right:4px"></span>`;
+  };
+
+  let html = '<div style="padding:0 20px 18px;border-top:1px solid #f3f4f6">';
+
+  // Attendees
+  if (r.attendees?.length) {
+    const avatarColors = ['#BB0014','#4279B0','#16a34a','#7c3aed','#ea580c','#0891b2'];
+    html += `<div style="display:flex;align-items:center;gap:6px;padding:14px 0 12px">
+      <span style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af;font-weight:500;margin-right:4px;text-transform:uppercase;letter-spacing:.05em">Asistentes</span>`;
+    r.attendees.slice(0,6).forEach((a, i) => {
+      const initials = a.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      html += `<div title="${esc(a)}" style="width:26px;height:26px;border-radius:50%;background:${avatarColors[i%avatarColors.length]};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;border:2px solid #fff">${initials}</div>`;
+    });
+    if (r.attendees.length > 6) html += `<span style="font-size:11px;color:#9ca3af">+${r.attendees.length-6}</span>`;
+    html += `</div>`;
+  }
+
+  // Decisions
+  if (r.decisions?.length) {
+    html += `<div style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Decisiones</div>`;
+    html += `<div style="margin-bottom:14px">`;
+    r.decisions.forEach(d => {
+      html += `<div style="padding:8px 12px;background:#f8fafc;border-left:3px solid #041627;margin-bottom:6px;border-radius:0 6px 6px 0">
+        <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:600;color:#111827">${esc(d.decision)}</div>
+        ${d.rationale ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#6b7280;margin-top:2px">${esc(d.rationale)}</div>` : ''}
+        ${d.owner ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#4279B0;margin-top:2px">👤 ${esc(d.owner)}</div>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Commitments table
+  if (r.commitments?.length) {
+    html += `<div style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Compromisos</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f3f4f6">Tarea</th>
+          <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f3f4f6">Responsable</th>
+          <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f3f4f6">Fecha</th>
+          <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #f3f4f6">Prioridad</th>
+        </tr>
+      </thead>
+      <tbody>`;
+    r.commitments.forEach(c => {
+      html += `<tr>
+        <td style="padding:8px;color:#374151;border-bottom:1px solid #f9fafb;font-family:Inter,sans-serif">${esc(c.task)}</td>
+        <td style="padding:8px;color:#374151;border-bottom:1px solid #f9fafb;font-family:Inter,sans-serif"><span style="display:inline-flex;align-items:center;background:#f3f4f6;border-radius:20px;padding:2px 8px;font-size:11px">${esc(c.responsible)}</span></td>
+        <td style="padding:8px;color:#374151;border-bottom:1px solid #f9fafb;font-family:Inter,sans-serif;font-size:11px">${esc(c.deadline)}</td>
+        <td style="padding:8px;color:#374151;border-bottom:1px solid #f9fafb;font-family:Inter,sans-serif">${priorityDot(c.priority)}${c.priority==='high'?'Alta':c.priority==='medium'?'Media':'Baja'}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+
+  // Open issues
+  if (r.open_issues?.length) {
+    html += `<div style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Pendientes</div>
+    <ul style="margin:0 0 14px 0;padding-left:16px">`;
+    r.open_issues.forEach(i => {
+      html += `<li style="font-family:Inter,sans-serif;font-size:12px;color:#374151;margin-bottom:4px">${esc(i)}</li>`;
+    });
+    html += `</ul>`;
+  }
+
+  // Export row
+  html += `<div style="display:flex;align-items:center;gap:10px;padding-top:14px;border-top:1px solid #f3f4f6">
+    <span style="font-family:Inter,sans-serif;font-size:11px;color:#9ca3af;font-weight:500">Exportar</span>
+    <button onclick="downloadMinutaDocx(this)" data-minuta='${JSON.stringify(r).replace(/'/g,"&#39;")}' style="display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;font-size:11px;font-weight:500;color:#6b7280;cursor:pointer;font-family:Inter,sans-serif">
+      <span class="material-symbols-outlined" style="font-size:14px">description</span> DOCX
+    </button>
+  </div>`;
+
+  html += '</div>';
+  return html;
+}
+
+function buildMinutaCardHTML(r, isPreview) {
+  return `<div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.07),0 2px 12px rgba(0,0,0,0.04);margin-bottom:12px;overflow:hidden">
+    <div style="padding:16px 20px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#111827">${esc(r.title)}</div>
+          <div style="font-family:Inter,sans-serif;font-size:12px;color:#9ca3af;margin-top:3px">${r.date || ''} ${r.attendees?.length ? '· '+r.attendees.length+' asistentes' : ''}</div>
+        </div>
+        <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#dbeafe;color:#1d4ed8">Nueva</span>
+      </div>
+      ${r.summary ? `<p style="font-family:Inter,sans-serif;font-size:13px;color:#374151;line-height:1.5;margin:0 0 12px">${esc(r.summary)}</p>` : ''}
+    </div>
+    ${buildMinutaBodyHTML(r)}
+  </div>`;
+}
+
+// ============================================================
+// MINUTAS — DOCX export
+// ============================================================
+async function downloadMinutaDocx(btn) {
+  let r;
+  try { r = JSON.parse(btn.dataset.minuta); } catch(e) { return; }
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } = docx;
+  const children = [];
+  children.push(new Paragraph({ children:[new TextRun({text:r.title||'Minuta',bold:true,size:36,color:'041627',font:'Calibri'})], spacing:{after:200} }));
+  if(r.date) children.push(new Paragraph({ children:[new TextRun({text:'Fecha: '+r.date,size:22,color:'44474C',font:'Calibri'})], spacing:{after:100} }));
+  if(r.attendees?.length) children.push(new Paragraph({ children:[new TextRun({text:'Asistentes: '+r.attendees.join(', '),size:22,color:'44474C',font:'Calibri'})], spacing:{after:300} }));
+  if(r.summary) {
+    children.push(new Paragraph({ children:[new TextRun({text:'RESUMEN',bold:true,size:20,color:'BB0014',font:'Calibri'})], spacing:{before:200,after:100} }));
+    children.push(new Paragraph({ children:[new TextRun({text:r.summary,size:22,font:'Calibri'})], spacing:{after:300} }));
+  }
+  if(r.commitments?.length) {
+    children.push(new Paragraph({ children:[new TextRun({text:'COMPROMISOS',bold:true,size:20,color:'BB0014',font:'Calibri'})], spacing:{before:200,after:200} }));
+    const rows = [new TableRow({children:[
+      new TableCell({children:[new Paragraph({children:[new TextRun({text:'Tarea',bold:true,size:18,font:'Calibri'})]})], shading:{fill:'041627'}}),
+      new TableCell({children:[new Paragraph({children:[new TextRun({text:'Responsable',bold:true,size:18,font:'Calibri'})]})], shading:{fill:'041627'}}),
+      new TableCell({children:[new Paragraph({children:[new TextRun({text:'Fecha',bold:true,size:18,font:'Calibri'})]})], shading:{fill:'041627'}}),
+      new TableCell({children:[new Paragraph({children:[new TextRun({text:'Prioridad',bold:true,size:18,font:'Calibri'})]})], shading:{fill:'041627'}}),
+    ]})];
+    r.commitments.forEach(c => {
+      rows.push(new TableRow({children:[
+        new TableCell({children:[new Paragraph({children:[new TextRun({text:c.task||'',size:18,font:'Calibri'})]})] }),
+        new TableCell({children:[new Paragraph({children:[new TextRun({text:c.responsible||'',size:18,font:'Calibri'})]})] }),
+        new TableCell({children:[new Paragraph({children:[new TextRun({text:c.deadline||'',size:18,font:'Calibri'})]})] }),
+        new TableCell({children:[new Paragraph({children:[new TextRun({text:c.priority||'',size:18,font:'Calibri'})]})] }),
+      ]}));
+    });
+    children.push(new Table({rows, width:{size:100,type:WidthType.PERCENTAGE}}));
+    children.push(new Paragraph({children:[],spacing:{after:300}}));
+  }
+  if(r.decisions?.length) {
+    children.push(new Paragraph({ children:[new TextRun({text:'DECISIONES',bold:true,size:20,color:'BB0014',font:'Calibri'})], spacing:{before:200,after:100} }));
+    r.decisions.forEach(d => {
+      children.push(new Paragraph({ children:[new TextRun({text:'• '+d.decision,bold:true,size:22,font:'Calibri'})], spacing:{after:60} }));
+      if(d.rationale) children.push(new Paragraph({ children:[new TextRun({text:'  '+d.rationale,size:20,color:'44474C',font:'Calibri'})], spacing:{after:100} }));
+    });
+  }
+  if(r.open_issues?.length) {
+    children.push(new Paragraph({ children:[new TextRun({text:'PENDIENTES',bold:true,size:20,color:'BB0014',font:'Calibri'})], spacing:{before:200,after:100} }));
+    r.open_issues.forEach(i => {
+      children.push(new Paragraph({ children:[new TextRun({text:'• '+i,size:22,font:'Calibri'})], spacing:{after:80} }));
+    });
+  }
+  const doc = new Document({sections:[{children}]});
+  const blob = await Packer.toBlob(doc);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url;
+  a.download=`Minuta_ALTO_${new Date().toISOString().slice(0,10)}.docx`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// Update renderHistory for dark sidebar
+// ============================================================
+function renderHistory(){
+  const list = document.getElementById('historyList');
+  if(!list)return;
+  const history = loadHistory();
+  if(!history.length){
+    list.innerHTML='<p style="font-family:Inter,sans-serif;font-size:12px;color:rgba(255,255,255,0.4);padding:12px 16px;font-style:italic">Sin informes aún</p>';
+    return;
+  }
+  list.innerHTML = history.map(h=>`
+    <button onclick="loadFromHistory(${h.id})" style="display:block;width:100%;text-align:left;padding:10px 14px;background:transparent;border:none;border-radius:6px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
+      <div style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${h.title}</div>
+      <div style="font-family:Inter,sans-serif;font-size:9px;color:rgba(255,255,255,0.35);margin-top:3px">${h.date}</div>
+    </button>
+  `).join('');
+}
+
+// ============================================================
 // Prevent accidental navigation when report is loaded
 window.addEventListener('beforeunload',e=>{if(result){e.preventDefault();}});
 
