@@ -120,12 +120,40 @@ const i18n = {
     uiFieldsIncomplete: 'Campos incompletos',
     uiMayBeIncomplete: 'El informe puede estar incompleto — puedes continuar o reintentar.',
     uiNoValidJson: 'La IA no devolvió JSON válido. Intenta de nuevo o reduce el largo del documento.',
+    // Nav & layout
+    uiBack: 'Volver a Informes',
+    uiNavMinutas: 'Minutas',
+    uiNavInformes: 'Informes',
+    // AI panel
+    uiAiAssistant: 'Asistente IA',
+    uiAiDesc: 'Consulta o modifica el informe',
+    uiEnterToSend: 'ENTER para enviar',
+    uiAiInputPlaceholder: 'Pregunta o pide un cambio...',
+    uiSend: 'Enviar',
+    uiMinimize: 'Minimizar',
+    // History
+    uiNoReports: 'Sin informes aún',
+    uiNoResults: 'Sin resultados',
+    uiHistorySearch: 'Buscar informe...',
+    // AI panel chips
+    uiChipDeepen: '💡 Profundiza hallazgo',
+    uiChipCFO: '🎯 Tono para CFO',
+    uiChipRisks: '⚠️ Ampliar riesgos',
+    uiChipSummary: '📋 Resumen ejecutivo',
+    uiChipDeepenQ: 'Profundiza el hallazgo más importante',
+    uiChipCFOQ: 'Reformula las recomendaciones para el CFO',
+    uiChipRisksQ: 'Agrega un análisis de riesgos más detallado',
+    uiChipSummaryQ: 'Resume en 3 puntos clave para presentación ejecutiva',
     // Regen section labels
     regenFindings: 'hallazgos',
     regenAnalysis: 'bloque de análisis',
     regenRecs: 'recomendaciones',
     regenRisks: 'riesgos',
     regenOpps: 'oportunidades',
+    regenExecSummary: 'resumen ejecutivo',
+    regenKeyMessages: 'mensajes clave',
+    regenContext: 'contexto',
+    regenConclusion: 'conclusión',
     // Validate labels
     valTitle: 'título',
     valSummary: 'resumen ejecutivo',
@@ -299,12 +327,40 @@ const i18n = {
     uiFieldsIncomplete: 'Incomplete fields',
     uiMayBeIncomplete: 'The report may be incomplete — you can continue or retry.',
     uiNoValidJson: 'AI did not return valid JSON. Try again or reduce document length.',
+    // Nav & layout
+    uiBack: 'Back to Reports',
+    uiNavMinutas: 'Minutes',
+    uiNavInformes: 'Reports',
+    // AI panel
+    uiAiAssistant: 'AI Assistant',
+    uiAiDesc: 'Ask or modify the report',
+    uiEnterToSend: 'ENTER to send',
+    uiAiInputPlaceholder: 'Ask a question or request a change...',
+    uiSend: 'Send',
+    uiMinimize: 'Minimize',
+    // History
+    uiNoReports: 'No reports yet',
+    uiNoResults: 'No results',
+    uiHistorySearch: 'Search report...',
+    // AI panel chips
+    uiChipDeepen: '💡 Deepen finding',
+    uiChipCFO: '🎯 CFO tone',
+    uiChipRisks: '⚠️ Expand risks',
+    uiChipSummary: '📋 Executive summary',
+    uiChipDeepenQ: 'Deep dive on the most important finding',
+    uiChipCFOQ: 'Reframe the recommendations for the CFO',
+    uiChipRisksQ: 'Add a more detailed risk analysis',
+    uiChipSummaryQ: 'Summarize in 3 key points for executive presentation',
     // Regen section labels
     regenFindings: 'findings',
     regenAnalysis: 'analysis block',
     regenRecs: 'recommendations',
     regenRisks: 'risks',
     regenOpps: 'opportunities',
+    regenExecSummary: 'executive summary',
+    regenKeyMessages: 'key messages',
+    regenContext: 'context',
+    regenConclusion: 'conclusion',
     // Validate labels
     valTitle: 'title',
     valSummary: 'executive summary',
@@ -371,6 +427,7 @@ const i18n = {
 // Current language — defaults to Spanish, updated when report is generated
 let currentLang = 'es';
 function t(key) { return (i18n[currentLang] || i18n.es)[key] || (i18n.es)[key] || key; }
+window._t = t;
 
 // ============================================================
 // ALTO CORPORATE COLORS
@@ -539,6 +596,8 @@ function updateUI(){
     const val=t(key);
     if(val && val!==key) el.placeholder=val;
   });
+  // Re-render JS-generated UI that contains translated strings
+  renderHistory();
 }
 
 // ============================================================
@@ -546,17 +605,17 @@ function updateUI(){
 // ============================================================
 function validateReport(r){
   const checks=[
-    {key:'title',label:'título'},
-    {key:'executive_summary',label:'resumen ejecutivo'},
-    {key:'key_messages',label:'mensajes clave'},
-    {key:'findings',label:'hallazgos'},
-    {key:'analysis_blocks',label:'bloques de análisis'},
-    {key:'recommendations',label:'recomendaciones'},
+    {key:'title',label:t('valTitle')},
+    {key:'executive_summary',label:t('valSummary')},
+    {key:'key_messages',label:t('valMessages')},
+    {key:'findings',label:t('valFindings')},
+    {key:'analysis_blocks',label:t('valAnalysis')},
+    {key:'recommendations',label:t('valRecs')},
   ];
   return checks.filter(c=>!r[c.key]||(Array.isArray(r[c.key])&&!r[c.key].length)).map(c=>c.label);
 }
 function showValidationWarning(fields){
-  document.getElementById('validationWarnText').textContent='Campos incompletos: '+fields.join(', ')+'. El informe puede estar incompleto — puedes continuar o reintentar.';
+  document.getElementById('validationWarnText').textContent=t('uiFieldsIncomplete')+': '+fields.join(', ')+'. '+t('uiMayBeIncomplete');
   document.getElementById('validationWarn').classList.remove('hidden');
 }
 
@@ -579,7 +638,7 @@ function startFakeProgress(onUpdate){
 async function regenSection(sectionKey,idx,btn){
   const wUrl=WORKER_URL;
   if(!wUrl||!result)return;
-  const labels={findings:'hallazgos',analysis_blocks:'bloque de análisis '+(idx!==undefined?idx+1:''),recommendations:'recomendaciones',risks:'riesgos',opportunities:'oportunidades',executive_summary:'resumen ejecutivo',key_messages:'mensajes clave',context:'contexto',conclusion:'conclusión'};
+  const labels={findings:t('regenFindings'),analysis_blocks:t('regenAnalysis')+(idx!==undefined?' '+(idx+1):''),recommendations:t('regenRecs'),risks:t('regenRisks'),opportunities:t('regenOpps'),executive_summary:t('regenExecSummary'),key_messages:t('regenKeyMessages'),context:t('regenContext'),conclusion:t('regenConclusion')};
   const label=labels[sectionKey]||sectionKey;
 
   // Build inline progress UI inside the button
@@ -588,7 +647,7 @@ async function regenSection(sectionKey,idx,btn){
   if(btn){
     btnOrigHTML=btn.innerHTML;
     btn.disabled=true;
-    btn.innerHTML=`<div class="regen-progress-wrap"><div class="regen-progress-label">Regenerando ${label}… <span class="regen-pct">0%</span></div><div class="regen-progress-bar"><div class="regen-progress-fill" style="width:0%"></div></div></div>`;
+    btn.innerHTML=`<div class="regen-progress-wrap"><div class="regen-progress-label">${t('uiRegenerating')} ${label}… <span class="regen-pct">0%</span></div><div class="regen-progress-bar"><div class="regen-progress-fill" style="width:0%"></div></div></div>`;
     // Dim the section body
     sectionEl=btn.closest('[class*="px-10"]')||btn.closest('div[class]');
     if(sectionEl) sectionEl.classList.add('section-regen-loading');
@@ -687,7 +746,7 @@ function renderHistory(){
   if(!list)return;
   const history = loadHistory();
   if(!history.length){
-    list.innerHTML='<p class="font-inter text-xs text-slate-400 px-3 py-2 italic" style="font-family:Inter,sans-serif">Sin informes aún</p>';
+    list.innerHTML=`<p class="font-inter text-xs text-slate-400 px-3 py-2 italic" style="font-family:Inter,sans-serif">${t('uiNoReports')}</p>`;
     return;
   }
   list.innerHTML = history.map(h=>`
@@ -1891,7 +1950,7 @@ async function sendChat() {
         const updated = JSON.parse(jsonPart);
         result = updated;
         renderPreview(result);
-        addChatBubble('assistant', (textPart || 'Informe actualizado.') + '\n\n✅ El informe ha sido actualizado. Los cambios se reflejan en la vista previa y en las exportaciones.');
+        addChatBubble('assistant', (textPart || t('uiReportUpdated')) + '\n\n✅ '+t('uiReportUpdatedDetail'));
       } catch(e) {
         addChatBubble('assistant', textPart || reply);
       }
@@ -2469,7 +2528,7 @@ function renderHistoryItems(items){
   const list = document.getElementById('historyList');
   if(!list)return;
   if(!items.length){
-    list.innerHTML='<p style="font-family:Inter,sans-serif;font-size:12px;color:rgba(255,255,255,0.4);padding:12px 16px;font-style:italic">Sin resultados</p>';
+    list.innerHTML=`<p style="font-family:Inter,sans-serif;font-size:12px;color:rgba(255,255,255,0.4);padding:12px 16px;font-style:italic">${t('uiNoResults')}</p>`;
     return;
   }
   list.innerHTML = items.map(h=>`
@@ -2486,7 +2545,7 @@ function renderHistory(){
   const history = loadHistory();
   const searchWrap = document.getElementById('historySearchWrap');
   if(!history.length){
-    list.innerHTML='<p style="font-family:Inter,sans-serif;font-size:12px;color:rgba(255,255,255,0.4);padding:12px 16px;font-style:italic">Sin informes aún</p>';
+    list.innerHTML=`<p style="font-family:Inter,sans-serif;font-size:12px;color:rgba(255,255,255,0.4);padding:12px 16px;font-style:italic">${t('uiNoReports')}</p>`;
     if(searchWrap) searchWrap.style.display='none';
     return;
   }
