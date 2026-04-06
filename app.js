@@ -567,7 +567,7 @@ async function regenSection(sectionKey,idx,btn){
   const wUrl=WORKER_URL;
   if(!wUrl||!result)return;
   if(btn){btn.disabled=true;const ic=btn.querySelector('.material-symbols-outlined');if(ic)ic.textContent='hourglass_empty';}
-  const labels={findings:'hallazgos',analysis_blocks:'bloque de análisis '+(idx!==undefined?idx+1:''),recommendations:'recomendaciones',risks:'riesgos',opportunities:'oportunidades'};
+  const labels={findings:'hallazgos',analysis_blocks:'bloque de análisis '+(idx!==undefined?idx+1:''),recommendations:'recomendaciones',risks:'riesgos',opportunities:'oportunidades',executive_summary:'resumen ejecutivo',key_messages:'mensajes clave',context:'contexto',conclusion:'conclusión'};
   const label=labels[sectionKey]||sectionKey;
   try{
     flash('Regenerando '+label+'...');
@@ -1045,10 +1045,13 @@ function renderPreview(r){
 
   // ── Executive Summary — So What box ───────────────────────
   h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
+    <div class="flex items-center justify-between mb-4">
+      <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">${t('execSummary')}</span>
+      <button class="regen-btn" onclick="regenSection('executive_summary',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
+    </div>
     <div class="flex gap-0">
       <div class="accent-bar self-stretch"></div>
       <div class="bg-[#F2F4F6] flex-1 p-6">
-        <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold block mb-3">${t('execSummary')}</span>
         <p class="font-['Inter'] italic text-base leading-relaxed text-[#041627] editable" contenteditable="true" data-path="executive_summary" onblur="updateField(this)">${esc(r.executive_summary)}</p>
       </div>
     </div>
@@ -1057,7 +1060,10 @@ function renderPreview(r){
   // ── Key Messages ───────────────────────────────────────────
   if(r.key_messages?.length){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-5">${t('keyMessages')}</h2>
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('keyMessages')}</h2>
+        <button class="regen-btn" onclick="regenSection('key_messages',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
+      </div>
       <div class="space-y-3">`;
     r.key_messages.forEach((m,i)=>{
       h+=`<div class="flex gap-3 items-start">
@@ -1071,7 +1077,10 @@ function renderPreview(r){
   // ── Context ────────────────────────────────────────────────
   if(r.context){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-4">${t('context')}</h2>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('context')}</h2>
+        <button class="regen-btn" onclick="regenSection('context',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
+      </div>
       <p class="font-['Inter'] text-sm text-[#44474C] leading-relaxed editable" contenteditable="true" data-path="context" onblur="updateField(this)">${esc(r.context)}</p>
     </div>`;
   }
@@ -1146,7 +1155,10 @@ function renderPreview(r){
   // ── Risks ──────────────────────────────────────────────────
   if(r.risks?.length){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold mb-5">${t('risks')}</h2>
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">${t('risks')}</h2>
+        <button class="regen-btn" onclick="regenSection('risks',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
+      </div>
       <div class="space-y-3">`;
     r.risks.forEach((rk,i)=>{
       h+=`<div class="flex gap-0">
@@ -1163,7 +1175,10 @@ function renderPreview(r){
   // ── Opportunities ──────────────────────────────────────────
   if(r.opportunities?.length){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
-      <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold mb-5">${t('opportunities')}</h2>
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('opportunities')}</h2>
+        <button class="regen-btn" onclick="regenSection('opportunities',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
+      </div>
       <div class="space-y-2">`;
     r.opportunities.forEach((o,i)=>{
       h+=`<div class="flex gap-3 items-start"><span class="font-['Inter'] text-[#4279B0] font-black text-xs select-none mt-0.5">✦</span><span class="font-['Inter'] text-sm text-[#191C1E] editable" contenteditable="true" data-path="opportunities[${i}]" onblur="updateField(this)">${esc(o)}</span></div>`;
@@ -1215,10 +1230,13 @@ function renderPreview(r){
   // ── Conclusion ─────────────────────────────────────────────
   if(r.conclusion){
     h+=`<div class="px-10 py-8">
+      <div class="flex items-center justify-between mb-4">
+        <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('conclusion')}</span>
+        <button class="regen-btn" onclick="regenSection('conclusion',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
+      </div>
       <div class="flex gap-0">
         <div style="width:4px;background:#041627;flex-shrink:0"></div>
         <div class="bg-[#F2F4F6] flex-1 p-6">
-          <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#041627] font-bold block mb-3">${t('conclusion')}</span>
           <p class="font-['Manrope'] italic text-base leading-relaxed text-[#041627] font-semibold editable" contenteditable="true" data-path="conclusion" onblur="updateField(this)">${esc(r.conclusion)}</p>
         </div>
       </div>
@@ -2380,20 +2398,39 @@ async function downloadMinutaDocx(btn) {
 // ============================================================
 // Update renderHistory for dark sidebar
 // ============================================================
-function renderHistory(){
+function renderHistoryItems(items){
   const list = document.getElementById('historyList');
   if(!list)return;
-  const history = loadHistory();
-  if(!history.length){
-    list.innerHTML='<p style="font-family:Inter,sans-serif;font-size:12px;color:rgba(255,255,255,0.4);padding:12px 16px;font-style:italic">Sin informes aún</p>';
+  if(!items.length){
+    list.innerHTML='<p style="font-family:Inter,sans-serif;font-size:12px;color:rgba(255,255,255,0.4);padding:12px 16px;font-style:italic">Sin resultados</p>';
     return;
   }
-  list.innerHTML = history.map(h=>`
+  list.innerHTML = items.map(h=>`
     <button onclick="loadFromHistory(${h.id})" style="display:block;width:100%;text-align:left;padding:10px 14px;background:transparent;border:none;border-radius:6px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
       <div style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${h.title}</div>
       <div style="font-family:Inter,sans-serif;font-size:9px;color:rgba(255,255,255,0.35);margin-top:3px">${h.date}</div>
     </button>
   `).join('');
+}
+
+function renderHistory(){
+  const list = document.getElementById('historyList');
+  if(!list)return;
+  const history = loadHistory();
+  const searchWrap = document.getElementById('historySearchWrap');
+  if(!history.length){
+    list.innerHTML='<p style="font-family:Inter,sans-serif;font-size:12px;color:rgba(255,255,255,0.4);padding:12px 16px;font-style:italic">Sin informes aún</p>';
+    if(searchWrap) searchWrap.style.display='none';
+    return;
+  }
+  if(searchWrap) searchWrap.style.display='block';
+  const q = (document.getElementById('historySearch')?.value||'').toLowerCase();
+  renderHistoryItems(q ? history.filter(h=>h.title.toLowerCase().includes(q)) : history);
+}
+
+function filterHistory(q){
+  const history = loadHistory();
+  renderHistoryItems(q ? history.filter(h=>h.title.toLowerCase().includes(q.toLowerCase())) : history);
 }
 
 // ============================================================
