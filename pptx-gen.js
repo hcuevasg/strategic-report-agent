@@ -390,11 +390,11 @@ REGLAS OBLIGATORIAS:
         // Section progress indicator
         if(s.section_number&&s.total_sections){
           const progText='Sección '+s.section_number+' de '+s.total_sections;
-          sl.addText(progText,{x:0.55,y:5.8,w:dRX-0.8,h:0.25,fontSize:8,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
+          sl.addText(progText,{x:0.55,y:5.65,w:dRX-0.8,h:0.25,fontSize:8,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});
         }
         // Mini-TOC items
         if(s.items&&s.items.length){
-          const miniY=s.body_text?6.2:5.8;
+          const miniY=s.section_number?6.05:5.8;
           s.items.forEach((item,i)=>{
             sl.addText((i+1)+'. '+(typeof item==='string'?item:item.title||''),{x:0.72,y:miniY+i*0.28,w:dRX-1.2,h:0.26,fontSize:9,fontFace:'Calibri',color:A.SGRAY,valign:'middle',shrinkText:true});
           });
@@ -416,14 +416,14 @@ REGLAS OBLIGATORIAS:
       let cy=1.02;
       const LW=SX-M-0.25; // left content width (when SO WHAT panel present)
       const eLW=s.so_what?LW:CW; // effective content width — full when no SO WHAT
-      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:eLW,h:0.35,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'middle',shrinkText:true});cy+=0.42;}
-      if(s.section_label){sl.addText(s.section_label.toUpperCase(),{x:M,y:0.98,w:eLW,h:0.22,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:true,charSpacing:3,valign:'middle'});cy+=0.22;}
+      if(s.section_label){sl.addText(s.section_label.toUpperCase(),{x:M,y:cy,w:eLW,h:0.2,fontSize:7,fontFace:'Calibri',color:A.SGRAY,bold:true,charSpacing:3,valign:'middle'});cy+=0.28;}
+      if(s.subheading){sl.addText(s.subheading,{x:M,y:cy,w:eLW,h:0.3,fontSize:11,fontFace:'Calibri',color:A.SGRAY,italic:true,valign:'middle',shrinkText:true});cy+=0.38;}
 
       // ========== LAYOUT: STORYLINE ==========
       if(s.type==='storyline') {
         sl.addShape('rect',{x:M,y:cy,w:eLW,h:2.2,fill:{color:A.LGRAY}});
         sl.addShape('rect',{x:M,y:cy,w:eLW,h:0.06,fill:{color:A.RED}});
-        sl.addText(s.body_text||'',{x:M+0.3,y:cy+0.2,w:eLW-0.6,h:1.8,fontSize:20,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.3,valign:'middle',shrinkText:true});
+        sl.addText(s.body_text||'',{x:M+0.3,y:cy+0.2,w:eLW-0.6,h:1.8,fontSize:14,fontFace:'Calibri',color:A.NAVY,bold:true,lineSpacingMultiple:1.4,valign:'middle',shrinkText:true});
         const argY=cy+2.5;
         const args=s.bullets||[];
         const argCols=Math.min(args.length,4)||1;
@@ -462,18 +462,16 @@ REGLAS OBLIGATORIAS:
           sl.addShape('rect',{x:cx+0.08,y:cy,w:colW-0.16,h:0.08,fill:{color:cardColors[i%4]}});
           // Big number centred in top ~45% of card
           sl.addText(val,{x:cx+0.12,y:cy+0.25,w:colW-0.24,h:cardH*0.44,fontSize:numFontSize,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle',shrinkText:true});
-          // Trend arrow (if present) + trend description below
+          // Trend arrow + description (compact, above divider)
           if(d.trend){
             const tChar=d.trend==='up'?'▲':d.trend==='down'?'▼':'—';
             const tColor=d.trend==='up'?A.TBLUE:d.trend==='down'?A.RED:A.SGRAY;
-            sl.addText(tChar,{x:cx+0.12,y:cy+cardH*0.44,w:colW-0.24,h:0.3,fontSize:13,fontFace:'Calibri',color:tColor,bold:true,align:'center',valign:'middle'});
-            if(d.trend_description){
-              sl.addText(d.trend_description,{x:cx+0.12,y:cy+cardH*0.44+0.28,w:colW-0.24,h:0.22,fontSize:8,fontFace:'Calibri',color:tColor,align:'center',valign:'middle',italic:true,shrinkText:true});
-            }
+            const trendText=d.trend_description ? tChar+' '+d.trend_description : tChar;
+            sl.addText(trendText,{x:cx+0.12,y:cy+cardH*0.44,w:colW-0.24,h:0.28,fontSize:9,fontFace:'Calibri',color:tColor,bold:true,align:'center',valign:'middle',italic:!!d.trend_description,shrinkText:true});
           }
-          // Label below thicker divider line
-          sl.addShape('rect',{x:cx+0.25,y:cy+cardH*0.54,w:colW-0.5,h:0.055,fill:{color:A.MGRAY}});
-          sl.addText(d.label,{x:cx+0.15,y:cy+cardH*0.61,w:colW-0.3,h:cardH*0.36,fontSize:13,fontFace:'Calibri',color:A.BODY,align:'center',valign:'top',lineSpacingMultiple:1.4,bold:false,shrinkText:true});
+          // Label below divider line
+          sl.addShape('rect',{x:cx+0.25,y:cy+cardH*0.52,w:colW-0.5,h:0.04,fill:{color:A.MGRAY}});
+          sl.addText(d.label,{x:cx+0.15,y:cy+cardH*0.56,w:colW-0.3,h:cardH*0.40,fontSize:12,fontFace:'Calibri',color:A.BODY,align:'center',valign:'top',lineSpacingMultiple:1.35,bold:false,shrinkText:true});
         });
         soWhatPanel(sl,s.so_what);
 
