@@ -393,11 +393,13 @@ REGLAS OBLIGATORIAS:
           const progText='Sección '+s.section_number+' de '+s.total_sections;
           sl.addText(progText,{x:0.55,y:divFootY,w:dRX-0.8,h:0.25,fontSize:8,fontFace:'Calibri',color:A.SGRAY,charSpacing:2});divFootY+=0.3;
         }
-        // Mini-TOC items
+        // Mini-TOC items — cap to fit within slide (max y=7.1)
         if(s.items&&s.items.length){
-          const miniY=divFootY+0.15;
-          s.items.forEach((item,i)=>{
-            sl.addText((i+1)+'. '+(typeof item==='string'?item:item.title||''),{x:0.72,y:miniY+i*0.28,w:dRX-1.2,h:0.26,fontSize:9,fontFace:'Calibri',color:A.SGRAY,valign:'middle',shrinkText:true});
+          const miniY=divFootY+0.1;
+          const maxItems=Math.min(s.items.length,Math.floor((7.0-miniY)/0.24));
+          const itemH=Math.min(0.24,(7.0-miniY)/maxItems);
+          s.items.slice(0,maxItems).forEach((item,i)=>{
+            sl.addText((i+1)+'. '+(typeof item==='string'?item:item.title||''),{x:0.72,y:miniY+i*itemH,w:dRX-1.2,h:itemH,fontSize:8,fontFace:'Calibri',color:A.SGRAY,valign:'middle',shrinkText:true});
           });
         }
         // Right side — navy block (same as cover)
@@ -502,8 +504,8 @@ REGLAS OBLIGATORIAS:
           });
         } else { chartFallback(sl,s,cy,eLW); }
         if(s.chart_annotation){
-          sl.addShape('rect',{x:M+0.3,y:cy+5.2,w:2.8,h:0.45,fill:{color:'FFF8E1'},line:{color:'F9A825',width:0.75},rectRadius:0.04});
-          sl.addText(s.chart_annotation,{x:M+0.4,y:cy+5.2,w:2.6,h:0.45,fontSize:9,fontFace:'Calibri',color:A.DGRAY,bold:true,valign:'middle',shrinkText:true});
+          sl.addShape('rect',{x:M+0.3,y:6.15,w:2.8,h:0.4,fill:{color:'FFF8E1'},line:{color:'F9A825',width:0.75},rectRadius:0.04});
+          sl.addText(s.chart_annotation,{x:M+0.4,y:6.15,w:2.6,h:0.4,fontSize:8,fontFace:'Calibri',color:A.DGRAY,bold:true,valign:'middle',shrinkText:true});
         }
         soWhatPanel(sl,s.so_what);
 
@@ -527,8 +529,8 @@ REGLAS OBLIGATORIAS:
           });
         } else { chartFallback(sl,s,cy,eLW); }
         if(s.chart_annotation){
-          sl.addShape('rect',{x:M+0.3,y:cy+5.0,w:2.8,h:0.45,fill:{color:'FFF8E1'},line:{color:'F9A825',width:0.75},rectRadius:0.04});
-          sl.addText(s.chart_annotation,{x:M+0.4,y:cy+5.0,w:2.6,h:0.45,fontSize:9,fontFace:'Calibri',color:A.DGRAY,bold:true,valign:'middle',shrinkText:true});
+          sl.addShape('rect',{x:M+0.3,y:6.15,w:2.8,h:0.4,fill:{color:'FFF8E1'},line:{color:'F9A825',width:0.75},rectRadius:0.04});
+          sl.addText(s.chart_annotation,{x:M+0.4,y:6.15,w:2.6,h:0.4,fontSize:8,fontFace:'Calibri',color:A.DGRAY,bold:true,valign:'middle',shrinkText:true});
         }
         soWhatPanel(sl,s.so_what);
 
@@ -556,8 +558,8 @@ REGLAS OBLIGATORIAS:
           });
         } else { chartFallback(sl,s,cy,eLW); }
         if(s.chart_annotation){
-          sl.addShape('rect',{x:M+0.3,y:cy+Math.min(5.4,7.5-cy-0.8)+0.2,w:2.8,h:0.45,fill:{color:'FFF8E1'},line:{color:'F9A825',width:0.75},rectRadius:0.04});
-          sl.addText(s.chart_annotation,{x:M+0.4,y:cy+Math.min(5.4,7.5-cy-0.8)+0.2,w:2.6,h:0.45,fontSize:9,fontFace:'Calibri',color:A.DGRAY,bold:true,valign:'middle',shrinkText:true});
+          sl.addShape('rect',{x:M+0.3,y:6.15,w:2.8,h:0.4,fill:{color:'FFF8E1'},line:{color:'F9A825',width:0.75},rectRadius:0.04});
+          sl.addText(s.chart_annotation,{x:M+0.4,y:6.15,w:2.6,h:0.4,fontSize:8,fontFace:'Calibri',color:A.DGRAY,bold:true,valign:'middle',shrinkText:true});
         }
         soWhatPanel(sl,s.so_what);
 
@@ -568,21 +570,22 @@ REGLAS OBLIGATORIAS:
         const vals=dp.map(d=>parseFloat(String(d.value).replace(/[^0-9.]/g,''))||1);
         const lbls=dp.map(d=>d.label||'');
         const donutColors=[A.NAVY,A.RED,A.TBLUE,'74777D','1A2B3C','C4C6CD'];
+        const donutW=eLW*0.55;const donutH=3.8;const donutX=M+(eLW-donutW)/2;
         sl.addChart(pptx.charts.DOUGHNUT,[{name:'',labels:lbls,values:vals}],{
-          x:M+0.5,y:cy,w:eLW*0.65,h:4.6,
+          x:donutX,y:cy,w:donutW,h:donutH,
           holeSize:55,
-          showLabel:true,showValue:false,showPercent:true,dataLabelPosition:'bestFit',
-          dataLabelFontSize:10,dataLabelFontBold:true,dataLabelColor:A.WHITE,
+          showLabel:false,showValue:false,showPercent:true,dataLabelPosition:'outEnd',
+          dataLabelFontSize:9,dataLabelFontBold:true,dataLabelColor:A.NAVY,
           chartColors:donutColors,
-          showLegend:true,legendPos:'b',legendFontSize:9,legendFontFace:'Calibri',
+          showLegend:true,legendPos:'b',legendFontSize:8,legendFontFace:'Calibri',
           legendColor:A.BODY,
           showTitle:false,plotAreaBorderColor:A.WHITE
         });
         // Center number in donut hole
         const centerVal=dp[0]?String(dp[0].value):'';
-        const donutCenterY=cy+4.6/2-0.3;
-        const donutCenterX=M+0.5+(eLW*0.65)/2-0.6;
-        sl.addText(centerVal,{x:donutCenterX,y:donutCenterY,w:1.2,h:0.6,fontSize:28,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle'});
+        const donutCenterY=cy+donutH/2-0.3;
+        const donutCenterX=donutX+donutW/2-0.6;
+        sl.addText(centerVal,{x:donutCenterX,y:donutCenterY,w:1.2,h:0.6,fontSize:24,fontFace:'Calibri',color:A.NAVY,bold:true,align:'center',valign:'middle'});
         soWhatPanel(sl,s.so_what);
 
       // ========== LAYOUT: PROCESS FLOW ==========
@@ -862,11 +865,11 @@ REGLAS OBLIGATORIAS:
           const circR=0.26;const circX=cx+cellPad+0.18;const circY=cy2+cellPad+0.18;
           sl.addShape('ellipse',{x:circX,y:circY,w:circR*2,h:circR*2,fill:{color:circleColors[i%3]}});
           sl.addText(String(i+1),{x:circX,y:circY,w:circR*2,h:circR*2,fontSize:11,fontFace:'Calibri',color:A.WHITE,bold:true,align:'center',valign:'middle'});
-          // Title bold
+          // Title bold — next to circle
           const titleX=cx+cellPad+circR*2+0.28;
-          sl.addText(item.title||'',{x:titleX,y:cy2+cellPad+0.12,w:cellW-cellPad*2-circR*2-0.34,h:0.38,fontSize:10,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle',shrinkText:true});
-          // Description
-          sl.addText(item.description||'',{x:cx+cellPad+0.14,y:cy2+cellPad+0.58,w:cellW-cellPad*2-0.2,h:cellH-cellPad*2-0.7,fontSize:9,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.3,valign:'top',shrinkText:true});
+          sl.addText(item.title||'',{x:titleX,y:cy2+cellPad+0.15,w:cellW-cellPad*2-circR*2-0.34,h:0.42,fontSize:10,fontFace:'Calibri',color:A.NAVY,bold:true,valign:'middle',shrinkText:true});
+          // Description — more gap below title/circle
+          sl.addText(item.description||'',{x:cx+cellPad+0.14,y:cy2+cellPad+0.72,w:cellW-cellPad*2-0.2,h:cellH-cellPad*2-0.82,fontSize:9,fontFace:'Calibri',color:A.BODY,lineSpacingMultiple:1.25,valign:'top',shrinkText:true});
         });
         soWhatPanel(sl,s.so_what);
 
