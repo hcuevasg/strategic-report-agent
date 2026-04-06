@@ -1986,17 +1986,22 @@ async function generateMinuta() {
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
+    let buf = '';
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      const chunk = decoder.decode(value, { stream: true });
-      chunk.split('\n').forEach(line => {
-        if (!line.startsWith('data:')) return;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') break;
         try {
-          const ev = JSON.parse(line.slice(5));
+          const ev = JSON.parse(data);
           if (ev.text) accumulated += ev.text;
         } catch(e) {}
-      });
+      }
     }
 
     progFill.style.width = '80%';
@@ -2011,9 +2016,11 @@ async function generateMinuta() {
     setTimeout(() => { prog.style.display = 'none'; progFill.style.width = '0%'; }, 1500);
 
     saveMinuta(minutaResult);
-    renderMinutaPreview(minutaResult);
     document.getElementById('nuevaMinutaSection').style.display = 'none';
     renderMinutasList();
+    // Auto-expand the newly saved minuta (first in list)
+    const saved = loadMinutasHistory();
+    if (saved.length > 0) toggleMinutaCard(saved[0].id);
 
   } catch(err) {
     progLabel.textContent = 'Error: ' + err.message;
