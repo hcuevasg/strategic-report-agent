@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Strategic Report Agent — Grupo ALTO</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        "navy": "#041627",
+        "alto-red": "#BB0014",
+        "outline-variant": "#C4C6CD",
+        "surface-low": "#F2F4F6",
+      },
+      fontFamily: { "headline": ["Manrope"], "body": ["Inter"] }
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .hero-clip { clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%); }
+</style>
+</head>
+<body class="bg-white font-body text-[#191C1E] antialiased flex flex-col min-h-screen">
+
+<!-- Nav -->
+<nav class="w-full sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[#E0E3E5]">
+  <div class="flex justify-between items-center px-8 py-4 max-w-screen-xl mx-auto">
+    <div class="flex items-center gap-3">
+      <img src="alto-logo.png" alt="ALTO" class="h-7"/>
+    </div>
+    <div class="hidden md:flex items-center gap-8">
+      <a class="text-[#041627] font-headline font-bold text-sm border-b-2 border-[#BB0014] pb-0.5" href="#">Inicio</a>
+      <a class="text-[#74777D] hover:text-[#041627] transition-colors font-headline text-sm" href="#features">Funciones</a>
+      <a class="text-[#74777D] hover:text-[#041627] transition-colors font-headline text-sm" href="#como-funciona">Cómo funciona</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="index.html" class="bg-[#BB0014] hover:bg-red-800 text-white px-6 py-2.5 font-headline font-bold text-sm tracking-wide transition-all active:scale-95">
+        Abrir Plataforma
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main class="flex-grow">
+
+  <!-- Hero -->
+  <section class="relative pt-24 pb-32 overflow-hidden bg-white">
+    <div class="max-w-screen-xl mx-auto px-8 relative z-10">
+      <div class="max-w-3xl">
+        <span class="inline-block px-3 py-1 bg-[#FEE2E2] text-[#BB0014] text-[10px] font-headline font-extrabold tracking-[0.2em] uppercase mb-6">
+          Grupo ALTO · Consultoría Estratégica
+        </span>
+        <h1 class="text-6xl md:text-7xl font-headline font-extrabold text-[#041627] tracking-tighter leading-[0.95] mb-8">
+          Informes ejecutivos<br/><span class="text-[#BB0014]">en minutos.</span>
+        </h1>
+        <p class="text-xl text-[#44474C] max-w-2xl font-body leading-relaxed mb-12">
+          Transforma documentos, datos y notas en informes estratégicos de calidad consultora — con análisis de hallazgos, riesgos, oportunidades y recomendaciones listas para el directorio.
+        </p>
+        <div class="flex flex-col sm:flex-row items-start gap-5">
+          <a href="index.html" class="bg-[#BB0014] hover:bg-red-800 text-white px-10 py-5 text-base font-headline font-bold tracking-wide shadow-xl hover:opacity-90 active:scale-95 transition-all">
+            Generar mi primer informe
+          </a>
+          <a href="#features" class="flex items-center gap-2 text-[#041627] font-headline font-bold text-base group pt-1">
+            Ver funcionalidades
+            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform text-xl">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- Decorative panel -->
+    <div class="absolute top-0 right-0 w-2/5 h-full bg-[#F2F4F6] hero-clip hidden lg:block -z-0"></div>
+    <div class="absolute top-16 right-16 w-80 h-80 -z-0 hidden lg:block opacity-60">
+      <div class="w-full h-full flex flex-col gap-3 p-6 bg-white border-l-4 border-[#041627] shadow-2xl">
+        <div class="h-3 w-1/2 bg-[#041627] rounded-sm"></div>
+        <div class="h-2 w-3/4 bg-[#E0E3E5] rounded-sm"></div>
+        <div class="h-2 w-2/3 bg-[#E0E3E5] rounded-sm"></div>
+        <div class="mt-2 h-px bg-[#E0E3E5]"></div>
+        <div class="flex gap-2 mt-1">
+          <div class="h-12 w-1/3 bg-[#FEE2E2] rounded-sm"></div>
+          <div class="h-12 w-1/3 bg-[#F2F4F6] rounded-sm"></div>
+          <div class="h-12 w-1/3 bg-[#DBEAFE] rounded-sm"></div>
+        </div>
+        <div class="h-2 w-full bg-[#E0E3E5] rounded-sm mt-2"></div>
+        <div class="h-2 w-5/6 bg-[#E0E3E5] rounded-sm"></div>
+        <div class="h-2 w-4/6 bg-[#E0E3E5] rounded-sm"></div>
+        <div class="mt-auto flex gap-2">
+          <div class="h-7 w-16 bg-[#BB0014] rounded-sm"></div>
+          <div class="h-7 w-16 bg-[#041627] rounded-sm"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Logos / trust -->
+  <section class="border-y border-[#E0E3E5] bg-[#F8F9FB] py-6">
+    <div class="max-w-screen-xl mx-auto px-8 flex items-center justify-center gap-3">
+      <span class="text-[10px] uppercase tracking-[0.2em] font-headline font-bold text-[#BB0014]">Exporta directamente a</span>
+      <div class="flex items-center gap-6 ml-4">
+        <span class="flex items-center gap-1.5 text-[#44474C] font-headline text-sm font-bold"><span class="material-symbols-outlined text-base text-[#BB0014]">picture_as_pdf</span>PDF</span>
+        <span class="flex items-center gap-1.5 text-[#44474C] font-headline text-sm font-bold"><span class="material-symbols-outlined text-base text-[#041627]">slideshow</span>PowerPoint</span>
+        <span class="flex items-center gap-1.5 text-[#44474C] font-headline text-sm font-bold"><span class="material-symbols-outlined text-base text-[#4279B0]">description</span>Word</span>
+        <span class="flex items-center gap-1.5 text-[#44474C] font-headline text-sm font-bold"><span class="material-symbols-outlined text-base text-[#74777D]">bolt</span>Brief ejecutivo</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="bg-white py-28">
+    <div class="max-w-screen-xl mx-auto px-8">
+      <div class="mb-20">
+        <h2 class="text-[#BB0014] text-xs font-headline font-extrabold tracking-[0.2em] uppercase mb-4">Funcionalidades</h2>
+        <div class="h-px w-20 bg-[#BB0014]"></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-16">
+        <div class="group">
+          <div class="mb-6">
+            <span class="material-symbols-outlined text-4xl text-[#041627]" style="font-variation-settings:'opsz' 48">psychology</span>
+          </div>
+          <h3 class="text-2xl font-headline font-bold text-[#041627] tracking-tight mb-4 group-hover:text-[#BB0014] transition-colors">
+            Análisis Estratégico con IA
+          </h3>
+          <p class="text-[#44474C] font-body leading-relaxed text-sm">
+            Sube un documento, pega texto o arrastra un PDF y la IA genera un informe estructurado con hallazgos clave, análisis, riesgos, oportunidades y recomendaciones por horizonte temporal.
+          </p>
+        </div>
+        <div class="group">
+          <div class="mb-6">
+            <span class="material-symbols-outlined text-4xl text-[#041627]" style="font-variation-settings:'opsz' 48">event_note</span>
+          </div>
+          <h3 class="text-2xl font-headline font-bold text-[#041627] tracking-tight mb-4 group-hover:text-[#BB0014] transition-colors">
+            Minutas de Reunión
+          </h3>
+          <p class="text-[#44474C] font-body leading-relaxed text-sm">
+            Convierte notas y transcripciones en minutas ejecutivas con asistentes, acuerdos, plan de acción con responsables y fechas, decisiones y próxima reunión. Exporta a Word en un clic.
+          </p>
+        </div>
+        <div class="group">
+          <div class="mb-6">
+            <span class="material-symbols-outlined text-4xl text-[#041627]" style="font-variation-settings:'opsz' 48">slideshow</span>
+          </div>
+          <h3 class="text-2xl font-headline font-bold text-[#041627] tracking-tight mb-4 group-hover:text-[#BB0014] transition-colors">
+            Presentaciones McKinsey
+          </h3>
+          <p class="text-[#44474C] font-body leading-relaxed text-sm">
+            Genera presentaciones PowerPoint con estilo visual de consultoría de primer nivel — action titles, matrices de análisis y flujo argumental piramidal automático.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cómo funciona -->
+  <section id="como-funciona" class="bg-[#F8F9FB] py-28">
+    <div class="max-w-screen-xl mx-auto px-8">
+      <div class="mb-16">
+        <h2 class="text-[#BB0014] text-xs font-headline font-extrabold tracking-[0.2em] uppercase mb-4">Cómo funciona</h2>
+        <div class="h-px w-20 bg-[#BB0014]"></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white border-l-4 border-[#041627] p-8">
+          <div class="text-4xl font-headline font-black text-[#E0E3E5] mb-4">01</div>
+          <h3 class="font-headline font-bold text-[#041627] text-lg mb-3">Ingresa tu información</h3>
+          <p class="text-[#44474C] text-sm leading-relaxed">Pega texto, arrastra un PDF, Word o imagen con los datos que quieres analizar. La IA procesa hasta 60.000 caracteres.</p>
+        </div>
+        <div class="bg-white border-l-4 border-[#BB0014] p-8">
+          <div class="text-4xl font-headline font-black text-[#E0E3E5] mb-4">02</div>
+          <h3 class="font-headline font-bold text-[#041627] text-lg mb-3">La IA analiza y redacta</h3>
+          <p class="text-[#44474C] text-sm leading-relaxed">En segundos obtienes un informe ejecutivo con estructura MECE, principio piramidal y estándar McKinsey. Puedes editar cualquier sección.</p>
+        </div>
+        <div class="bg-white border-l-4 border-[#4279B0] p-8">
+          <div class="text-4xl font-headline font-black text-[#E0E3E5] mb-4">03</div>
+          <h3 class="font-headline font-bold text-[#041627] text-lg mb-3">Exporta y presenta</h3>
+          <p class="text-[#44474C] text-sm leading-relaxed">Descarga en PDF, PowerPoint, Word o Brief de 1 página. Listo para el directorio, cliente o equipo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-28 bg-white">
+    <div class="max-w-screen-xl mx-auto px-8">
+      <div class="bg-[#041627] p-12 md:p-20 relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl">
+          <span class="inline-block px-3 py-1 bg-[#BB0014] text-white text-[10px] font-headline font-extrabold tracking-[0.2em] uppercase mb-6">
+            Grupo ALTO
+          </span>
+          <h2 class="text-4xl md:text-5xl font-headline font-bold text-white tracking-tight mb-6 leading-tight">
+            Informes que convencen.<br/>Análisis que generan decisiones.
+          </h2>
+          <p class="text-slate-300 text-xl mb-10 leading-relaxed">
+            Herramienta interna de Grupo ALTO para consultoría estratégica de alto impacto.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="index.html" class="bg-[#BB0014] hover:bg-red-800 text-white px-8 py-4 font-headline font-bold transition-all active:scale-95">
+              Abrir la Plataforma
+            </a>
+          </div>
+        </div>
+        <div class="absolute top-0 right-0 w-1/2 h-full opacity-5 pointer-events-none" style="background: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 20px 20px;"></div>
+        <div class="absolute bottom-8 right-12 hidden lg:block">
+          <img src="alto-logo-white.png" alt="ALTO" class="h-16 opacity-20"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="w-full bg-[#041627] text-slate-400">
+  <div class="flex flex-col md:flex-row justify-between items-center px-12 py-12 max-w-screen-xl mx-auto gap-6">
+    <div>
+      <img src="alto-logo-white.png" alt="ALTO" class="h-6 mb-3 opacity-80"/>
+      <div class="text-xs font-body">© 2025 Grupo ALTO. Uso interno — Confidencial.</div>
+    </div>
+    <div class="flex gap-8 text-sm font-body">
+      <a href="index.html" class="hover:text-[#BB0014] transition-colors">Plataforma</a>
+      <a href="index.html" class="hover:text-[#BB0014] transition-colors">Informes</a>
+      <a href="index.html" class="hover:text-[#BB0014] transition-colors">Minutas</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
