@@ -1650,8 +1650,8 @@ function buildCalendar() {
   const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const todayY = now.getFullYear(), todayM = now.getMonth(), todayD = now.getDate();
 
-  // Build set of dates that have minutas
-  const minutasDates = new Set(loadMinutasHistory().map(m => m.date || ''));
+  // Build set of dates that have minutas (prefer cal_date for reliable matching)
+  const minutasDates = new Set(loadMinutasHistory().map(m => m.cal_date || m.date || ''));
 
   let html = '';
   months.forEach(({ year, month }, idx) => {
@@ -1830,7 +1830,8 @@ function saveMinuta(r) {
     const entry = {
       id,
       title: r.title || 'Sin título',
-      date: r.date || new Date().toLocaleDateString('es-CL'),
+      date: r.date || new Date().toLocaleDateString('es-CL'), // display date (may come from AI)
+      cal_date: new Date().toLocaleDateString('es-CL'),       // filter date — always JS-generated
       saved_at: new Date().toISOString(),
       data: JSON.stringify(r),
     };
@@ -1866,7 +1867,7 @@ function renderMinutasList() {
   if (!container) return;
   let list = loadMinutasHistory();
   if (_minutasFilter) {
-    list = list.filter(m => m.title.toLowerCase().includes(_minutasFilter) || (m.date||'').includes(_minutasFilter));
+    list = list.filter(m => m.title.toLowerCase().includes(_minutasFilter) || (m.cal_date||m.date||'').includes(_minutasFilter));
   }
   if (!list.length) {
     container.innerHTML = `<p style="font-family:Inter,sans-serif;font-size:13px;color:#9ca3af;padding:32px 0;text-align:center;font-style:italic">${t('uiNoMinutas')}</p>`;
