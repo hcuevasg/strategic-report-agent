@@ -1,0 +1,19 @@
+{
+  "name": "strategic-report-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ALTO Strategic Report Agent — Cloudflare Worker + Pages",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "lint": "eslint src/worker/**/*.js worker.js",
+    "lint:fix": "eslint src/worker/**/*.js worker.js --fix",
+    "format": "prettier --write '**/*.{js,json,css,html}' --ignore-path .gitignore",
+    "format:check": "prettier --check '**/*.{js,json,css,html}' --ignore-path .gitignore"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0"
+  }
+}
