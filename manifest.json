@@ -1,0 +1,20 @@
+{
+  "name": "Strategic Report Agent — Grupo ALTO",
+  "short_name": "ALTO Reports",
+  "description": "Generador de informes estratégicos con IA para consultoría de alto impacto",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F8F9FB",
+  "theme_color": "#041627",
+  "icons": [
+    {
+      "src": "assets/alto-logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "es"
+}

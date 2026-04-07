@@ -378,6 +378,7 @@ async function downloadBrief() {
   if (!result) return;
   showStatus('Generando Executive Brief...');
   try {
+    await Promise.all([loadLib('html2canvas'), loadLib('jspdf')]);
     // Render inside an iframe with exact viewport so html2canvas sees full width
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:660px;height:2000px;border:none;';
@@ -436,6 +437,7 @@ async function downloadDocx() {
   if (!result) return;
   showStatus('Generando documento Word ALTO...');
   try {
+    await loadLib('docx');
     const {
       Document,
       Packer,

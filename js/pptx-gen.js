@@ -104,6 +104,7 @@ async function downloadPptx(){if(!result)return;
   startPptxProgress('Diseñando estructura de slides...');
   hideError();
   try{
+    await loadLib('pptxgenjs');
     // Stream PPTX generation with real-time slide detection
     let slidesDetected=0;
     const txt=await fetchFromWorker(wUrl,{

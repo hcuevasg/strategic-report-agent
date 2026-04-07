@@ -85,7 +85,7 @@ async function processFile(file){const ext=file.name.split('.').pop().toLowerCas
     txt='[Imagen subida: '+file.name+' — analizar visualmente]';
   }else if(ext==='pdf'){
     const ab=await file.arrayBuffer();
-    if(typeof pdfjsLib==='undefined')throw new Error('Librería PDF no cargada, recarga la página');
+    await loadLib('pdfjs');
     const pdf=await pdfjsLib.getDocument({data:ab}).promise;
     const pp=[];const images=[];
     const maxImagePages=Math.min(pdf.numPages,5);
@@ -114,7 +114,7 @@ async function processFile(file){const ext=file.name.split('.').pop().toLowerCas
     if(images.length>0) window._pendingImages=images;
   }else if(['docx','doc'].includes(ext)){
     const ab=await file.arrayBuffer();
-    if(typeof mammoth==='undefined')throw new Error('Librería DOCX no cargada, recarga la página');
+    await loadLib('mammoth');
     const r=await mammoth.extractRawText({arrayBuffer:ab});
     txt=r.value;
   }else{throw new Error('Formato no soportado');}
@@ -955,6 +955,7 @@ async function downloadPdf(){
   if(!result)return;
   showStatus('Generando PDF...');
   try{
+    await loadLib('jspdf');
     const{jsPDF}=window.jspdf;
     const pdf=new jsPDF('p','mm','a4');
     const r=result;
