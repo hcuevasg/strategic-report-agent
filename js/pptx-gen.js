@@ -2,8 +2,8 @@
 // PPTX GENERATION v4 — ALTO Corporate Style (Fixed Colors + Space)
 // ============================================================
 // Changes from v3:
-// - Replaced #1B7A4A (green) with #4279B0 (ALTO tertiary blue) 
-// - Replaced #CC3333 with #BB0014 (ALTO corporate red)
+// - Replaced #1B7A4A (green) with #4174B9 (ALTO tertiary blue) 
+// - Replaced #CC3333 with #E74243 (ALTO corporate red)
 // - Taller cards/columns in all layouts (better space usage)
 // - Improved closing slide (no dead space)
 // - Larger SoWhat boxes

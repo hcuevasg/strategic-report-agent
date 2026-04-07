@@ -20,12 +20,12 @@ function buildBriefHTML(r) {
   });
   const P = '28px';
   const s = [];
-  const NAVY = '#041627',
-    RED = '#BB0014',
-    BLUE = '#4279B0',
+  const NAVY = '#1A3350',
+    RED = '#E74243',
+    BLUE = '#4174B9',
     LGRAY = '#F2F4F6',
     BODY = '#191C1E',
-    MUTED = '#74777D';
+    MUTED = '#676766';
   const typeLabel =
     {
       market_analysis: 'Análisis de Mercado',

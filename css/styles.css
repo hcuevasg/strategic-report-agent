@@ -5,7 +5,7 @@
 
   /* ── Spinner ─────────────────────────────────────────────── */
   @keyframes spin{to{transform:rotate(360deg)}}
-  .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(4,22,39,0.2);border-top-color:#041627;animation:spin .7s linear infinite}
+  .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(26,51,80,0.2);border-top-color:#1A3350;animation:spin .7s linear infinite}
 
   /* ── Fade-in on appear ───────────────────────────────────── */
   .fade-in{animation:fadeIn .5s cubic-bezier(.16,1,.3,1) both}
@@ -24,46 +24,46 @@
 
   /* ── Editable fields ─────────────────────────────────────── */
   .editable{cursor:text;transition:background .15s,box-shadow .15s;padding:1px 3px;margin:-1px -3px}
-  .editable:hover{background:rgba(4,22,39,0.04)}
-  .editable:focus{outline:2px solid #BB0014;background:rgba(187,0,20,0.04)}
+  .editable:hover{background:rgba(26,51,80,0.04)}
+  .editable:focus{outline:2px solid #E74243;background:rgba(231,66,67,0.04)}
 
   /* ── Drop zone ───────────────────────────────────────────── */
-  .drop-zone{border:2px dashed #C4C6CD;transition:all .25s cubic-bezier(.16,1,.3,1)}
-  .drop-zone.drag-over{border-color:#BB0014;background:rgba(187,0,20,0.03);transform:scale(1.005)}
+  .drop-zone{border:2px dashed #BFC4C5;transition:all .25s cubic-bezier(.16,1,.3,1)}
+  .drop-zone.drag-over{border-color:#E74243;background:rgba(231,66,67,0.03);transform:scale(1.005)}
 
   /* ── Progress bars ───────────────────────────────────────── */
   .progress-track{height:2px;background:#E0E3E5;overflow:hidden}
-  .progress-fill{height:100%;background:linear-gradient(90deg,#041627,#BB0014);transition:width .6s cubic-bezier(.16,1,.3,1)}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#1A3350,#E74243);transition:width .6s cubic-bezier(.16,1,.3,1)}
 
   /* ── Accent bar ──────────────────────────────────────────── */
-  .accent-bar{width:4px;background:#BB0014;flex-shrink:0}
+  .accent-bar{width:4px;background:#E74243;flex-shrink:0}
 
   /* ── Report type chips ───────────────────────────────────── */
-  .rtype-chip{padding:6px 12px;border:1px solid #C4C6CD;color:#44474C;cursor:pointer;transition:all .15s;background:#fff;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
-  .rtype-chip:hover{border-color:#041627;color:#041627}
-  .rtype-chip.active{background:#041627;color:#fff;border-color:#041627}
+  .rtype-chip{padding:6px 12px;border:1px solid #BFC4C5;color:#44474C;cursor:pointer;transition:all .15s;background:#fff;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+  .rtype-chip:hover{border-color:#1A3350;color:#1A3350}
+  .rtype-chip.active{background:#1A3350;color:#fff;border-color:#1A3350}
 
   /* ── Regen button ────────────────────────────────────────── */
   .regen-btn{display:inline-flex;align-items:center;gap:3px;padding:4px 8px;font-family:'Inter',sans-serif;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;transition:all .15s;cursor:pointer;background:transparent;border:none;flex-shrink:0}
-  .regen-btn:hover{color:#041627;background:#F2F4F6}
+  .regen-btn:hover{color:#1A3350;background:#F2F4F6}
   .regen-btn:disabled{opacity:0.4;cursor:not-allowed}
 
   /* ── Input / textarea ────────────────────────────────────── */
   input,textarea{border-radius:0!important;transition:border-color .2s}
-  input:focus,textarea:focus{outline:none;border-bottom:2px solid #041627!important;box-shadow:none!important}
+  input:focus,textarea:focus{outline:none;border-bottom:2px solid #1A3350!important;box-shadow:none!important}
 
   /* ── Header shimmer on load ──────────────────────────────── */
   @keyframes headerGlow{
-    0%{box-shadow:0 2px 0 0 rgba(187,0,20,0)}
-    50%{box-shadow:0 2px 0 0 rgba(187,0,20,.5)}
-    100%{box-shadow:0 2px 0 0 rgba(187,0,20,0)}
+    0%{box-shadow:0 2px 0 0 rgba(231,66,67,0)}
+    50%{box-shadow:0 2px 0 0 rgba(231,66,67,.5)}
+    100%{box-shadow:0 2px 0 0 rgba(231,66,67,0)}
   }
-  header.bg-\[\#041627\]{animation:headerGlow 3s ease-in-out 1s 1}
+  header.bg-\[\#1A3350\]{animation:headerGlow 3s ease-in-out 1s 1}
 
   /* ── Button hover lift — only main action buttons ───────── */
   button{transition:background .15s,opacity .15s,color .15s}
   #btnAnalyze:not(:disabled){transition:transform .15s,box-shadow .15s,background .15s}
-  #btnAnalyze:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(4,22,39,0.25)}
+  #btnAnalyze:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(26,51,80,0.25)}
   #btnAnalyze:not(:disabled):active{transform:translateY(0);box-shadow:none}
 
   /* ── Status dot pulse ────────────────────────────────────── */
@@ -76,7 +76,7 @@
 
   /* ── Finding cards hover ─────────────────────────────────── */
   .finding-card{transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s}
-  .finding-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(4,22,39,0.1)}
+  .finding-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,51,80,0.1)}
 
   /* ── So What box entrance ────────────────────────────────── */
   @keyframes soWhatIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
@@ -92,7 +92,7 @@
   .tooltip-wrap{position:relative;display:inline-flex}
   .tooltip-wrap .tooltip{
     position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);
-    background:#041627;color:#fff;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.05em;
+    background:#1A3350;color:#fff;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.05em;
     white-space:nowrap;padding:4px 10px;pointer-events:none;
     opacity:0;transition:opacity .15s,transform .15s;z-index:200;
   }
@@ -102,7 +102,7 @@
   /* ── Generating overlay shimmer ──────────────────────────── */
   @keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
   .generating-glow{
-    background:linear-gradient(135deg,#041627,#1A2B3C,#BB0014,#041627);
+    background:linear-gradient(135deg,#1A3350,#2A313E,#E74243,#1A3350);
     background-size:300% 300%;
     animation:gradientShift 4s ease infinite;
   }
@@ -129,9 +129,9 @@
   /* ── Flash notification ──────────────────────────────────── */
   #flashMsg{
     position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
-    background:#041627;color:#fff;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;
+    background:#1A3350;color:#fff;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;
     letter-spacing:.1em;text-transform:uppercase;padding:10px 24px;z-index:999;
     opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;
   }
   #flashMsg.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  #flashMsg .flash-bar{position:absolute;bottom:0;left:0;height:2px;background:#BB0014;width:0;transition:width 2s linear}
+  #flashMsg .flash-bar{position:absolute;bottom:0;left:0;height:2px;background:#E74243;width:0;transition:width 2s linear}

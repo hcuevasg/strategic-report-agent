@@ -19,17 +19,17 @@ async function openDashboard(){
   overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(4,22,39,0.7);display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease;';
   overlay.innerHTML=`
     <div style="background:#F8F9FB;width:90%;max-width:900px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.3);position:relative;">
-      <div style="background:#041627;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="background:#1A3350;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;">
         <div>
           <div style="font-family:Manrope,sans-serif;font-weight:800;color:#fff;font-size:16px;letter-spacing:0.05em;">Analytics Dashboard</div>
-          <div style="font-family:Inter,sans-serif;font-size:10px;color:#BB0014;letter-spacing:2px;text-transform:uppercase;margin-top:2px;">ALTO · Strategic Insights</div>
+          <div style="font-family:Inter,sans-serif;font-size:10px;color:#E74243;letter-spacing:2px;text-transform:uppercase;margin-top:2px;">ALTO · Strategic Insights</div>
         </div>
         <button onclick="closeDashboard()" style="color:#fff;background:none;border:none;cursor:pointer;font-size:20px;padding:4px;">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
       <div id="dashContent" style="padding:24px 28px;">
-        <div style="text-align:center;padding:40px;color:#74777D;font-family:Inter,sans-serif;font-size:13px;">
+        <div style="text-align:center;padding:40px;color:#676766;font-family:Inter,sans-serif;font-size:13px;">
           <div class="spinner" style="margin:0 auto 12px;"></div>
           Cargando datos...
         </div>
@@ -47,7 +47,7 @@ async function openDashboard(){
     if(res.status===401){
       localStorage.removeItem('alto_stats_token');
       document.getElementById('dashContent').innerHTML=`
-        <div style="text-align:center;padding:40px;color:#BB0014;font-family:Inter,sans-serif;">
+        <div style="text-align:center;padding:40px;color:#E74243;font-family:Inter,sans-serif;">
           <span class="material-symbols-outlined" style="font-size:36px;display:block;margin-bottom:8px;">lock</span>
           Token no autorizado. Cierra e intenta de nuevo.
         </div>`;
@@ -58,7 +58,7 @@ async function openDashboard(){
     renderDashboard(data);
   }catch(err){
     document.getElementById('dashContent').innerHTML=`
-      <div style="text-align:center;padding:40px;color:#BB0014;font-family:Inter,sans-serif;">
+      <div style="text-align:center;padding:40px;color:#E74243;font-family:Inter,sans-serif;">
         Error: ${err.message}
       </div>`;
   }
@@ -72,7 +72,7 @@ function closeDashboard(){
 function renderDashboard(data){
   const {days, totals}=data;
   const dc=document.getElementById('dashContent');
-  const A={NAVY:'#041627',RED:'#BB0014',BLUE:'#4279B0',LGRAY:'#F2F4F6',BODY:'#44474C',SGRAY:'#74777D'};
+  const A={NAVY:'#1A3350',RED:'#E74243',BLUE:'#4174B9',LGRAY:'#F2F4F6',BODY:'#44474C',SGRAY:'#676766'};
 
   // Calculate totals
   const totalReqs=Object.values(totals.requests||{}).reduce((a,b)=>a+b,0);
@@ -225,7 +225,7 @@ function drawDailyChart(days){
   for(let i=0;i<=4;i++){
     const y=pad.top+chartH-(chartH*i/4);
     ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();
-    ctx.fillStyle='#74777D';
+    ctx.fillStyle='#676766';
     ctx.font='9px Inter,sans-serif';
     ctx.textAlign='right';
     ctx.fillText(Math.round(maxVal*i/4),pad.left-6,y+3);
@@ -239,21 +239,21 @@ function drawDailyChart(days){
 
     // Gradient effect — navy to red
     const grad=ctx.createLinearGradient(x,y,x,pad.top+chartH);
-    grad.addColorStop(0,'#041627');
-    grad.addColorStop(1,'#BB0014');
+    grad.addColorStop(0,'#1A3350');
+    grad.addColorStop(1,'#E74243');
     ctx.fillStyle=grad;
     ctx.fillRect(x,y,barWidth,barH);
 
     // Value on top
     if(d.total>0){
-      ctx.fillStyle='#041627';
+      ctx.fillStyle='#1A3350';
       ctx.font='bold 10px Manrope,sans-serif';
       ctx.textAlign='center';
       ctx.fillText(d.total,x+barWidth/2,y-4);
     }
 
     // Date label
-    ctx.fillStyle='#74777D';
+    ctx.fillStyle='#676766';
     ctx.font='9px Inter,sans-serif';
     ctx.textAlign='center';
     const label=d.date.slice(5); // MM-DD

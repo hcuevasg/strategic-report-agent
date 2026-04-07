@@ -28,18 +28,18 @@ window._t = t;
 // ============================================================
 const ALTO = {
   // Stitch design system — The Executive Architect
-  RED:   'BB0014',  // secondary — accent rojo quirúrgico
-  BLUE:  '041627',  // primary   — navy institucional
-  GRAY:  'B0B6B8',
-  NAVY:  '041627',  // primary
-  DNAVY: '041627',  // dark navy (portada)
+  RED:   'E74243',  // secondary — accent rojo quirúrgico
+  BLUE:  '1A3350',  // primary   — navy institucional
+  GRAY:  'AFB5B6',
+  NAVY:  '1A3350',  // primary
+  DNAVY: '1A3350',  // dark navy (portada)
   WHITE: 'FFFFFF',
   LGRAY: 'F2F4F6',  // surface-container-low
   MGRAY: 'E0E3E5',  // surface-container-highest
   BODY:  '44474C',  // on-surface-variant
-  SGRAY: '74777D',  // outline
+  SGRAY: '676766',  // outline
   DGRAY: '191C1E',  // on-surface
-  TBLUE: '4279B0',  // tertiary blue (3rd accent)
+  TBLUE: '4174B9',  // tertiary blue (3rd accent)
 };
 
 // Logos ALTO embebidos (extraídos del template corporativo oficial)
@@ -126,7 +126,7 @@ async function processFile(file){const ext=file.name.split('.').pop().toLowerCas
   showStatus(t('uiFileLoaded')+(imgCount?' — '+imgCount+' '+t('imagesDetected'):''));
 }catch(e){showError('Error: '+e.message);}}
 function clearFile(){document.getElementById('inputText').value='';document.getElementById('fileInfo').classList.add('hidden');document.getElementById('fileInput').value='';updateCharCount({value:''});}
-function updateCharCount(el){const n=el.value.length;const c=document.getElementById('charCount');if(!c)return;if(n===0){c.textContent='';return;}const k=(n/1000).toFixed(1);if(n>60000){c.textContent=k+'K '+t('uiChars')+' — ⚠ '+t('uiTooLong');c.style.color='#BB0014';c.style.fontWeight='600';}else{c.textContent=k+'K '+t('uiChars');c.style.color=n>30000?'#44474C':'#94a3b8';c.style.fontWeight='400';}}
+function updateCharCount(el){const n=el.value.length;const c=document.getElementById('charCount');if(!c)return;if(n===0){c.textContent='';return;}const k=(n/1000).toFixed(1);if(n>60000){c.textContent=k+'K '+t('uiChars')+' — ⚠ '+t('uiTooLong');c.style.color='#E74243';c.style.fontWeight='600';}else{c.textContent=k+'K '+t('uiChars');c.style.color=n>30000?'#44474C':'#94a3b8';c.style.fontWeight='400';}}
 
 // ============================================================
 // REPORT TYPE SELECTOR
@@ -347,7 +347,7 @@ function renderHistory(){
   }
   list.innerHTML = history.map(h=>`
     <button onclick="loadFromHistory(${h.id})" class="w-full text-left px-3 py-2.5 hover:bg-white transition-all group">
-      <div class="font-['Inter'] text-[11px] font-semibold text-[#041627] leading-snug line-clamp-2 group-hover:text-[#BB0014] transition-colors">${h.title}</div>
+      <div class="font-['Inter'] text-[11px] font-semibold text-[#1A3350] leading-snug line-clamp-2 group-hover:text-[#E74243] transition-colors">${h.title}</div>
       <div class="font-['Inter'] text-[9px] text-slate-400 mt-0.5">${h.date}</div>
     </button>
   `).join('');
@@ -398,7 +398,7 @@ function renderInformesDashboard() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
         <div style="flex:1;min-width:0">
           <span style="display:inline-block;padding:2px 10px;border-radius:20px;background:${colors.bg};color:${colors.text};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">${label}</span>
-          <h3 style="font-family:Manrope,sans-serif;font-size:17px;font-weight:800;color:#041627;line-height:1.3;margin:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(h.title)}</h3>
+          <h3 style="font-family:Manrope,sans-serif;font-size:17px;font-weight:800;color:#1A3350;line-height:1.3;margin:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(h.title)}</h3>
         </div>
         <span style="padding:4px 12px;border-radius:20px;background:#f0fdf4;color:#16a34a;font-size:11px;font-weight:600;white-space:nowrap;margin-left:12px;flex-shrink:0">${t('uiSaved')}</span>
       </div>
@@ -415,7 +415,7 @@ function renderInformesDashboard() {
           </span>` : ''}
         </div>
         <button onclick="openInformeFromGrid(${h.id})" style="display:flex;align-items:center;gap:4px;padding:6px 14px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:#374151;cursor:pointer;transition:all .15s"
-                onmouseover="this.style.background='#041627';this.style.color='#fff';this.style.borderColor='#041627'"
+                onmouseover="this.style.background='#1A3350';this.style.color='#fff';this.style.borderColor='#1A3350'"
                 onmouseout="this.style.background='#fff';this.style.color='#374151';this.style.borderColor='#e5e7eb'">
           <span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>${t('uiView')}
         </button>
@@ -491,7 +491,7 @@ function buildQuarterPlanner() {
     const count = byMonth[m] || 0;
     const dots = count === 0
       ? `<div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15)"></div><div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15)"></div>`
-      : `<div style="width:6px;height:6px;border-radius:50%;background:#BB0014"></div>${count>1?`<div style="width:6px;height:6px;border-radius:50%;background:#4279B0"></div>`:'<div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15)"></div>'}`;
+      : `<div style="width:6px;height:6px;border-radius:50%;background:#E74243"></div>${count>1?`<div style="width:6px;height:6px;border-radius:50%;background:#4174B9"></div>`:'<div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15)"></div>'}`;
     return `<div style="display:flex;align-items:center;justify-content:space-between">
       <span style="font-family:Inter,sans-serif;font-size:12px;font-weight:${isActive?'600':'400'};color:${isActive?'#fff':'rgba(255,255,255,0.55)'}">${monthNames[m]}</span>
       <div style="display:flex;gap:4px">${dots}</div>
@@ -723,7 +723,7 @@ function renderPreview(r){
   let h=`<div id="reportContent" class="bg-white overflow-hidden fade-in" style="box-shadow:0 2px 40px rgba(4,22,39,0.08)">`;
 
   // ── Cover bar ──────────────────────────────────────────────
-  h+=`<div class="flex items-center justify-between px-8 py-4 bg-[#041627]">
+  h+=`<div class="flex items-center justify-between px-8 py-4 bg-[#1A3350]">
     <div class="flex items-center gap-3">
       <span class="font-['Manrope'] font-black text-white text-xs tracking-widest uppercase">ALTO</span>
       <div class="w-px h-4 bg-white/20"></div>
@@ -734,21 +734,21 @@ function renderPreview(r){
 
   // ── Title block ────────────────────────────────────────────
   h+=`<div class="px-10 pt-10 pb-8 border-b border-[#E0E3E5]">
-    <span class="font-['Inter'] text-[#BB0014] font-bold tracking-[0.25em] uppercase text-[10px] mb-3 block">${t('analysisLabel')}</span>
-    <h1 class="font-['Manrope'] text-3xl font-extrabold text-[#041627] leading-tight tracking-tight editable" contenteditable="true" data-path="title" onblur="updateField(this)">${esc(r.title)}</h1>`;
+    <span class="font-['Inter'] text-[#E74243] font-bold tracking-[0.25em] uppercase text-[10px] mb-3 block">${t('analysisLabel')}</span>
+    <h1 class="font-['Manrope'] text-3xl font-extrabold text-[#1A3350] leading-tight tracking-tight editable" contenteditable="true" data-path="title" onblur="updateField(this)">${esc(r.title)}</h1>`;
   if(r.subtitle)h+=`<p class="font-['Inter'] text-sm text-slate-500 italic mt-2 editable" contenteditable="true" data-path="subtitle" onblur="updateField(this)">${esc(r.subtitle)}</p>`;
-  h+=`<div class="w-16 h-0.5 bg-[#BB0014] mt-5"></div></div>`;
+  h+=`<div class="w-16 h-0.5 bg-[#E74243] mt-5"></div></div>`;
 
   // ── Executive Summary — So What box ───────────────────────
   h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
     <div class="flex items-center justify-between mb-4">
-      <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">${t('execSummary')}</span>
+      <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold">${t('execSummary')}</span>
       <button class="regen-btn" onclick="regenSection('executive_summary',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
     </div>
     <div class="flex gap-0">
       <div class="accent-bar self-stretch"></div>
       <div class="bg-[#F2F4F6] flex-1 p-6">
-        <p class="font-['Inter'] italic text-base leading-relaxed text-[#041627] editable" contenteditable="true" data-path="executive_summary" onblur="updateField(this)">${esc(r.executive_summary)}</p>
+        <p class="font-['Inter'] italic text-base leading-relaxed text-[#1A3350] editable" contenteditable="true" data-path="executive_summary" onblur="updateField(this)">${esc(r.executive_summary)}</p>
       </div>
     </div>
   </div>`;
@@ -757,13 +757,13 @@ function renderPreview(r){
   if(r.key_messages?.length){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
       <div class="flex items-center justify-between mb-5">
-        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('keyMessages')}</h2>
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#1A3350] font-bold">${t('keyMessages')}</h2>
         <button class="regen-btn" onclick="regenSection('key_messages',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
       </div>
       <div class="space-y-3">`;
     r.key_messages.forEach((m,i)=>{
       h+=`<div class="flex gap-3 items-start">
-        <span class="font-['Inter'] text-[#BB0014] font-black text-xs mt-0.5 select-none">▸</span>
+        <span class="font-['Inter'] text-[#E74243] font-black text-xs mt-0.5 select-none">▸</span>
         <span class="font-['Inter'] text-sm text-[#191C1E] leading-snug editable" contenteditable="true" data-path="key_messages[${i}]" onblur="updateField(this)">${esc(m)}</span>
       </div>`;
     });
@@ -774,7 +774,7 @@ function renderPreview(r){
   if(r.context){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('context')}</h2>
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#1A3350] font-bold">${t('context')}</h2>
         <button class="regen-btn" onclick="regenSection('context',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
       </div>
       <p class="font-['Inter'] text-sm text-[#44474C] leading-relaxed editable" contenteditable="true" data-path="context" onblur="updateField(this)">${esc(r.context)}</p>
@@ -786,7 +786,7 @@ function renderPreview(r){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5] section-collapsible">
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3 cursor-pointer select-none flex-1" onclick="this.closest('.section-collapsible').classList.toggle('collapsed')">
-          <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('findings')}</h2>
+          <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#1A3350] font-bold">${t('findings')}</h2>
           <span class="collapse-icon material-symbols-outlined text-sm text-slate-400">expand_more</span>
         </div>
         <button class="regen-btn" onclick="event.stopPropagation();regenSection('findings',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
@@ -795,13 +795,13 @@ function renderPreview(r){
       <div class="space-y-5">`;
     r.findings.forEach((f,i)=>{
       h+=`<div class="grid grid-cols-12 gap-0 finding-card">
-        <div class="col-span-1 bg-[#041627] flex items-center justify-center py-4">
+        <div class="col-span-1 bg-[#1A3350] flex items-center justify-center py-4">
           <span class="font-['Manrope'] font-black text-white text-sm">${i+1}</span>
         </div>
-        <div class="col-span-11 bg-[#F8F9FB] p-5 border-b-2 border-[#BB0014]">
-          <p class="font-['Manrope'] font-bold text-sm text-[#041627] mb-2 editable" contenteditable="true" data-path="findings[${i}].finding" onblur="updateField(this)">${esc(f.finding)}</p>
+        <div class="col-span-11 bg-[#F8F9FB] p-5 border-b-2 border-[#E74243]">
+          <p class="font-['Manrope'] font-bold text-sm text-[#1A3350] mb-2 editable" contenteditable="true" data-path="findings[${i}].finding" onblur="updateField(this)">${esc(f.finding)}</p>
           <p class="font-['Inter'] text-xs text-slate-500 mb-1.5"><strong>${t('evidence')}:</strong> <span class="editable" contenteditable="true" data-path="findings[${i}].evidence" onblur="updateField(this)">${esc(f.evidence)}</span></p>
-          <p class="font-['Inter'] text-xs text-[#BB0014] font-medium"><strong>${t('implication')}:</strong> <span class="editable" contenteditable="true" data-path="findings[${i}].business_implication" onblur="updateField(this)">${esc(f.business_implication)}</span></p>
+          <p class="font-['Inter'] text-xs text-[#E74243] font-medium"><strong>${t('implication')}:</strong> <span class="editable" contenteditable="true" data-path="findings[${i}].business_implication" onblur="updateField(this)">${esc(f.business_implication)}</span></p>
         </div>
       </div>`;
     });
@@ -816,14 +816,14 @@ function renderPreview(r){
           <div class="flex items-start gap-0 flex-1">
             <div class="accent-bar self-stretch mr-5"></div>
             <div>
-              <span class="font-['Inter'] text-[#BB0014] text-[10px] uppercase tracking-widest font-bold">${i+1}. ${t('analysis')}</span>
-              <h2 class="font-['Manrope'] text-lg font-bold text-[#041627] mt-1 editable" contenteditable="true" data-path="analysis_blocks[${i}].heading" onblur="updateField(this)">${esc(s.heading)}</h2>
+              <span class="font-['Inter'] text-[#E74243] text-[10px] uppercase tracking-widest font-bold">${i+1}. ${t('analysis')}</span>
+              <h2 class="font-['Manrope'] text-lg font-bold text-[#1A3350] mt-1 editable" contenteditable="true" data-path="analysis_blocks[${i}].heading" onblur="updateField(this)">${esc(s.heading)}</h2>
             </div>
           </div>
           <button class="regen-btn" onclick="regenSection('analysis_blocks',${i},this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
         </div>`;
       if(s.governing_thought){
-        h+=`<div class="bg-[#041627] text-white p-5 mb-5">
+        h+=`<div class="bg-[#1A3350] text-white p-5 mb-5">
           <p class="font-['Manrope'] font-bold text-sm leading-snug editable" contenteditable="true" data-path="analysis_blocks[${i}].governing_thought" onblur="updateField(this)">${esc(s.governing_thought)}</p>
         </div>`;
       }
@@ -832,14 +832,14 @@ function renderPreview(r){
       }
       if(s.bullets?.length){
         s.bullets.forEach((b,j)=>{
-          h+=`<div class="flex gap-3 mb-2 items-start pl-2"><span class="text-[#BB0014] font-black text-xs select-none mt-0.5">▸</span><span class="font-['Inter'] text-sm text-[#191C1E] editable" contenteditable="true" data-path="analysis_blocks[${i}].bullets[${j}]" onblur="updateField(this)">${esc(b)}</span></div>`;
+          h+=`<div class="flex gap-3 mb-2 items-start pl-2"><span class="text-[#E74243] font-black text-xs select-none mt-0.5">▸</span><span class="font-['Inter'] text-sm text-[#191C1E] editable" contenteditable="true" data-path="analysis_blocks[${i}].bullets[${j}]" onblur="updateField(this)">${esc(b)}</span></div>`;
         });
       }
       if(s.so_what){
         h+=`<div class="flex gap-0 mt-5 so-what-box">
-          <div style="width:3px;background:#BB0014;flex-shrink:0"></div>
+          <div style="width:3px;background:#E74243;flex-shrink:0"></div>
           <div class="bg-[#FFF5F5] flex-1 px-5 py-3">
-            <span class="font-['Inter'] text-[10px] font-bold text-[#BB0014] uppercase tracking-widest">So what?  </span>
+            <span class="font-['Inter'] text-[10px] font-bold text-[#E74243] uppercase tracking-widest">So what?  </span>
             <span class="font-['Inter'] text-xs italic text-slate-600 editable" contenteditable="true" data-path="analysis_blocks[${i}].so_what" onblur="updateField(this)">${esc(s.so_what)}</span>
           </div>
         </div>`;
@@ -852,15 +852,15 @@ function renderPreview(r){
   if(r.risks?.length){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
       <div class="flex items-center justify-between mb-5">
-        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#BB0014] font-bold">${t('risks')}</h2>
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold">${t('risks')}</h2>
         <button class="regen-btn" onclick="regenSection('risks',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
       </div>
       <div class="space-y-3">`;
     r.risks.forEach((rk,i)=>{
       h+=`<div class="flex gap-0">
-        <div style="width:3px;background:#BB0014;flex-shrink:0"></div>
+        <div style="width:3px;background:#E74243;flex-shrink:0"></div>
         <div class="bg-[#FFF5F5] flex-1 px-5 py-4">
-          <p class="font-['Manrope'] font-bold text-sm text-[#BB0014] mb-1 editable" contenteditable="true" data-path="risks[${i}].risk" onblur="updateField(this)">${esc(rk.risk)}</p>
+          <p class="font-['Manrope'] font-bold text-sm text-[#E74243] mb-1 editable" contenteditable="true" data-path="risks[${i}].risk" onblur="updateField(this)">${esc(rk.risk)}</p>
           <p class="font-['Inter'] text-xs text-slate-500 editable" contenteditable="true" data-path="risks[${i}].implication" onblur="updateField(this)">${esc(rk.implication)}</p>
         </div>
       </div>`;
@@ -872,12 +872,12 @@ function renderPreview(r){
   if(r.opportunities?.length){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
       <div class="flex items-center justify-between mb-5">
-        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('opportunities')}</h2>
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#1A3350] font-bold">${t('opportunities')}</h2>
         <button class="regen-btn" onclick="regenSection('opportunities',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
       </div>
       <div class="space-y-2">`;
     r.opportunities.forEach((o,i)=>{
-      h+=`<div class="flex gap-3 items-start"><span class="font-['Inter'] text-[#4279B0] font-black text-xs select-none mt-0.5">✦</span><span class="font-['Inter'] text-sm text-[#191C1E] editable" contenteditable="true" data-path="opportunities[${i}]" onblur="updateField(this)">${esc(o)}</span></div>`;
+      h+=`<div class="flex gap-3 items-start"><span class="font-['Inter'] text-[#4174B9] font-black text-xs select-none mt-0.5">✦</span><span class="font-['Inter'] text-sm text-[#191C1E] editable" contenteditable="true" data-path="opportunities[${i}]" onblur="updateField(this)">${esc(o)}</span></div>`;
     });
     h+=`</div></div>`;
   }
@@ -886,10 +886,10 @@ function renderPreview(r){
   if(r.recommendations){
     h+=`<div class="px-10 py-8 border-b border-[#E0E3E5]">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('recommendations')}</h2>
+        <h2 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#1A3350] font-bold">${t('recommendations')}</h2>
         <button class="regen-btn" onclick="regenSection('recommendations',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
       </div>`;
-    [{key:'short_term',label:t('shortTerm'),color:'#BB0014'},{key:'medium_term',label:t('mediumTerm'),color:'#041627'},{key:'long_term',label:t('longTerm'),color:'#1A2B3C'}].forEach(hz=>{
+    [{key:'short_term',label:t('shortTerm'),color:'#E74243'},{key:'medium_term',label:t('mediumTerm'),color:'#1A3350'},{key:'long_term',label:t('longTerm'),color:'#2A313E'}].forEach(hz=>{
       const items=r.recommendations[hz.key];
       if(!items?.length)return;
       h+=`<div class="mb-6">
@@ -898,7 +898,7 @@ function renderPreview(r){
         h+=`<div class="flex gap-0 mb-3">
           <div class="w-7 h-7 flex items-center justify-center flex-shrink-0 font-['Manrope'] font-black text-xs text-white" style="background:${hz.color}">${i+1}</div>
           <div class="bg-[#F8F9FB] flex-1 px-5 py-3">
-            <p class="font-['Manrope'] font-bold text-sm text-[#041627] editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].action" onblur="updateField(this)">${esc(rec.action)}</p>
+            <p class="font-['Manrope'] font-bold text-sm text-[#1A3350] editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].action" onblur="updateField(this)">${esc(rec.action)}</p>
             <p class="font-['Inter'] text-xs text-slate-500 italic mt-1 editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].rationale" onblur="updateField(this)">${esc(rec.rationale)}</p>
             <p class="font-['Inter'] text-xs font-medium mt-1" style="color:${hz.color}">${t('impact')}: <span class="editable" contenteditable="true" data-path="recommendations.${hz.key}[${i}].impact" onblur="updateField(this)">${esc(rec.impact)}</span></p>
           </div>
@@ -913,12 +913,12 @@ function renderPreview(r){
   if(r.information_gaps?.length){
     h+=`<div class="px-10 py-7 border-b border-[#E0E3E5]">
       <div class="flex gap-0">
-        <div style="width:4px;background:#4279B0;flex-shrink:0"></div>
+        <div style="width:4px;background:#4174B9;flex-shrink:0"></div>
         <div class="flex-1 pl-6">
-          <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#4279B0] font-bold block mb-4">${t('infoGaps')}</span>
+          <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#4174B9] font-bold block mb-4">${t('infoGaps')}</span>
           <div class="space-y-2.5">`;
     r.information_gaps.forEach((g,i)=>{
-      h+=`<div class="flex gap-3 items-start"><span class="material-symbols-outlined text-[14px] text-[#4279B0] select-none mt-0.5" style="font-variation-settings:'FILL' 0">info</span><span class="font-['Inter'] text-sm text-[#44474C] editable" contenteditable="true" data-path="information_gaps[${i}]" onblur="updateField(this)">${esc(g)}</span></div>`;
+      h+=`<div class="flex gap-3 items-start"><span class="material-symbols-outlined text-[14px] text-[#4174B9] select-none mt-0.5" style="font-variation-settings:'FILL' 0">info</span><span class="font-['Inter'] text-sm text-[#44474C] editable" contenteditable="true" data-path="information_gaps[${i}]" onblur="updateField(this)">${esc(g)}</span></div>`;
     });
     h+=`</div></div></div></div>`;
   }
@@ -927,13 +927,13 @@ function renderPreview(r){
   if(r.conclusion){
     h+=`<div class="px-10 py-8">
       <div class="flex items-center justify-between mb-4">
-        <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#041627] font-bold">${t('conclusion')}</span>
+        <span class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#1A3350] font-bold">${t('conclusion')}</span>
         <button class="regen-btn" onclick="regenSection('conclusion',undefined,this)"><span class="material-symbols-outlined" style="font-size:13px">refresh</span>${t('regenerate')}</button>
       </div>
       <div class="flex gap-0">
-        <div style="width:4px;background:#041627;flex-shrink:0"></div>
+        <div style="width:4px;background:#1A3350;flex-shrink:0"></div>
         <div class="bg-[#F2F4F6] flex-1 p-6">
-          <p class="font-['Manrope'] italic text-base leading-relaxed text-[#041627] font-semibold editable" contenteditable="true" data-path="conclusion" onblur="updateField(this)">${esc(r.conclusion)}</p>
+          <p class="font-['Manrope'] italic text-base leading-relaxed text-[#1A3350] font-semibold editable" contenteditable="true" data-path="conclusion" onblur="updateField(this)">${esc(r.conclusion)}</p>
         </div>
       </div>
     </div>`;
@@ -963,7 +963,7 @@ async function downloadPdf(){
     const ML=18,MR=18,MT=22,MB=22;
     const CW=W-ML-MR;
     let y=0;
-    const NAVY='#041627',RED='#BB0014',BLUE='#4279B0',BODY='#44474C',SGRAY='#74777D',LGRAY='#F2F4F6',MGRAY='#C4C6CD';
+    const NAVY='#1A3350',RED='#E74243',BLUE='#4174B9',BODY='#44474C',SGRAY='#676766',LGRAY='#F2F4F6',MGRAY='#BFC4C5';
     const SIDEBAR_W=52;
     const CONTENT_X=SIDEBAR_W+14;
     const CONTENT_W=W-CONTENT_X-MR;
@@ -1523,7 +1523,7 @@ async function sendChat() {
   const typingEl = document.createElement('div');
   typingEl.id = 'chatTyping';
   typingEl.style.cssText = 'display:flex;align-items:flex-start;gap:8px';
-  typingEl.innerHTML = `<div style="width:24px;height:24px;background:#BB0014;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px"><span class="material-symbols-outlined" style="font-size:13px;color:#fff;font-variation-settings:'FILL' 1">smart_toy</span></div><div class="typing-bubble"><span></span><span></span><span></span></div>`;
+  typingEl.innerHTML = `<div style="width:24px;height:24px;background:#E74243;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px"><span class="material-symbols-outlined" style="font-size:13px;color:#fff;font-variation-settings:'FILL' 1">smart_toy</span></div><div class="typing-bubble"><span></span><span></span><span></span></div>`;
   container.appendChild(typingEl);
   container.scrollTop = container.scrollHeight;
 
@@ -1573,14 +1573,14 @@ function addChatBubble(role, text) {
   div.style.cssText = role === 'user' ? 'display:flex;justify-content:flex-end' : 'display:flex;justify-content:flex-start;gap:8px;align-items:flex-start';
   if(role === 'assistant'){
     const avatar = document.createElement('div');
-    avatar.style.cssText = 'width:24px;height:24px;background:#BB0014;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px';
+    avatar.style.cssText = 'width:24px;height:24px;background:#E74243;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px';
     avatar.innerHTML = '<span class="material-symbols-outlined" style="font-size:13px;color:#fff;font-variation-settings:\'FILL\' 1">smart_toy</span>';
     div.appendChild(avatar);
   }
   const bubble = document.createElement('div');
   bubble.style.cssText = role === 'user'
-    ? 'background:#041627;color:#fff;font-family:Inter,sans-serif;font-size:13px;padding:10px 14px;border-radius:10px 10px 2px 10px;max-width:85%;white-space:pre-wrap;line-height:1.5'
-    : 'background:#fff;border:1px solid #E0E3E5;border-left:3px solid #BB0014;color:#191C1E;font-family:Inter,sans-serif;font-size:13px;padding:10px 14px;border-radius:2px 10px 10px 10px;max-width:85%;white-space:pre-wrap;line-height:1.5';
+    ? 'background:#1A3350;color:#fff;font-family:Inter,sans-serif;font-size:13px;padding:10px 14px;border-radius:10px 10px 2px 10px;max-width:85%;white-space:pre-wrap;line-height:1.5'
+    : 'background:#fff;border:1px solid #E0E3E5;border-left:3px solid #E74243;color:#191C1E;font-family:Inter,sans-serif;font-size:13px;padding:10px 14px;border-radius:2px 10px 10px 10px;max-width:85%;white-space:pre-wrap;line-height:1.5';
   bubble.textContent = text;
   div.appendChild(bubble);
   container.appendChild(div);
@@ -1595,7 +1595,7 @@ function setDot(s){
   const d=document.getElementById('statusDot'),l=document.getElementById('statusDotLabel');
   d.classList.remove('connected');
   if(s==='ok'){d.style.background='#10b981';d.style.boxShadow='0 0 8px rgba(16,185,129,0.6)';d.classList.add('connected');l.textContent=t('uiConnected');}
-  else if(s==='no'){d.style.background='#BB0014';d.style.boxShadow='0 0 8px rgba(187,0,20,0.6)';l.textContent=t('uiError');}
+  else if(s==='no'){d.style.background='#E74243';d.style.boxShadow='0 0 8px rgba(187,0,20,0.6)';l.textContent=t('uiError');}
   else{d.style.background='#64748b';d.style.boxShadow='none';l.textContent=t('uiOffline');}
 }
 function flash(m){showStatus(m);setTimeout(()=>{if(result)showStatus(t('uiReportReadyEdit'));},2500);}
@@ -1611,7 +1611,7 @@ function switchNavTab(tab) {
   const calSection     = document.getElementById('sidebarCalendar');
   const histSection    = document.getElementById('sidebarHistory');
 
-  const activeStyle   = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:#fff;background:rgba(187,0,20,0.12);border:none;border-left:3px solid #BB0014;cursor:pointer;text-align:left';
+  const activeStyle   = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:#fff;background:rgba(187,0,20,0.12);border:none;border-left:3px solid #E74243;cursor:pointer;text-align:left';
   const inactiveStyle = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);background:transparent;border:none;border-left:3px solid transparent;cursor:pointer;text-align:left';
 
   if (tab === 'minutas') {
@@ -1660,7 +1660,7 @@ function buildCalendar() {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     html += `<div style="margin-bottom:14px">
-      <div style="font-size:11px;font-weight:600;color:${isCurrent ? '#BB0014' : 'rgba(255,255,255,0.9)'};text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding:0 2px">${monthNames[month]} ${year}</div>
+      <div style="font-size:11px;font-weight:600;color:${isCurrent ? '#E74243' : 'rgba(255,255,255,0.9)'};text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding:0 2px">${monthNames[month]} ${year}</div>
       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px">`;
     ['D','L','M','X','J','V','S'].forEach(d => {
       html += `<div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;padding:2px 0;font-weight:500">${d}</div>`;
@@ -1673,12 +1673,12 @@ function buildCalendar() {
       const isSelected = _calSelectedDate === dateStr;
 
       let bg = 'transparent', color = 'rgba(255,255,255,0.55)', fw = '400', border = 'none';
-      if (isSelected)    { bg = '#fff'; color = '#041627'; fw = '700'; }
-      else if (isToday)  { bg = '#BB0014'; color = '#fff'; fw = '600'; }
+      if (isSelected)    { bg = '#fff'; color = '#1A3350'; fw = '700'; }
+      else if (isToday)  { bg = '#E74243'; color = '#fff'; fw = '600'; }
       else if (hasMinutas) { color = '#fff'; fw = '600'; }
 
       const dot = hasMinutas && !isSelected && !isToday
-        ? `<div style="width:3px;height:3px;border-radius:50%;background:#BB0014;margin:0 auto;margin-top:1px"></div>` : '';
+        ? `<div style="width:3px;height:3px;border-radius:50%;background:#E74243;margin:0 auto;margin-top:1px"></div>` : '';
 
       html += `<div onclick="filterMinutasByDate('${dateStr}')" style="font-size:10px;text-align:center;padding:3px 1px;border-radius:50%;background:${bg};color:${color};font-weight:${fw};cursor:pointer;transition:background .15s" title="${dateStr}">${d}${dot}</div>`;
     }
@@ -1688,7 +1688,7 @@ function buildCalendar() {
 
   // Active filter banner
   if (_calSelectedDate) {
-    html += `<div style="margin-top:8px;padding:6px 10px;background:rgba(187,0,20,0.15);border-left:2px solid #BB0014;display:flex;justify-content:space-between;align-items:center">
+    html += `<div style="margin-top:8px;padding:6px 10px;background:rgba(187,0,20,0.15);border-left:2px solid #E74243;display:flex;justify-content:space-between;align-items:center">
       <span style="font-family:Inter,sans-serif;font-size:10px;color:#fff;opacity:.8">${_calSelectedDate}</span>
       <button onclick="clearCalendarFilter()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;padding:0 2px" title="Quitar filtro">✕</button>
     </div>`;
@@ -1813,8 +1813,8 @@ async function generateMinuta() {
 
   } catch(err) {
     progLabel.textContent = 'Error: ' + err.message;
-    progLabel.style.color = '#BB0014';
-    setTimeout(() => { prog.style.display = 'none'; progLabel.style.color = '#BB0014'; }, 3000);
+    progLabel.style.color = '#E74243';
+    setTimeout(() => { prog.style.display = 'none'; progLabel.style.color = '#E74243'; }, 3000);
   } finally {
     btn.disabled = false;
   }
@@ -1881,20 +1881,20 @@ function renderMinutasList() {
     const savedDate   = m.date || new Date(m.saved_at).toLocaleDateString('es-CL');
     const attendees   = r?.attendees?.length || 0;
     return `
-    <div style="background:#fff;border-left:4px solid #041627;box-shadow:0 2px 12px rgba(4,22,39,0.06);margin-bottom:12px;overflow:hidden">
+    <div style="background:#fff;border-left:4px solid #1A3350;box-shadow:0 2px 12px rgba(4,22,39,0.06);margin-bottom:12px;overflow:hidden">
       <div style="padding:18px 24px;cursor:pointer" onclick="toggleMinutaCard(${m.id})">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
           <div style="flex:1;min-width:0">
-            <div style="font-family:Manrope,sans-serif;font-size:15px;font-weight:800;color:#041627;line-height:1.3">${esc(m.title)}</div>
-            <div style="font-family:Inter,sans-serif;font-size:12px;color:#74777D;margin-top:4px;display:flex;align-items:center;gap:6px">
-              <span class="material-symbols-outlined" style="font-size:13px;color:#BB0014">calendar_today</span>
+            <div style="font-family:Manrope,sans-serif;font-size:15px;font-weight:800;color:#1A3350;line-height:1.3">${esc(m.title)}</div>
+            <div style="font-family:Inter,sans-serif;font-size:12px;color:#676766;margin-top:4px;display:flex;align-items:center;gap:6px">
+              <span class="material-symbols-outlined" style="font-size:13px;color:#E74243">calendar_today</span>
               ${esc(savedDate)}${attendees ? ` &nbsp;·&nbsp; <span class="material-symbols-outlined" style="font-size:13px">group</span> ${attendees} ${t('uiAttendeesSuffix')}` : ''}
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
             ${commitCount ? `<span style="font-size:10px;font-weight:700;padding:3px 10px;background:#F0FDF4;color:#16a34a;letter-spacing:.05em;text-transform:uppercase">✓ ${commitCount}</span>` : ''}
             ${pending ? `<span style="font-size:10px;font-weight:700;padding:3px 10px;background:#FFFBEB;color:#D97706;letter-spacing:.05em;text-transform:uppercase">⚠ ${pending}</span>` : ''}
-            <span id="chevron-${m.id}" class="material-symbols-outlined" style="font-size:20px;color:#74777D;transition:transform .2s">expand_more</span>
+            <span id="chevron-${m.id}" class="material-symbols-outlined" style="font-size:20px;color:#676766;transition:transform .2s">expand_more</span>
           </div>
         </div>
       </div>
@@ -1916,8 +1916,8 @@ function toggleMinutaCard(id) {
 
 function buildMinutaBodyHTML(r) {
   const S = {
-    section: 'font-family:Inter,sans-serif;font-size:9px;font-weight:800;color:#BB0014;text-transform:uppercase;letter-spacing:.18em;margin:20px 0 10px;display:flex;align-items:center;gap:8px',
-    sectionLine: 'flex:1;height:1px;background:#BB0014;opacity:.25',
+    section: 'font-family:Inter,sans-serif;font-size:9px;font-weight:800;color:#E74243;text-transform:uppercase;letter-spacing:.18em;margin:20px 0 10px;display:flex;align-items:center;gap:8px',
+    sectionLine: 'flex:1;height:1px;background:#E74243;opacity:.25',
     body: 'padding:0 24px 20px',
   };
   const priorityStyle = p => ({
@@ -1933,12 +1933,12 @@ function buildMinutaBodyHTML(r) {
   // Summary
   if (r.summary) {
     html += sectionHead(t('execSummary'));
-    html += `<p style="font-family:Inter,sans-serif;font-size:13px;color:#44474C;line-height:1.6;margin:0 0 4px;background:#F8F9FB;border-left:3px solid #041627;padding:12px 14px">${esc(r.summary)}</p>`;
+    html += `<p style="font-family:Inter,sans-serif;font-size:13px;color:#44474C;line-height:1.6;margin:0 0 4px;background:#F8F9FB;border-left:3px solid #1A3350;padding:12px 14px">${esc(r.summary)}</p>`;
   }
 
   // Attendees
   if (r.attendees?.length) {
-    const avatarColors = ['#BB0014','#4279B0','#16a34a','#7c3aed','#ea580c','#0891b2'];
+    const avatarColors = ['#E74243','#4174B9','#16a34a','#7c3aed','#ea580c','#0891b2'];
     html += sectionHead(t('uiAttendees'));
     html += `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">`;
     r.attendees.slice(0,8).forEach((a, i) => {
@@ -1957,7 +1957,7 @@ function buildMinutaBodyHTML(r) {
     html += sectionHead(t('uiActionPlan'));
     html += `<table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead>
-        <tr style="background:#041627">
+        <tr style="background:#1A3350">
           <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em">${t('uiTask')}</th>
           <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap">${t('uiResponsible')}</th>
           <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap">${t('uiDeadline')}</th>
@@ -1980,10 +1980,10 @@ function buildMinutaBodyHTML(r) {
   if (r.decisions?.length) {
     html += sectionHead(t('uiDecisions'));
     r.decisions.forEach(d => {
-      html += `<div style="border-left:3px solid #041627;padding:8px 12px;background:#F8F9FB;margin-bottom:8px">
-        <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#041627">${esc(d.decision)}</div>
+      html += `<div style="border-left:3px solid #1A3350;padding:8px 12px;background:#F8F9FB;margin-bottom:8px">
+        <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#1A3350">${esc(d.decision)}</div>
         ${d.rationale ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;margin-top:3px">${esc(d.rationale)}</div>` : ''}
-        ${d.owner ? `<div style="font-family:Inter,sans-serif;font-size:10px;color:#4279B0;margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">${t('uiResponsibleColon')} ${esc(d.owner)}</div>` : ''}
+        ${d.owner ? `<div style="font-family:Inter,sans-serif;font-size:10px;color:#4174B9;margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">${t('uiResponsibleColon')} ${esc(d.owner)}</div>` : ''}
       </div>`;
     });
   }
@@ -1992,8 +1992,8 @@ function buildMinutaBodyHTML(r) {
   if (r.key_topics?.length) {
     html += sectionHead(t('uiTopics'));
     r.key_topics.forEach(topic => {
-      html += `<div style="margin-bottom:8px;padding:8px 12px;border-left:3px solid #BB0014;background:#FFF8F8">
-        <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#041627">${esc(topic.topic)}</div>
+      html += `<div style="margin-bottom:8px;padding:8px 12px;border-left:3px solid #E74243;background:#FFF8F8">
+        <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#1A3350">${esc(topic.topic)}</div>
         ${topic.summary ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;margin-top:2px">${esc(topic.summary)}</div>` : ''}
         ${topic.outcome ? `<div style="font-family:Inter,sans-serif;font-size:11px;color:#16a34a;margin-top:3px;font-weight:600">→ ${esc(topic.outcome)}</div>` : ''}
       </div>`;
@@ -2015,7 +2015,7 @@ function buildMinutaBodyHTML(r) {
   // Next meeting
   if (r.next_meeting?.date || r.next_meeting?.objectives?.length) {
     html += sectionHead(t('uiNextMeeting'));
-    if (r.next_meeting.date) html += `<div style="font-family:Inter,sans-serif;font-size:12px;color:#041627;font-weight:600;margin-bottom:4px">📅 ${esc(r.next_meeting.date)}</div>`;
+    if (r.next_meeting.date) html += `<div style="font-family:Inter,sans-serif;font-size:12px;color:#1A3350;font-weight:600;margin-bottom:4px">📅 ${esc(r.next_meeting.date)}</div>`;
     r.next_meeting.objectives?.forEach(o => {
       html += `<div style="font-family:Inter,sans-serif;font-size:12px;color:#44474C;margin-bottom:3px">• ${esc(o)}</div>`;
     });
@@ -2024,8 +2024,8 @@ function buildMinutaBodyHTML(r) {
   // Export row
   const minutaData = JSON.stringify(r).replace(/'/g,"&#39;");
   html += `<div style="display:flex;align-items:center;gap:10px;margin-top:20px;padding-top:14px;border-top:2px solid #F2F4F6">
-    <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#74777D;text-transform:uppercase;letter-spacing:.1em">${t('uiExport')}</span>
-    <button onclick="downloadMinutaDocx(this)" data-minuta='${minutaData}' style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#041627;border:none;color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;letter-spacing:.05em;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+    <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#676766;text-transform:uppercase;letter-spacing:.1em">${t('uiExport')}</span>
+    <button onclick="downloadMinutaDocx(this)" data-minuta='${minutaData}' style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#1A3350;border:none;color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;letter-spacing:.05em;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
       <span class="material-symbols-outlined" style="font-size:14px">description</span>DOCX
     </button>
   </div>`;
@@ -2059,7 +2059,7 @@ async function downloadMinutaDocx(btn) {
   const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle, AlignmentType } = docx;
 
   const F = 'Calibri';
-  const NAVY = '041627', RED = 'BB0014', GRAY = '44474C', LGRAY = 'F2F4F6', WHITE = 'FFFFFF';
+  const NAVY = '1A3350', RED = 'E74243', GRAY = '44474C', LGRAY = 'F2F4F6', WHITE = 'FFFFFF';
 
   const sectionHeader = label => new Paragraph({
     children: [new TextRun({ text: label, bold: true, size: 18, color: RED, font: F })],
@@ -2124,7 +2124,7 @@ async function downloadMinutaDocx(btn) {
     r.decisions.forEach(d => {
       children.push(new Paragraph({ children: [new TextRun({ text: `• ${d.decision}`, bold: true, size: 22, font: F, color: NAVY })], spacing: { after: 60 }, indent: { left: 240 } }));
       if (d.rationale) children.push(new Paragraph({ children: [new TextRun({ text: `  ${d.rationale}`, size: 20, font: F, color: GRAY, italics: true })], spacing: { after: 60 }, indent: { left: 480 } }));
-      if (d.owner) children.push(new Paragraph({ children: [new TextRun({ text: `  Responsable: ${d.owner}`, size: 18, font: F, color: '4279B0', bold: true })], spacing: { after: 120 }, indent: { left: 480 } }));
+      if (d.owner) children.push(new Paragraph({ children: [new TextRun({ text: `  Responsable: ${d.owner}`, size: 18, font: F, color: '4174B9', bold: true })], spacing: { after: 120 }, indent: { left: 480 } }));
     });
   }
 
