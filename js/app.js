@@ -1637,6 +1637,8 @@ function switchNavTab(tab) {
 // ============================================================
 // CALENDAR — 3-month planner in sidebar
 // ============================================================
+let _calSelectedDate = '';
+
 function buildCalendar() {
   const container = document.getElementById('sidebarCalendar');
   if (!container) return;
@@ -1648,10 +1650,13 @@ function buildCalendar() {
   const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const todayY = now.getFullYear(), todayM = now.getMonth(), todayD = now.getDate();
 
+  // Build set of dates that have minutas
+  const minutasDates = new Set(loadMinutasHistory().map(m => m.date || ''));
+
   let html = '';
   months.forEach(({ year, month }, idx) => {
     const isCurrent = year === todayY && month === todayM;
-    const firstDay  = new Date(year, month, 1).getDay(); // 0=Sun
+    const firstDay  = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     html += `<div style="margin-bottom:14px">
@@ -1660,21 +1665,58 @@ function buildCalendar() {
     ['D','L','M','X','J','V','S'].forEach(d => {
       html += `<div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;padding:2px 0;font-weight:500">${d}</div>`;
     });
-    // Empty cells before first day
-    for (let i = 0; i < firstDay; i++) {
-      html += `<div></div>`;
-    }
+    for (let i = 0; i < firstDay; i++) html += `<div></div>`;
     for (let d = 1; d <= daysInMonth; d++) {
-      const isToday = isCurrent && d === todayD;
-      const style = isToday
-        ? 'font-size:10px;text-align:center;padding:3px 1px;border-radius:50%;background:#BB0014;color:#fff;font-weight:600;cursor:pointer'
-        : 'font-size:10px;text-align:center;padding:3px 1px;border-radius:50%;color:rgba(255,255,255,0.55);cursor:pointer';
-      html += `<div style="${style}">${d}</div>`;
+      const dateStr = new Date(year, month, d).toLocaleDateString('es-CL');
+      const isToday    = isCurrent && d === todayD;
+      const hasMinutas = minutasDates.has(dateStr);
+      const isSelected = _calSelectedDate === dateStr;
+
+      let bg = 'transparent', color = 'rgba(255,255,255,0.55)', fw = '400', border = 'none';
+      if (isSelected)    { bg = '#fff'; color = '#041627'; fw = '700'; }
+      else if (isToday)  { bg = '#BB0014'; color = '#fff'; fw = '600'; }
+      else if (hasMinutas) { color = '#fff'; fw = '600'; }
+
+      const dot = hasMinutas && !isSelected && !isToday
+        ? `<div style="width:3px;height:3px;border-radius:50%;background:#BB0014;margin:0 auto;margin-top:1px"></div>` : '';
+
+      html += `<div onclick="filterMinutasByDate('${dateStr}')" style="font-size:10px;text-align:center;padding:3px 1px;border-radius:50%;background:${bg};color:${color};font-weight:${fw};cursor:pointer;transition:background .15s" title="${dateStr}">${d}${dot}</div>`;
     }
     html += `</div></div>`;
     if (idx < 2) html += `<div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0 12px"></div>`;
   });
+
+  // Active filter banner
+  if (_calSelectedDate) {
+    html += `<div style="margin-top:8px;padding:6px 10px;background:rgba(187,0,20,0.15);border-left:2px solid #BB0014;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-family:Inter,sans-serif;font-size:10px;color:#fff;opacity:.8">${_calSelectedDate}</span>
+      <button onclick="clearCalendarFilter()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;padding:0 2px" title="Quitar filtro">✕</button>
+    </div>`;
+  }
+
   container.innerHTML = html;
+}
+
+function filterMinutasByDate(dateStr) {
+  // Toggle: click same date again to clear
+  if (_calSelectedDate === dateStr) {
+    clearCalendarFilter();
+    return;
+  }
+  _calSelectedDate = dateStr;
+  _minutasFilter = dateStr;
+  renderMinutasList();
+  buildCalendar();
+  // Scroll minutas list into view on mobile
+  const el = document.getElementById('minutasList');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function clearCalendarFilter() {
+  _calSelectedDate = '';
+  _minutasFilter = '';
+  renderMinutasList();
+  buildCalendar();
 }
 
 // ============================================================
@@ -1795,6 +1837,7 @@ function saveMinuta(r) {
     list.unshift(entry);
     if (list.length > 20) list.splice(20);
     localStorage.setItem(MINUTAS_KEY, JSON.stringify(list));
+    buildCalendar(); // refresh dots
   } catch(e) {}
 }
 
