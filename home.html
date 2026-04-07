@@ -40,11 +40,20 @@ tailwind.config = {
       <a class="text-[#74777D] hover:text-[#041627] transition-colors font-headline text-sm" href="#features">Funciones</a>
       <a class="text-[#74777D] hover:text-[#041627] transition-colors font-headline text-sm" href="#como-funciona">Cómo funciona</a>
     </div>
-    <div class="flex items-center gap-4">
-      <a href="index.html" class="bg-[#BB0014] hover:bg-red-800 text-white px-6 py-2.5 font-headline font-bold text-sm tracking-wide transition-all active:scale-95">
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="bg-[#BB0014] hover:bg-red-800 text-white px-4 md:px-6 py-2.5 font-headline font-bold text-sm tracking-wide transition-all active:scale-95">
         Abrir Plataforma
       </a>
+      <button id="homeMenuBtn" onclick="toggleHomeMenu()" class="flex md:hidden items-center justify-center w-9 h-9 text-[#041627] hover:text-[#BB0014] transition-colors" aria-label="Menú">
+        <span class="material-symbols-outlined" style="font-size:22px">menu</span>
+      </button>
     </div>
+  </div>
+  <!-- Mobile nav dropdown -->
+  <div id="homeMenuDropdown" class="hidden md:hidden border-t border-[#E0E3E5] bg-white px-8 py-4 flex flex-col gap-4">
+    <a class="text-[#041627] font-headline font-bold text-sm" href="#">Inicio</a>
+    <a class="text-[#74777D] hover:text-[#041627] font-headline text-sm" href="#features">Funciones</a>
+    <a class="text-[#74777D] hover:text-[#041627] font-headline text-sm" href="#como-funciona">Cómo funciona</a>
   </div>
 </nav>
 
@@ -100,9 +109,9 @@ tailwind.config = {
 
   <!-- Logos / trust -->
   <section class="border-y border-[#E0E3E5] bg-[#F8F9FB] py-6">
-    <div class="max-w-screen-xl mx-auto px-8 flex items-center justify-center gap-3">
+    <div class="max-w-screen-xl mx-auto px-8 flex flex-wrap items-center justify-center gap-3">
       <span class="text-[10px] uppercase tracking-[0.2em] font-headline font-bold text-[#BB0014]">Exporta directamente a</span>
-      <div class="flex items-center gap-6 ml-4">
+      <div class="flex flex-wrap items-center justify-center gap-4 gap-y-2 ml-2">
         <span class="flex items-center gap-1.5 text-[#44474C] font-headline text-sm font-bold"><span class="material-symbols-outlined text-base text-[#BB0014]">picture_as_pdf</span>PDF</span>
         <span class="flex items-center gap-1.5 text-[#44474C] font-headline text-sm font-bold"><span class="material-symbols-outlined text-base text-[#041627]">slideshow</span>PowerPoint</span>
         <span class="flex items-center gap-1.5 text-[#44474C] font-headline text-sm font-bold"><span class="material-symbols-outlined text-base text-[#4279B0]">description</span>Word</span>
@@ -228,5 +237,15 @@ tailwind.config = {
   </div>
 </footer>
 
+<script>
+  function toggleHomeMenu() {
+    const d = document.getElementById('homeMenuDropdown');
+    d.classList.toggle('hidden');
+  }
+  // Close mobile menu when a link is clicked
+  document.querySelectorAll('#homeMenuDropdown a').forEach(a => {
+    a.addEventListener('click', () => document.getElementById('homeMenuDropdown').classList.add('hidden'));
+  });
+</script>
 </body>
 </html>

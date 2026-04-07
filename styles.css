@@ -107,6 +107,25 @@
     animation:gradientShift 4s ease infinite;
   }
 
+  /* ── Mobile sidebar drawer ───────────────────────────────── */
+  #navSidebar{transform:translateX(-100%);transition:transform .3s cubic-bezier(.16,1,.3,1)}
+  @media(min-width:768px){#navSidebar{transform:translateX(0)}}
+  #navSidebar.open{transform:translateX(0)}
+
+  /* ── Sidebar overlay (mobile) ────────────────────────────── */
+  #sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:39}
+  #sidebarOverlay.open{display:block}
+
+  /* ── Responsive panel padding ────────────────────────────── */
+  .panel-content{padding:24px 20px 96px}
+  @media(min-width:768px){.panel-content{padding:40px 48px 96px}}
+
+  /* ── Mobile minutas action bar ───────────────────────────── */
+  @media(max-width:639px){
+    #minutasActionBar{flex-direction:column;align-items:stretch;gap:10px}
+    #minutasActionBar > *{width:100%}
+  }
+
   /* ── Flash notification ──────────────────────────────────── */
   #flashMsg{
     position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
