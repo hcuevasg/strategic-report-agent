@@ -2,7 +2,7 @@
 export default [
   {
     // Worker source — ES modules, no browser globals
-    files: ['src/worker/**/*.js', 'worker.js'],
+    files: ['src/worker/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
@@ -32,7 +32,7 @@ export default [
   },
   {
     // Frontend scripts — browser globals, no modules
-    files: ['app.js', 'pptx-gen.js', 'exports.js', 'dashboard.js', 'i18n.js'],
+    files: ['js/app.js', 'js/pptx-gen.js', 'js/exports.js', 'js/dashboard.js', 'js/i18n.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'script',

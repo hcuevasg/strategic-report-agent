@@ -4,24 +4,9 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Strategic Report Agent — Grupo ALTO</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="css/tailwind.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        "navy": "#041627",
-        "alto-red": "#BB0014",
-        "outline-variant": "#C4C6CD",
-        "surface-low": "#F2F4F6",
-      },
-      fontFamily: { "headline": ["Manrope"], "body": ["Inter"] }
-    }
-  }
-}
-</script>
 <style>
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
   .hero-clip { clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%); }
@@ -33,7 +18,7 @@ tailwind.config = {
 <nav class="w-full sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[#E0E3E5]">
   <div class="flex justify-between items-center px-8 py-4 max-w-screen-xl mx-auto">
     <div class="flex items-center gap-3">
-      <img src="alto-logo.png" alt="ALTO" class="h-7"/>
+      <img src="assets/alto-logo.png" alt="ALTO" class="h-7"/>
     </div>
     <div class="hidden md:flex items-center gap-8">
       <a class="text-[#041627] font-headline font-bold text-sm border-b-2 border-[#BB0014] pb-0.5" href="#">Inicio</a>
@@ -214,7 +199,7 @@ tailwind.config = {
         </div>
         <div class="absolute top-0 right-0 w-1/2 h-full opacity-5 pointer-events-none" style="background: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 20px 20px;"></div>
         <div class="absolute bottom-8 right-12 hidden lg:block">
-          <img src="alto-logo-white.png" alt="ALTO" class="h-16 opacity-20"/>
+          <img src="assets/alto-logo-white.png" alt="ALTO" class="h-16 opacity-20"/>
         </div>
       </div>
     </div>
@@ -226,7 +211,7 @@ tailwind.config = {
 <footer class="w-full bg-[#041627] text-slate-400">
   <div class="flex flex-col md:flex-row justify-between items-center px-12 py-12 max-w-screen-xl mx-auto gap-6">
     <div>
-      <img src="alto-logo-white.png" alt="ALTO" class="h-6 mb-3 opacity-80"/>
+      <img src="assets/alto-logo-white.png" alt="ALTO" class="h-6 mb-3 opacity-80"/>
       <div class="text-xs font-body">© 2025 Grupo ALTO. Uso interno — Confidencial.</div>
     </div>
     <div class="flex gap-8 text-sm font-body">

@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - worker.js
+      - src/worker/**
       - wrangler.toml
 
 jobs:
