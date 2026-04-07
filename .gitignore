@@ -2,6 +2,7 @@ node_modules/
 .wrangler/
 .claude/
 .mcp.json
+css/tailwind.css
 *.log
 .env
 .env.*
