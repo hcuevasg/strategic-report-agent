@@ -2274,6 +2274,8 @@ let _cmFuentes = [
   {nombre:'',rol:'',unidad:'',tipo:'área',notas:''},
   {nombre:'',rol:'',unidad:'',tipo:'área',notas:''}
 ];
+let _cmTipoContraste = 'operativo_legal';
+let _cmSensibilidad = 'uso_interno';
 let _cmTono = 'ejecutivo_prudente';
 let _cmProfundidad = 'estandar';
 let _contrasteResult = null;
@@ -2287,6 +2289,16 @@ function initContrasteForm() {
 }
 
 // ── Chip selectors ────────────────────────────────────────────
+function setCmTipo(el) {
+  document.querySelectorAll('#cmTipoChips .rtype-chip').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  _cmTipoContraste = el.dataset.tipo;
+}
+function setCmSensibilidad(el) {
+  document.querySelectorAll('#cmSensibilidadChips .rtype-chip').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  _cmSensibilidad = el.dataset.sens;
+}
 function setCmTono(el) {
   document.querySelectorAll('#cmTonoChips .rtype-chip').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
@@ -2379,25 +2391,31 @@ function removeCmFuente(i) { _cmFuentes.splice(i, 1); renderCmFuentes(); }
 
 // ── Build structured text input ───────────────────────────────
 function buildContrasteInput() {
-  const titulo = (document.getElementById('cmTitle')?.value || '').trim();
-  const sponsor = (document.getElementById('cmSponsor')?.value || '').trim();
-  const fecha = (document.getElementById('cmFecha')?.value || '').trim();
-  const analista = (document.getElementById('cmAnalista')?.value || '').trim();
-  const unidad = (document.getElementById('cmUnidad')?.value || '').trim();
-  const objetivo = (document.getElementById('cmObjetivo')?.value || '').trim();
-  const observaciones = (document.getElementById('cmObservaciones')?.value || '').trim();
+  const sponsor           = (document.getElementById('cmSponsor')?.value || '').trim();
+  const fecha             = (document.getElementById('cmFecha')?.value || '').trim();
+  const analista          = (document.getElementById('cmAnalista')?.value || '').trim();
+  const pais              = (document.getElementById('cmPais')?.value || '').trim();
+  const objetivo          = (document.getElementById('cmObjetivo')?.value || '').trim();
+  const notasInsumo       = (document.getElementById('cmNotasInsumo')?.value || '').trim();
+  const fechaLevantamiento= (document.getElementById('cmFechaLevantamiento')?.value || '').trim();
+  const unidad            = (document.getElementById('cmUnidad')?.value || '').trim();
+  const observaciones     = (document.getElementById('cmObservaciones')?.value || '').trim();
   const puntos = _cmPuntos.filter(p => p.trim());
   const fuentes = _cmFuentes.filter(f => f.nombre.trim() || f.notas.trim());
 
   let text = 'INFORME DE CONTRASTE MULTIFUENTE\n' + '─'.repeat(48) + '\n\n';
   text += 'METADATOS\n';
-  if (titulo)   text += `Título: ${titulo}\n`;
-  if (sponsor)  text += `Solicitante / Sponsor: ${sponsor}\n`;
-  if (fecha)    text += `Fecha: ${fecha}\n`;
-  if (analista) text += `Responsable del levantamiento: ${analista}\n`;
-  if (unidad)   text += `País / Unidad / Proyecto: ${unidad}\n`;
+  if (sponsor)            text += `Solicitante / Sponsor: ${sponsor}\n`;
+  if (fecha)              text += `Fecha del informe: ${fecha}\n`;
+  if (analista)           text += `Responsable del levantamiento: ${analista}\n`;
+  if (pais)               text += `País / Geografía: ${pais}\n`;
+  text += `Tipo de contraste: ${_cmTipoContraste.replace(/_/g,' ')}\n`;
+  if (fechaLevantamiento) text += `Fecha del levantamiento: ${fechaLevantamiento}\n`;
+  if (unidad)             text += `Unidad / Gerencia / Área: ${unidad}\n`;
+  text += `Nivel de sensibilidad: ${_cmSensibilidad.replace(/_/g,' ')}\n`;
   text += '\n';
-  if (objetivo) { text += `OBJETIVO DEL INFORME\n${objetivo}\n\n`; }
+  if (objetivo)    { text += `OBJETIVO DEL INFORME\n${objetivo}\n\n`; }
+  if (notasInsumo) { text += `NOTAS O INSUMO PRINCIPAL\n${notasInsumo}\n\n`; }
   if (puntos.length) {
     text += 'PUNTOS A CONTRASTAR\n';
     puntos.forEach((p, i) => { text += `${i+1}. ${p}\n`; });
@@ -2411,7 +2429,7 @@ function buildContrasteInput() {
       if (f.rol)    text += `  Rol / Cargo: ${f.rol}\n`;
       if (f.unidad) text += `  País / Unidad: ${f.unidad}\n`;
       if (f.tipo)   text += `  Tipo: ${f.tipo}\n`;
-      if (f.notas)  text += `  Notas / Insumo:\n  ${f.notas.replace(/\n/g,'  \n')}\n`;
+      if (f.notas)  text += `  Notas por fuente:\n  ${f.notas.replace(/\n/g,'  \n')}\n`;
     });
     text += '\n';
   }

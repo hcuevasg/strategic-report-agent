@@ -341,37 +341,58 @@
           <div style="width:64px;height:4px;background:#E74243;margin-top:16px"></div>
         </header>
 
-        <!-- Metadatos -->
+        <!-- ── OBLIGATORIOS ── -->
+        <div style="margin-bottom:6px;padding:4px 0">
+          <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#E74243">Campos obligatorios</span>
+        </div>
+
+        <!-- Metadatos obligatorios -->
         <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:16px" data-i18n="uiContrasteMetadata">Metadatos del Informe</label>
+          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:16px">Identificación del Informe</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
             <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px" data-i18n="uiContrasteTitle">Título del Informe</label>
-              <input id="cmTitle" type="text" placeholder="Ej: Contraste operativo-legal Colombia" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
-            </div>
-            <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px" data-i18n="uiContrasteSponsor">Solicitante / Sponsor</label>
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">Solicitante / Sponsor</label>
               <input id="cmSponsor" type="text" placeholder="Ej: Country Manager Colombia" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
             </div>
             <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px" data-i18n="uiContrasteFecha">Fecha</label>
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">Fecha del Informe</label>
               <input id="cmFecha" type="text" placeholder="Ej: 15 de abril 2026" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
             </div>
             <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px" data-i18n="uiContrasteAnalista">Responsable del Levantamiento</label>
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">Responsable del Levantamiento</label>
               <input id="cmAnalista" type="text" placeholder="Ej: Gerencia de Análisis" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
             </div>
             <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px" data-i18n="uiContrasteUnidad">País / Unidad / Proyecto</label>
-              <input id="cmUnidad" type="text" placeholder="Ej: Colombia" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">País / Geografía</label>
+              <input id="cmPais" type="text" placeholder="Ej: Colombia" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
+            </div>
+          </div>
+          <!-- Tipo de contraste chips -->
+          <div style="margin-top:20px">
+            <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:10px">Tipo de Contraste</label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px" id="cmTipoChips">
+              <button data-tipo="operativo_legal" onclick="setCmTipo(this)" class="rtype-chip active">Operativo-Legal</button>
+              <button data-tipo="financiero" onclick="setCmTipo(this)" class="rtype-chip">Financiero</button>
+              <button data-tipo="recursos_humanos" onclick="setCmTipo(this)" class="rtype-chip">Recursos Humanos</button>
+              <button data-tipo="regulatorio" onclick="setCmTipo(this)" class="rtype-chip">Regulatorio / Compliance</button>
+              <button data-tipo="estrategico" onclick="setCmTipo(this)" class="rtype-chip">Estratégico</button>
+              <button data-tipo="comercial" onclick="setCmTipo(this)" class="rtype-chip">Comercial</button>
+              <button data-tipo="tecnico" onclick="setCmTipo(this)" class="rtype-chip">Técnico</button>
+              <button data-tipo="otro" onclick="setCmTipo(this)" class="rtype-chip">Otro</button>
             </div>
           </div>
         </div>
 
         <!-- Objetivo -->
         <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:12px" data-i18n="uiContrasteObjetivo">Objetivo del Informe</label>
+          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:12px">Objetivo del Informe</label>
           <textarea id="cmObjetivo" rows="3" placeholder="Ej: Validar los puntos levantados por Country Manager respecto de operación legal en Colombia." style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;resize:vertical;outline:none"></textarea>
+        </div>
+
+        <!-- Notas o insumo principal -->
+        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:12px">Notas o Insumo Principal</label>
+          <textarea id="cmNotasInsumo" rows="4" placeholder="Contexto general, antecedentes relevantes, o insumo principal que da origen a este contraste..." style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;resize:vertical;outline:none"></textarea>
         </div>
 
         <!-- Puntos a contrastar -->
@@ -392,16 +413,46 @@
           </button>
         </div>
 
+        <!-- ── RECOMENDADOS ── -->
+        <div style="margin-top:32px;margin-bottom:6px;padding:4px 0">
+          <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#4279B0">Campos recomendados</span>
+        </div>
+
+        <!-- Metadatos recomendados -->
+        <div style="background:#fff;border-left:4px solid #4279B0;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#4279B0;font-weight:700;display:block;margin-bottom:16px">Contexto del Levantamiento</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div>
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">Fecha del Levantamiento</label>
+              <input id="cmFechaLevantamiento" type="text" placeholder="Ej: 10 de abril 2026" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
+            </div>
+            <div>
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">Unidad / Gerencia / Área</label>
+              <input id="cmUnidad" type="text" placeholder="Ej: Gerencia de Operaciones" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
+            </div>
+          </div>
+          <!-- Nivel de sensibilidad -->
+          <div>
+            <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:10px">Nivel de Sensibilidad</label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px" id="cmSensibilidadChips">
+              <button data-sens="uso_interno" onclick="setCmSensibilidad(this)" class="rtype-chip active">Uso interno</button>
+              <button data-sens="reservado" onclick="setCmSensibilidad(this)" class="rtype-chip">Reservado</button>
+              <button data-sens="confidencial" onclick="setCmSensibilidad(this)" class="rtype-chip">Confidencial</button>
+              <button data-sens="publico" onclick="setCmSensibilidad(this)" class="rtype-chip">Público</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Observaciones del analista -->
-        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:12px" data-i18n="uiContrasteObservaciones">Observaciones del Analista</label>
-          <textarea id="cmObservaciones" rows="5" placeholder="Hipótesis, alertas, lecturas contextuales o notas propias del analista que no provienen directamente de las fuentes..." style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;resize:vertical;outline:none"></textarea>
+        <div style="background:#fff;border-left:4px solid #4279B0;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#4279B0;font-weight:700;display:block;margin-bottom:12px" data-i18n="uiContrasteObservaciones">Observaciones del Analista</label>
+          <textarea id="cmObservaciones" rows="4" placeholder="Hipótesis, alertas, lecturas contextuales o notas propias del analista que no provienen directamente de las fuentes..." style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;resize:vertical;outline:none"></textarea>
         </div>
 
         <!-- Tono + Profundidad -->
-        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+        <div style="background:#fff;border-left:4px solid #4279B0;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
           <div style="margin-bottom:20px">
-            <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:10px" data-i18n="uiContrasteTono">Tono del Informe</label>
+            <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#4279B0;font-weight:700;display:block;margin-bottom:10px" data-i18n="uiContrasteTono">Tono del Informe</label>
             <div style="display:flex;flex-wrap:wrap;gap:8px" id="cmTonoChips">
               <button data-tono="ejecutivo_prudente" onclick="setCmTono(this)" class="rtype-chip active">Ejecutivo prudente</button>
               <button data-tono="ejecutivo_directo" onclick="setCmTono(this)" class="rtype-chip">Ejecutivo directo</button>
@@ -412,7 +463,7 @@
             </div>
           </div>
           <div>
-            <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:10px" data-i18n="uiContrasteProfundidad">Nivel de Profundidad</label>
+            <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#4279B0;font-weight:700;display:block;margin-bottom:10px" data-i18n="uiContrasteProfundidad">Nivel de Profundidad</label>
             <div style="display:flex;flex-wrap:wrap;gap:8px" id="cmProfundidadChips">
               <button data-prof="breve" onclick="setCmProfundidad(this)" class="rtype-chip">Breve</button>
               <button data-prof="estandar" onclick="setCmProfundidad(this)" class="rtype-chip active">Estándar</button>
