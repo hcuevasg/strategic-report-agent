@@ -2,15 +2,6 @@
 // Exports — PDF (jsPDF), Executive Brief (html2canvas), DOCX
 // ============================================================
 
-// ── Escape HTML special chars ─────────────────────────────────
-function esc(s) {
-  return String(s || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 // ── Build the Executive Brief as an HTML string ───────────────
 function buildBriefHTML(r) {
   const dateStr = new Date().toLocaleDateString('es-CL', {
