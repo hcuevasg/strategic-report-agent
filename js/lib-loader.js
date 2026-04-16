@@ -17,7 +17,7 @@ const _LIBS = {
   },
   jspdf: {
     url: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-    integrity: 'sha384-JcnsjUPPylma1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk',
+    integrity: 'sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==',
     check: () => typeof window.jspdf !== 'undefined',
   },
   mammoth: {
