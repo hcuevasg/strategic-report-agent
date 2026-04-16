@@ -1606,8 +1606,10 @@ function loadSample(){document.getElementById('inputText').value=`Tenemos un pro
 function switchNavTab(tab) {
   const minutasPanel   = document.getElementById('minutasPanel');
   const informesPanel  = document.getElementById('informesPanel');
+  const contrastePanel = document.getElementById('contrastePanel');
   const navMinutas     = document.getElementById('navMinutas');
   const navInformes    = document.getElementById('navInformes');
+  const navContraste   = document.getElementById('navContraste');
   const calSection     = document.getElementById('sidebarCalendar');
   const histSection    = document.getElementById('sidebarHistory');
 
@@ -1615,20 +1617,34 @@ function switchNavTab(tab) {
   const inactiveStyle = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);background:transparent;border:none;border-left:3px solid transparent;cursor:pointer;text-align:left';
 
   if (tab === 'minutas') {
-    minutasPanel.style.display  = 'block';
-    informesPanel.style.display = 'none';
-    navMinutas.style.cssText    = activeStyle;
-    navInformes.style.cssText   = inactiveStyle;
-    calSection.style.display    = 'block';
-    histSection.style.display   = 'none';
+    minutasPanel.style.display   = 'block';
+    informesPanel.style.display  = 'none';
+    contrastePanel.style.display = 'none';
+    navMinutas.style.cssText     = activeStyle;
+    navInformes.style.cssText    = inactiveStyle;
+    if (navContraste) navContraste.style.cssText = inactiveStyle;
+    calSection.style.display     = 'block';
+    histSection.style.display    = 'none';
     renderMinutasList();
+  } else if (tab === 'contraste') {
+    minutasPanel.style.display   = 'none';
+    informesPanel.style.display  = 'none';
+    contrastePanel.style.display = 'block';
+    navMinutas.style.cssText     = inactiveStyle;
+    navInformes.style.cssText    = inactiveStyle;
+    if (navContraste) navContraste.style.cssText = activeStyle;
+    calSection.style.display     = 'none';
+    histSection.style.display    = 'none';
+    initContrasteForm();
   } else {
-    minutasPanel.style.display  = 'none';
-    informesPanel.style.display = 'block';
-    navMinutas.style.cssText    = inactiveStyle;
-    navInformes.style.cssText   = activeStyle;
-    calSection.style.display    = 'none';
-    histSection.style.display   = 'block';
+    minutasPanel.style.display   = 'none';
+    informesPanel.style.display  = 'block';
+    contrastePanel.style.display = 'none';
+    navMinutas.style.cssText     = inactiveStyle;
+    navInformes.style.cssText    = activeStyle;
+    if (navContraste) navContraste.style.cssText = inactiveStyle;
+    calSection.style.display     = 'none';
+    histSection.style.display    = 'block';
     buildQuarterPlanner();
     hideNuevoInformeForm();
   }
@@ -2247,4 +2263,631 @@ function extractNumbers(r) {
   }
   const seen=new Set();
   return nums.filter(n=>{if(seen.has(n.value))return false;seen.add(n.value);return true;}).slice(0,8);
+}
+
+// ============================================================
+// CONTRASTE MULTIFUENTE MODULE
+// ============================================================
+
+let _cmPuntos = ['', '', ''];
+let _cmFuentes = [
+  {nombre:'',rol:'',unidad:'',tipo:'área',notas:''},
+  {nombre:'',rol:'',unidad:'',tipo:'área',notas:''}
+];
+let _cmTono = 'ejecutivo_prudente';
+let _cmProfundidad = 'estandar';
+let _contrasteResult = null;
+let _contrasteInited = false;
+
+function initContrasteForm() {
+  if (_contrasteInited) return;
+  _contrasteInited = true;
+  renderCmPuntos();
+  renderCmFuentes();
+}
+
+// ── Chip selectors ────────────────────────────────────────────
+function setCmTono(el) {
+  document.querySelectorAll('#cmTonoChips .rtype-chip').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  _cmTono = el.dataset.tono;
+}
+function setCmProfundidad(el) {
+  document.querySelectorAll('#cmProfundidadChips .rtype-chip').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  _cmProfundidad = el.dataset.prof;
+}
+
+// ── Dynamic puntos list ───────────────────────────────────────
+function renderCmPuntos() {
+  const container = document.getElementById('cmPuntosList');
+  if (!container) return;
+  let h = '';
+  _cmPuntos.forEach((p, i) => {
+    h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="width:22px;height:22px;background:#1A3350;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <span style="font-family:Manrope,sans-serif;font-size:10px;font-weight:800;color:#fff">${i+1}</span>
+      </div>
+      <input type="text" value="${esc(p)}" oninput="updateCmPunto(${i},this.value)" placeholder="Ej: Clústeres, ROI, Discovery..."
+        style="flex:1;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:8px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
+      ${_cmPuntos.length > 1
+        ? `<button onclick="removeCmPunto(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;padding:4px;display:flex;align-items:center" title="Eliminar">
+             <span class="material-symbols-outlined" style="font-size:16px">close</span>
+           </button>`
+        : ''}
+    </div>`;
+  });
+  container.innerHTML = h;
+}
+function updateCmPunto(i, val) { _cmPuntos[i] = val; }
+function addCmPunto() { _cmPuntos.push(''); renderCmPuntos(); }
+function removeCmPunto(i) { _cmPuntos.splice(i, 1); renderCmPuntos(); }
+
+// ── Dynamic fuentes list ──────────────────────────────────────
+function renderCmFuentes() {
+  const container = document.getElementById('cmFuentesList');
+  if (!container) return;
+  const inputStyle = 'width:100%;background:#fff;border:none;border-bottom:1px solid #BFC4C5;padding:7px 10px;font-family:Inter,sans-serif;font-size:12px;color:#191C1E;outline:none';
+  const labelStyle = 'font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:5px';
+  let h = '';
+  _cmFuentes.forEach((f, i) => {
+    h += `<div style="background:#F8F9FB;padding:16px 18px;margin-bottom:12px;border-left:3px solid #4279B0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <span style="font-family:Manrope,sans-serif;font-size:11px;font-weight:700;color:#1A3350">Fuente ${i+1}</span>
+        ${_cmFuentes.length > 1
+          ? `<button onclick="removeCmFuente(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;display:flex;align-items:center;gap:4px;font-family:Inter,sans-serif;font-size:10px">
+               <span class="material-symbols-outlined" style="font-size:14px">close</span>Eliminar
+             </button>`
+          : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="${labelStyle}">Nombre</label>
+          <input type="text" value="${esc(f.nombre)}" oninput="updateCmFuente(${i},'nombre',this.value)" placeholder="Ej: María José Matus" style="${inputStyle}">
+        </div>
+        <div>
+          <label style="${labelStyle}">Rol / Cargo</label>
+          <input type="text" value="${esc(f.rol)}" oninput="updateCmFuente(${i},'rol',this.value)" placeholder="Ej: Jefa de Operaciones" style="${inputStyle}">
+        </div>
+        <div>
+          <label style="${labelStyle}">País / Unidad</label>
+          <input type="text" value="${esc(f.unidad)}" oninput="updateCmFuente(${i},'unidad',this.value)" placeholder="Ej: Colombia" style="${inputStyle}">
+        </div>
+        <div>
+          <label style="${labelStyle}">Tipo de Fuente</label>
+          <select oninput="updateCmFuente(${i},'tipo',this.value)" style="${inputStyle};appearance:auto">
+            <option value="área"${f.tipo==='área'?' selected':''}>Área</option>
+            <option value="país"${f.tipo==='país'?' selected':''}>País</option>
+            <option value="persona"${f.tipo==='persona'?' selected':''}>Persona</option>
+            <option value="rol_funcional"${f.tipo==='rol_funcional'?' selected':''}>Rol funcional</option>
+            <option value="fuente_técnica"${f.tipo==='fuente_técnica'?' selected':''}>Fuente técnica</option>
+            <option value="otra"${f.tipo==='otra'?' selected':''}>Otra</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label style="${labelStyle}">Notas / Insumo de esta fuente</label>
+        <textarea oninput="updateCmFuente(${i},'notas',this.value)" rows="4" placeholder="Pega aquí la posición, notas o insumo de esta fuente..." style="width:100%;background:#fff;border:none;border-bottom:1px solid #BFC4C5;padding:8px 10px;font-family:Inter,sans-serif;font-size:12px;color:#191C1E;resize:vertical;outline:none">${esc(f.notas)}</textarea>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = h;
+}
+function updateCmFuente(i, field, val) { _cmFuentes[i][field] = val; }
+function addCmFuente() { _cmFuentes.push({nombre:'',rol:'',unidad:'',tipo:'área',notas:''}); renderCmFuentes(); }
+function removeCmFuente(i) { _cmFuentes.splice(i, 1); renderCmFuentes(); }
+
+// ── Build structured text input ───────────────────────────────
+function buildContrasteInput() {
+  const titulo = (document.getElementById('cmTitle')?.value || '').trim();
+  const sponsor = (document.getElementById('cmSponsor')?.value || '').trim();
+  const fecha = (document.getElementById('cmFecha')?.value || '').trim();
+  const analista = (document.getElementById('cmAnalista')?.value || '').trim();
+  const unidad = (document.getElementById('cmUnidad')?.value || '').trim();
+  const objetivo = (document.getElementById('cmObjetivo')?.value || '').trim();
+  const observaciones = (document.getElementById('cmObservaciones')?.value || '').trim();
+  const puntos = _cmPuntos.filter(p => p.trim());
+  const fuentes = _cmFuentes.filter(f => f.nombre.trim() || f.notas.trim());
+
+  let text = 'INFORME DE CONTRASTE MULTIFUENTE\n' + '─'.repeat(48) + '\n\n';
+  text += 'METADATOS\n';
+  if (titulo)   text += `Título: ${titulo}\n`;
+  if (sponsor)  text += `Solicitante / Sponsor: ${sponsor}\n`;
+  if (fecha)    text += `Fecha: ${fecha}\n`;
+  if (analista) text += `Responsable del levantamiento: ${analista}\n`;
+  if (unidad)   text += `País / Unidad / Proyecto: ${unidad}\n`;
+  text += '\n';
+  if (objetivo) { text += `OBJETIVO DEL INFORME\n${objetivo}\n\n`; }
+  if (puntos.length) {
+    text += 'PUNTOS A CONTRASTAR\n';
+    puntos.forEach((p, i) => { text += `${i+1}. ${p}\n`; });
+    text += '\n';
+  }
+  if (fuentes.length) {
+    text += 'FUENTES CONTRASTADAS\n';
+    fuentes.forEach((f, i) => {
+      text += `\nFuente ${i+1}:\n`;
+      if (f.nombre) text += `  Nombre: ${f.nombre}\n`;
+      if (f.rol)    text += `  Rol / Cargo: ${f.rol}\n`;
+      if (f.unidad) text += `  País / Unidad: ${f.unidad}\n`;
+      if (f.tipo)   text += `  Tipo: ${f.tipo}\n`;
+      if (f.notas)  text += `  Notas / Insumo:\n  ${f.notas.replace(/\n/g,'  \n')}\n`;
+    });
+    text += '\n';
+  }
+  if (observaciones) { text += `OBSERVACIONES DEL ANALISTA\n${observaciones}\n\n`; }
+  text += `TONO DEL INFORME: ${_cmTono.replace(/_/g,' ')}\n`;
+  text += `NIVEL DE PROFUNDIDAD: ${_cmProfundidad.replace(/_/g,' ')}\n`;
+  return text;
+}
+
+// ── Submit ────────────────────────────────────────────────────
+async function submitContraste() {
+  const puntos = _cmPuntos.filter(p => p.trim());
+  const fuentes = _cmFuentes.filter(f => f.nombre.trim() || f.notas.trim());
+  const contrasteErrEl = document.getElementById('contrasteError');
+  if (!puntos.length) {
+    contrasteErrEl.textContent = 'Agrega al menos un punto a contrastar.';
+    contrasteErrEl.style.display = 'block';
+    return;
+  }
+  if (!fuentes.length) {
+    contrasteErrEl.textContent = 'Agrega al menos una fuente con nombre o notas.';
+    contrasteErrEl.style.display = 'block';
+    return;
+  }
+  contrasteErrEl.style.display = 'none';
+
+  const btn = document.getElementById('btnSubmitContraste');
+  const prog = document.getElementById('contrasteProgress');
+  const fill = document.getElementById('contrasteProgressFill');
+  const label = document.getElementById('contrasteProgressLabel');
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  prog.style.display = 'block';
+  fill.style.width = '5%';
+  label.textContent = t('uiContrasteProgressThinking') || 'Analizando fuentes y puntos críticos...';
+
+  try {
+    let chunks = 0;
+    const input = buildContrasteInput();
+    const txt = await fetchFromWorker(WORKER_URL, {
+      userContent: input,
+      reportType: 'multisource_contrast',
+      outputLanguage
+    }, (full, chunk) => {
+      chunks++;
+      const pct = Math.min(93, 12 + chunks * 3);
+      fill.style.width = pct + '%';
+    }, (phase) => {
+      if (phase === 'thinking') {
+        label.textContent = t('uiContrasteProgressThinking') || 'Analizando fuentes y puntos críticos...';
+        fill.style.width = '8%';
+      } else if (phase === 'writing') {
+        label.textContent = t('uiContrasteProgressWriting') || 'Elaborando contraste ejecutivo...';
+        fill.style.width = '15%';
+      }
+    });
+
+    const clean = txt.replace(/```json|```/g, '').trim();
+    _contrasteResult = JSON.parse(clean);
+    result = _contrasteResult; // share with export functions
+
+    fill.style.width = '100%';
+    setTimeout(() => {
+      prog.style.display = 'none';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      document.getElementById('contrasteFormSection').style.display = 'none';
+      renderContrastePreview(_contrasteResult);
+      document.getElementById('contrastePreviewSection').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 400);
+  } catch (err) {
+    prog.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    contrasteErrEl.textContent = 'Error: ' + err.message;
+    contrasteErrEl.style.display = 'block';
+  }
+}
+
+// ── Show form again ───────────────────────────────────────────
+function showContrasteForm() {
+  document.getElementById('contrastePreviewSection').style.display = 'none';
+  document.getElementById('contrasteFormSection').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Status helper ─────────────────────────────────────────────
+function showContrasteStatus(msg) {
+  const el = document.getElementById('contrasteStatusMsg');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+// ── Render preview ────────────────────────────────────────────
+function renderContrastePreview(r) {
+  const card = document.getElementById('contrastePreviewCard');
+  if (!card) return;
+  const dateStr = new Date().toLocaleDateString('es-CL', {year:'numeric',month:'long',day:'numeric'});
+  let h = `<div id="contrasteReportContent" style="background:#fff;overflow:hidden;box-shadow:0 2px 40px rgba(4,22,39,0.08)">`;
+
+  // Cover bar
+  h += `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 32px;background:#1A3350">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-family:Manrope,sans-serif;font-weight:900;color:#fff;font-size:12px;letter-spacing:.2em;text-transform:uppercase">ALTO</span>
+      <div style="width:1px;height:16px;background:rgba(255,255,255,0.2)"></div>
+      <span style="font-family:Inter,sans-serif;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:.08em;text-transform:uppercase">Contraste Multifuente · Confidencial</span>
+    </div>
+    <span style="font-family:Inter,sans-serif;font-style:italic;font-size:10px;color:rgba(255,255,255,0.35)">${dateStr}</span>
+  </div>`;
+
+  // Title block
+  h += `<div style="padding:40px 40px 28px;border-bottom:1px solid #E0E3E5">
+    <span style="font-family:Inter,sans-serif;color:#E74243;font-weight:700;letter-spacing:.25em;text-transform:uppercase;font-size:10px;display:block;margin-bottom:10px">Contraste Multifuente</span>
+    <h1 style="font-family:Manrope,sans-serif;font-size:28px;font-weight:800;color:#1A3350;line-height:1.1;margin:0">${esc(r.title)}</h1>
+    ${r.subtitle ? `<p style="font-family:Inter,sans-serif;font-size:13px;color:#74777D;font-style:italic;margin-top:8px">${esc(r.subtitle)}</p>` : ''}
+    <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:14px">
+      ${r.sponsor ? `<div style="display:flex;align-items:center;gap:6px"><span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#74777D">Solicitante:</span><span style="font-family:Inter,sans-serif;font-size:12px;color:#1A3350;font-weight:600">${esc(r.sponsor)}</span></div>` : ''}
+      ${r.scope ? `<div style="display:flex;align-items:center;gap:6px"><span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#74777D">Alcance:</span><span style="font-family:Inter,sans-serif;font-size:12px;color:#44474C">${esc(r.scope)}</span></div>` : ''}
+    </div>
+    <div style="width:64px;height:3px;background:#E74243;margin-top:16px"></div>
+  </div>`;
+
+  // Central Message (So What)
+  if (r.central_message) {
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#E74243;display:block;margin-bottom:12px">Mensaje Central</span>
+      <div style="display:flex;gap:0">
+        <div style="width:4px;background:#E74243;flex-shrink:0"></div>
+        <div style="background:#FFF5F5;flex:1;padding:18px 22px">
+          <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#E74243;text-transform:uppercase;letter-spacing:.2em">So What?  </span>
+          <p style="font-family:Manrope,sans-serif;font-size:15px;font-weight:700;color:#1A3350;font-style:italic;margin-top:6px;line-height:1.45">${esc(r.central_message)}</p>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Executive Summary
+  if (r.executive_summary) {
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#E74243;display:block;margin-bottom:12px">Resumen Ejecutivo</span>
+      <div style="display:flex;gap:0">
+        <div style="width:4px;background:#1A3350;flex-shrink:0"></div>
+        <div style="background:#F2F4F6;flex:1;padding:18px 22px">
+          <p style="font-family:Inter,sans-serif;font-style:italic;font-size:14px;line-height:1.65;color:#1A3350">${esc(r.executive_summary)}</p>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Sources Map
+  if (r.sources_map?.length) {
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1A3350;display:block;margin-bottom:14px">Mapa de Fuentes Contrastadas</span>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:Inter,sans-serif;font-size:12px">
+        <thead><tr style="background:#1A3350;color:#fff">
+          <th style="padding:8px 12px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:600">Fuente</th>
+          <th style="padding:8px 12px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:600">Rol / Cargo</th>
+          <th style="padding:8px 12px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:600">País / Unidad</th>
+          <th style="padding:8px 12px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:600">Tipo</th>
+        </tr></thead>
+        <tbody>`;
+    r.sources_map.forEach((s, i) => {
+      const bg = i%2===0?'#F8F9FB':'#fff';
+      h += `<tr style="background:${bg}">
+        <td style="padding:8px 12px;font-weight:600;color:#1A3350;border-bottom:1px solid #E0E3E5">${esc(s.name)}</td>
+        <td style="padding:8px 12px;color:#44474C;border-bottom:1px solid #E0E3E5">${esc(s.role)}</td>
+        <td style="padding:8px 12px;color:#44474C;border-bottom:1px solid #E0E3E5">${esc(s.unit)}</td>
+        <td style="padding:8px 12px;color:#44474C;border-bottom:1px solid #E0E3E5">${esc(s.type)}</td>
+      </tr>`;
+    });
+    h += `</tbody></table></div></div>`;
+  }
+
+  // Key Messages
+  if (r.key_messages?.length) {
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1A3350;display:block;margin-bottom:14px">Mensajes Clave</span>
+      <div style="display:flex;flex-direction:column;gap:10px">`;
+    r.key_messages.forEach(m => {
+      h += `<div style="display:flex;gap:10px;align-items:start">
+        <span style="color:#E74243;font-weight:900;font-size:12px;flex-shrink:0;margin-top:2px">▸</span>
+        <span style="font-family:Inter,sans-serif;font-size:13px;color:#191C1E;line-height:1.5">${esc(m)}</span>
+      </div>`;
+    });
+    h += `</div></div>`;
+  }
+
+  // Methodology
+  if (r.methodology) {
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1A3350;display:block;margin-bottom:10px">Metodología</span>
+      <p style="font-family:Inter,sans-serif;font-size:13px;color:#44474C;line-height:1.65">${esc(r.methodology)}</p>
+    </div>`;
+  }
+
+  // Analysis by point
+  if (r.analysis_by_point?.length) {
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#E74243;display:block;margin-bottom:24px">Desarrollo Analítico por Punto</span>`;
+    r.analysis_by_point.forEach((ap, i) => {
+      const notLast = i < r.analysis_by_point.length - 1;
+      h += `<div style="margin-bottom:${notLast?'32px':'0'};${notLast?'border-bottom:1px dashed #E0E3E5;padding-bottom:32px':''}">
+        <div style="display:flex;gap:0;margin-bottom:14px">
+          <div style="width:28px;background:#1A3350;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-family:Manrope,sans-serif;font-weight:900;font-size:11px;color:#fff">${i+1}</span>
+          </div>
+          <div style="background:#F8F9FB;flex:1;padding:11px 16px;border-bottom:2px solid #E74243">
+            <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#E74243">Punto consultado</span>
+            <h3 style="font-family:Manrope,sans-serif;font-size:15px;font-weight:800;color:#1A3350;margin-top:3px">${esc(ap.point)}</h3>
+          </div>
+        </div>`;
+      if (ap.consolidated_reading) {
+        h += `<div style="margin-bottom:12px">
+          <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#1A3350;text-transform:uppercase;letter-spacing:.12em;display:block;margin-bottom:5px">Lectura consolidada</span>
+          <p style="font-family:Inter,sans-serif;font-size:12px;color:#44474C;line-height:1.6">${esc(ap.consolidated_reading)}</p>
+        </div>`;
+      }
+      if (ap.contrast) {
+        h += `<div style="margin-bottom:14px">
+          <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#1A3350;text-transform:uppercase;letter-spacing:.12em;display:block;margin-bottom:5px">Contraste multifuente</span>
+          <p style="font-family:Inter,sans-serif;font-size:12px;color:#44474C;line-height:1.6">${esc(ap.contrast)}</p>
+        </div>`;
+      }
+      // Convergences / Divergences / Gaps — 3-col grid
+      const hasConv = ap.convergences?.length, hasDiv = ap.divergences?.length, hasGap = ap.gaps?.length;
+      if (hasConv || hasDiv || hasGap) {
+        h += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">`;
+        h += hasConv
+          ? `<div style="background:#EEF6EE;padding:11px 14px;border-top:3px solid #4279B0">
+              <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#4279B0;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:7px">Convergencias</span>
+              ${ap.convergences.map(c=>`<div style="font-family:Inter,sans-serif;font-size:11px;color:#1A3350;line-height:1.4;margin-bottom:4px">· ${esc(c)}</div>`).join('')}
+            </div>`
+          : '<div></div>';
+        h += hasDiv
+          ? `<div style="background:#FFF5F5;padding:11px 14px;border-top:3px solid #E74243">
+              <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#E74243;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:7px">Divergencias</span>
+              ${ap.divergences.map(d=>`<div style="font-family:Inter,sans-serif;font-size:11px;color:#191C1E;line-height:1.4;margin-bottom:4px">· ${esc(d)}</div>`).join('')}
+            </div>`
+          : '<div></div>';
+        h += hasGap
+          ? `<div style="background:#F8F9FB;padding:11px 14px;border-top:3px solid #74777D">
+              <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#74777D;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:7px">Vacíos de Información</span>
+              ${ap.gaps.map(g=>`<div style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.4;margin-bottom:4px">· ${esc(g)}</div>`).join('')}
+            </div>`
+          : '<div></div>';
+        h += `</div>`;
+      }
+      if (ap.executive_finding) {
+        h += `<div style="background:#1A3350;padding:11px 16px;margin-bottom:10px">
+          <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.12em;display:block;margin-bottom:3px">Hallazgo ejecutivo</span>
+          <p style="font-family:Manrope,sans-serif;font-weight:700;font-size:13px;color:#fff;line-height:1.4">${esc(ap.executive_finding)}</p>
+        </div>`;
+      }
+      if (ap.implication || ap.risk_opportunity || ap.next_step) {
+        h += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+          <div>${ap.implication ? `<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#E74243;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px">Implicancia</span><p style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.4">${esc(ap.implication)}</p>` : ''}</div>
+          <div>${ap.risk_opportunity ? `<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#1A3350;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px">Riesgo / Oportunidad</span><p style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.4">${esc(ap.risk_opportunity)}</p>` : ''}</div>
+          <div>${ap.next_step ? `<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#4279B0;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px">Próximo paso</span><p style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.4">${esc(ap.next_step)}</p>` : ''}</div>
+        </div>`;
+      }
+      h += `</div>`;
+    });
+    h += `</div>`;
+  }
+
+  // Comparison Matrix
+  if (r.comparison_matrix?.length) {
+    const srcNames = [];
+    r.comparison_matrix.forEach(row => {
+      Object.keys(row.source_views||{}).forEach(n => { if(!srcNames.includes(n)) srcNames.push(n); });
+    });
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1A3350;display:block;margin-bottom:14px">Matriz Comparativa Consolidada</span>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:Inter,sans-serif;font-size:11px">
+        <thead><tr style="background:#1A3350;color:#fff">
+          <th style="padding:9px 11px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;min-width:100px">Punto</th>`;
+    srcNames.forEach(n => {
+      h += `<th style="padding:9px 11px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;min-width:110px">${esc(n)}</th>`;
+    });
+    h += `<th style="padding:9px 11px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;min-width:110px">Convergencia / Divergencia</th>
+          <th style="padding:9px 11px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;min-width:110px">Hallazgo Preliminar</th>
+          <th style="padding:9px 11px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#E74243;min-width:100px">Riesgo / Oportunidad</th>
+          <th style="padding:9px 11px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;min-width:100px">Acción Sugerida</th>
+        </tr></thead>
+        <tbody>`;
+    r.comparison_matrix.forEach((row, i) => {
+      const bg = i%2===0?'#F8F9FB':'#fff';
+      h += `<tr style="background:${bg}">
+        <td style="padding:9px 11px;font-weight:600;color:#1A3350;border-bottom:1px solid #E0E3E5;vertical-align:top">${esc(row.point)}</td>`;
+      srcNames.forEach(n => {
+        h += `<td style="padding:9px 11px;color:#44474C;border-bottom:1px solid #E0E3E5;vertical-align:top">${esc(row.source_views?.[n]||'—')}</td>`;
+      });
+      h += `<td style="padding:9px 11px;color:#44474C;border-bottom:1px solid #E0E3E5;vertical-align:top">${esc(row.convergence_divergence||'')}</td>
+        <td style="padding:9px 11px;color:#1A3350;font-weight:500;border-bottom:1px solid #E0E3E5;vertical-align:top">${esc(row.preliminary_finding||'')}</td>
+        <td style="padding:9px 11px;color:#E74243;border-bottom:1px solid #E0E3E5;vertical-align:top">${esc(row.risk_opportunity||'')}</td>
+        <td style="padding:9px 11px;color:#44474C;border-bottom:1px solid #E0E3E5;vertical-align:top">${esc(row.suggested_action||'')}</td>
+      </tr>`;
+    });
+    h += `</tbody></table></div></div>`;
+  }
+
+  // Transversal Findings
+  if (r.transversal_findings?.length) {
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1A3350;display:block;margin-bottom:14px">Hallazgos Transversales</span>
+      <div style="display:flex;flex-direction:column;gap:10px">`;
+    r.transversal_findings.forEach(f => {
+      h += `<div style="display:flex;gap:0">
+        <div style="width:3px;background:#4279B0;flex-shrink:0"></div>
+        <div style="background:#EEF4FF;flex:1;padding:10px 16px">
+          <p style="font-family:Inter,sans-serif;font-size:13px;color:#1A3350;line-height:1.5">${esc(f)}</p>
+        </div>
+      </div>`;
+    });
+    h += `</div></div>`;
+  }
+
+  // Risks
+  if (r.risks?.length) {
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#E74243;display:block;margin-bottom:14px">Riesgos</span>
+      <div style="display:flex;flex-direction:column;gap:10px">`;
+    r.risks.forEach(rk => {
+      h += `<div style="display:flex;gap:0">
+        <div style="width:3px;background:#E74243;flex-shrink:0"></div>
+        <div style="background:#FFF5F5;flex:1;padding:12px 16px">
+          <p style="font-family:Manrope,sans-serif;font-size:13px;font-weight:700;color:#E74243;margin-bottom:4px">${esc(rk.risk)}</p>
+          ${rk.nature ? `<span style="font-family:Inter,sans-serif;font-size:10px;color:#74777D;background:#fff;padding:2px 8px;border-radius:10px">${esc(rk.nature)}</span>` : ''}
+        </div>
+      </div>`;
+    });
+    h += `</div></div>`;
+  }
+
+  // Opportunities
+  if (r.opportunities?.length) {
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1A3350;display:block;margin-bottom:14px">Oportunidades</span>
+      <div style="display:flex;flex-direction:column;gap:10px">`;
+    r.opportunities.forEach(op => {
+      h += `<div style="display:flex;gap:10px;align-items:start">
+        <span style="color:#4279B0;font-weight:900;font-size:14px;flex-shrink:0;margin-top:1px">✦</span>
+        <div>
+          <p style="font-family:Inter,sans-serif;font-size:13px;color:#191C1E;line-height:1.4;margin-bottom:4px">${esc(op.opportunity)}</p>
+          ${op.improvement_type ? `<span style="font-family:Inter,sans-serif;font-size:10px;color:#4279B0;background:#EEF4FF;padding:2px 8px;border-radius:10px">${esc(op.improvement_type)}</span>` : ''}
+        </div>
+      </div>`;
+    });
+    h += `</div></div>`;
+  }
+
+  // Recommendations
+  if (r.recommendations) {
+    h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1A3350;display:block;margin-bottom:20px">Recomendaciones</span>`;
+    [{key:'immediate',label:'Inmediatas',color:'#E74243'},{key:'short_term',label:'Corto Plazo',color:'#1A3350'},{key:'structural',label:'Estructurales',color:'#2A313E'}].forEach(hz => {
+      const items = r.recommendations[hz.key];
+      if (!items?.length) return;
+      h += `<div style="margin-bottom:20px">
+        <div style="display:inline-block;font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:#fff;padding:4px 12px;margin-bottom:12px;background:${hz.color}">${hz.label}</div>`;
+      items.forEach((rec, i) => {
+        h += `<div style="display:flex;gap:0;margin-bottom:10px">
+          <div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:Manrope,sans-serif;font-weight:900;font-size:11px;color:#fff;background:${hz.color}">${i+1}</div>
+          <div style="background:#F8F9FB;flex:1;padding:10px 16px">
+            <p style="font-family:Manrope,sans-serif;font-weight:700;font-size:13px;color:#1A3350;margin-bottom:3px">${esc(rec.action)}</p>
+            ${rec.rationale ? `<p style="font-family:Inter,sans-serif;font-size:11px;color:#74777D;font-style:italic;margin-bottom:3px">${esc(rec.rationale)}</p>` : ''}
+            ${rec.impact ? `<p style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:${hz.color}">Impacto: ${esc(rec.impact)}</p>` : ''}
+          </div>
+        </div>`;
+      });
+      h += `</div>`;
+    });
+    h += `</div>`;
+  }
+
+  // Conclusion
+  if (r.conclusion) {
+    h += `<div style="padding:28px 40px">
+      <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1A3350;display:block;margin-bottom:12px">Conclusión Ejecutiva</span>
+      <div style="display:flex;gap:0">
+        <div style="width:4px;background:#1A3350;flex-shrink:0"></div>
+        <div style="background:#F2F4F6;flex:1;padding:18px 22px">
+          <p style="font-family:Manrope,sans-serif;font-style:italic;font-size:14px;font-weight:600;line-height:1.65;color:#1A3350">${esc(r.conclusion)}</p>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  h += `</div>`;
+  card.innerHTML = h;
+}
+
+// ── PDF export (html2canvas screenshot) ──────────────────────
+async function downloadContrastePDF() {
+  const reportEl = document.getElementById('contrasteReportContent');
+  if (!reportEl) return;
+  showContrasteStatus('Generando PDF...');
+  try {
+    await Promise.all([loadLib('html2canvas'), loadLib('jspdf')]);
+    const canvas = await html2canvas(reportEl, {
+      backgroundColor: '#fff',
+      scale: 1.5,
+      useCORS: true,
+      logging: false,
+    });
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdfW = 210;
+    const pdfH = Math.round((canvas.height * pdfW) / canvas.width);
+    const pdf = new jsPDF('p', 'mm', [pdfW, pdfH]);
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+    pdf.save('Contraste_ALTO_' + new Date().toISOString().slice(0,10) + '.pdf');
+    showContrasteStatus('PDF descargado');
+  } catch (err) {
+    showContrasteStatus('Error PDF: ' + err.message);
+  }
+}
+
+// ── Markdown copy ─────────────────────────────────────────────
+function copyContrasteMarkdown() {
+  const r = _contrasteResult;
+  if (!r) return;
+  let md = `# ${r.title}\n*${r.subtitle||'Informe Ejecutivo de Contraste Multifuente'}*\n\n`;
+  if (r.sponsor) md += `**Solicitante:** ${r.sponsor}  \n`;
+  if (r.scope)   md += `**Alcance:** ${r.scope}\n`;
+  md += `\n---\n\n`;
+  if (r.central_message) md += `## Mensaje Central\n\n> **So What?** *${r.central_message}*\n\n`;
+  if (r.executive_summary) md += `## Resumen Ejecutivo\n\n> ${r.executive_summary}\n\n`;
+  if (r.key_messages?.length) {
+    md += `## Mensajes Clave\n\n`;
+    r.key_messages.forEach(m => { md += `- ${m}\n`; });
+    md += '\n';
+  }
+  if (r.sources_map?.length) {
+    md += `## Fuentes Contrastadas\n\n| Fuente | Rol | País/Unidad | Tipo |\n|--------|-----|-------------|------|\n`;
+    r.sources_map.forEach(s => { md += `| ${s.name} | ${s.role} | ${s.unit} | ${s.type} |\n`; });
+    md += '\n';
+  }
+  if (r.analysis_by_point?.length) {
+    md += `## Desarrollo Analítico por Punto\n\n`;
+    r.analysis_by_point.forEach((ap, i) => {
+      md += `### ${i+1}. ${ap.point}\n\n`;
+      if (ap.consolidated_reading) md += `**Lectura consolidada:** ${ap.consolidated_reading}\n\n`;
+      if (ap.contrast) md += `**Contraste:** ${ap.contrast}\n\n`;
+      if (ap.convergences?.length) { md += `**Convergencias:**\n`; ap.convergences.forEach(c=>{md+=`- ${c}\n`;}); md+='\n'; }
+      if (ap.divergences?.length)  { md += `**Divergencias:**\n`;  ap.divergences.forEach(d=>{md+=`- ${d}\n`;}); md+='\n'; }
+      if (ap.gaps?.length)         { md += `**Vacíos:**\n`;         ap.gaps.forEach(g=>{md+=`- ${g}\n`;}); md+='\n'; }
+      if (ap.executive_finding) md += `**Hallazgo ejecutivo:** ${ap.executive_finding}\n\n`;
+      if (ap.implication)       md += `**Implicancia:** ${ap.implication}\n\n`;
+      if (ap.next_step)         md += `**Próximo paso:** ${ap.next_step}\n\n`;
+    });
+  }
+  if (r.risks?.length) {
+    md += `## Riesgos\n\n`;
+    r.risks.forEach(rk => { md += `- **${rk.risk}** *(${rk.nature})*\n`; });
+    md += '\n';
+  }
+  if (r.opportunities?.length) {
+    md += `## Oportunidades\n\n`;
+    r.opportunities.forEach(op => { md += `- ${op.opportunity} *(${op.improvement_type})*\n`; });
+    md += '\n';
+  }
+  if (r.recommendations) {
+    md += `## Recomendaciones\n\n`;
+    [{key:'immediate',label:'Inmediatas'},{key:'short_term',label:'Corto Plazo'},{key:'structural',label:'Estructurales'}].forEach(hz => {
+      const items = r.recommendations[hz.key];
+      if (!items?.length) return;
+      md += `### ${hz.label}\n\n`;
+      items.forEach((rec,i) => { md += `${i+1}. **${rec.action}** — ${rec.rationale} *(${rec.impact})*\n`; });
+      md += '\n';
+    });
+  }
+  if (r.conclusion) md += `---\n\n## Conclusión Ejecutiva\n\n${r.conclusion}\n`;
+  navigator.clipboard.writeText(md);
+  showContrasteStatus('Markdown copiado');
 }

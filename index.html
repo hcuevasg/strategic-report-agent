@@ -53,6 +53,10 @@
         <span class="material-symbols-outlined" style="font-size:18px">bar_chart</span>
         <span data-i18n="uiNavInformes">Informes</span>
       </button>
+      <button id="navContraste" onclick="switchNavTab('contraste')" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);background:transparent;border:none;border-left:3px solid transparent;cursor:pointer;text-align:left">
+        <span class="material-symbols-outlined" style="font-size:18px">compare_arrows</span>
+        <span data-i18n="uiNavContraste">Contraste Multifuente</span>
+      </button>
     </nav>
     <!-- Calendar (Minutas tab) -->
     <div id="sidebarCalendar" style="padding:14px 12px;flex:1"></div>
@@ -324,6 +328,136 @@
 
     </div><!-- /informesNewSection -->
     </div><!-- /informesPanel -->
+
+    <!-- ── CONTRASTE MULTIFUENTE PANEL ── -->
+    <div id="contrastePanel" class="panel-content" style="display:none">
+
+      <!-- ── FORM SECTION ── -->
+      <div id="contrasteFormSection">
+        <header style="margin-bottom:32px">
+          <span style="font-family:Inter,sans-serif;color:#E74243;font-weight:700;letter-spacing:.25em;text-transform:uppercase;font-size:10px;display:block;margin-bottom:8px" data-i18n="uiContrasteModule">Contraste Multifuente</span>
+          <h1 style="font-family:Manrope,sans-serif;font-size:36px;font-weight:800;color:#1A3350;line-height:1">Informe de Contraste Multifuente</h1>
+          <p style="font-family:Inter,sans-serif;color:#676766;font-size:14px;margin-top:8px;font-weight:500" data-i18n="uiContrasteSubtitle">Valida y contrasta puntos críticos entre múltiples fuentes internas.</p>
+          <div style="width:64px;height:4px;background:#E74243;margin-top:16px"></div>
+        </header>
+
+        <!-- Metadatos -->
+        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:16px" data-i18n="uiContrasteMetadata">Metadatos del Informe</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px" data-i18n="uiContrasteTitle">Título del Informe</label>
+              <input id="cmTitle" type="text" placeholder="Ej: Contraste operativo-legal Colombia" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
+            </div>
+            <div>
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px" data-i18n="uiContrasteSponsor">Solicitante / Sponsor</label>
+              <input id="cmSponsor" type="text" placeholder="Ej: Country Manager Colombia" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
+            </div>
+            <div>
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px" data-i18n="uiContrasteFecha">Fecha</label>
+              <input id="cmFecha" type="text" placeholder="Ej: 15 de abril 2026" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
+            </div>
+            <div>
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px" data-i18n="uiContrasteAnalista">Responsable del Levantamiento</label>
+              <input id="cmAnalista" type="text" placeholder="Ej: Gerencia de Análisis" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
+            </div>
+            <div>
+              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px" data-i18n="uiContrasteUnidad">País / Unidad / Proyecto</label>
+              <input id="cmUnidad" type="text" placeholder="Ej: Colombia" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Objetivo -->
+        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:12px" data-i18n="uiContrasteObjetivo">Objetivo del Informe</label>
+          <textarea id="cmObjetivo" rows="3" placeholder="Ej: Validar los puntos levantados por Country Manager respecto de operación legal en Colombia." style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;resize:vertical;outline:none"></textarea>
+        </div>
+
+        <!-- Puntos a contrastar -->
+        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:16px" data-i18n="uiContrastePuntos">Puntos a Contrastar</label>
+          <div id="cmPuntosList"></div>
+          <button onclick="addCmPunto()" style="margin-top:10px;background:transparent;border:1px dashed #BFC4C5;color:#74777D;padding:7px 16px;font-family:Inter,sans-serif;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px" data-i18n="uiContrasteAddPunto">
+            <span class="material-symbols-outlined" style="font-size:14px">add</span>+ Agregar punto
+          </button>
+        </div>
+
+        <!-- Fuentes contrastadas -->
+        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:16px" data-i18n="uiContrasteFuentes">Fuentes Contrastadas</label>
+          <div id="cmFuentesList"></div>
+          <button onclick="addCmFuente()" style="margin-top:10px;background:transparent;border:1px dashed #BFC4C5;color:#74777D;padding:7px 16px;font-family:Inter,sans-serif;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px" data-i18n="uiContrasteAddFuente">
+            <span class="material-symbols-outlined" style="font-size:14px">add</span>+ Agregar fuente
+          </button>
+        </div>
+
+        <!-- Observaciones del analista -->
+        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:12px" data-i18n="uiContrasteObservaciones">Observaciones del Analista</label>
+          <textarea id="cmObservaciones" rows="5" placeholder="Hipótesis, alertas, lecturas contextuales o notas propias del analista que no provienen directamente de las fuentes..." style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;resize:vertical;outline:none"></textarea>
+        </div>
+
+        <!-- Tono + Profundidad -->
+        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
+          <div style="margin-bottom:20px">
+            <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:10px" data-i18n="uiContrasteTono">Tono del Informe</label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px" id="cmTonoChips">
+              <button data-tono="ejecutivo_prudente" onclick="setCmTono(this)" class="rtype-chip active">Ejecutivo prudente</button>
+              <button data-tono="ejecutivo_directo" onclick="setCmTono(this)" class="rtype-chip">Ejecutivo directo</button>
+              <button data-tono="analitico" onclick="setCmTono(this)" class="rtype-chip">Analítico</button>
+              <button data-tono="diplomatico" onclick="setCmTono(this)" class="rtype-chip">Diplomático</button>
+              <button data-tono="escalamiento_interno" onclick="setCmTono(this)" class="rtype-chip">Escalamiento interno</button>
+              <button data-tono="alta_direccion" onclick="setCmTono(this)" class="rtype-chip">Alta dirección</button>
+            </div>
+          </div>
+          <div>
+            <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:10px" data-i18n="uiContrasteProfundidad">Nivel de Profundidad</label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px" id="cmProfundidadChips">
+              <button data-prof="breve" onclick="setCmProfundidad(this)" class="rtype-chip">Breve</button>
+              <button data-prof="estandar" onclick="setCmProfundidad(this)" class="rtype-chip active">Estándar</button>
+              <button data-prof="profundo" onclick="setCmProfundidad(this)" class="rtype-chip">Profundo</button>
+              <button data-prof="profundo_recomendaciones" onclick="setCmProfundidad(this)" class="rtype-chip">Profundo con recomendaciones</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generate button + progress -->
+        <div style="margin-top:8px;margin-bottom:40px">
+          <button id="btnSubmitContraste" onclick="submitContraste()" style="background:#1A3350;color:#fff;border:none;padding:14px 32px;font-family:Manrope,sans-serif;font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:10px">
+            <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1">compare_arrows</span>
+            <span data-i18n="uiContrasteGenerate">Generar Contraste Multifuente</span>
+          </button>
+          <div id="contrasteProgress" style="display:none;margin-top:16px;max-width:480px">
+            <div style="height:3px;background:#E0E3E5;border-radius:2px"><div id="contrasteProgressFill" style="height:3px;background:#E74243;border-radius:2px;width:0%;transition:width 0.3s"></div></div>
+            <span id="contrasteProgressLabel" style="font-family:Inter,sans-serif;font-size:10px;color:#E74243;text-transform:uppercase;letter-spacing:.1em;font-weight:600;display:block;margin-top:6px" data-i18n="uiContrasteProgressThinking">Analizando fuentes y puntos críticos...</span>
+          </div>
+          <div id="contrasteError" style="display:none;margin-top:14px;background:#FFF5F5;border-left:3px solid #E74243;padding:10px 14px;font-family:Inter,sans-serif;font-size:12px;color:#E74243"></div>
+        </div>
+      </div><!-- /contrasteFormSection -->
+
+      <!-- ── PREVIEW SECTION ── -->
+      <div id="contrastePreviewSection" style="display:none">
+        <!-- Toolbar -->
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:28px">
+          <button onclick="showContrasteForm()" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;font-family:Inter,sans-serif;font-size:13px;color:#74777D;cursor:pointer" data-i18n="uiContrasteBack">
+            <span class="material-symbols-outlined" style="font-size:16px">arrow_back</span>Nuevo Contraste
+          </button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button onclick="downloadContrastePDF()" style="display:flex;align-items:center;gap:6px;background:#E74243;color:#fff;border:none;padding:9px 18px;font-family:Manrope,sans-serif;font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer" data-i18n="uiContrastePdf">
+              <span class="material-symbols-outlined" style="font-size:14px">picture_as_pdf</span>Exportar PDF
+            </button>
+            <button onclick="copyContrasteMarkdown()" style="display:flex;align-items:center;gap:6px;background:#1A3350;color:#fff;border:none;padding:9px 18px;font-family:Manrope,sans-serif;font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer" data-i18n="uiContrasteMarkdown">
+              <span class="material-symbols-outlined" style="font-size:14px">content_copy</span>Markdown
+            </button>
+          </div>
+        </div>
+        <div id="contrasteStatusMsg" style="display:none;font-family:Inter,sans-serif;font-size:11px;color:#4279B0;margin-bottom:12px"></div>
+        <!-- Report card -->
+        <div id="contrastePreviewCard"></div>
+      </div><!-- /contrastePreviewSection -->
+
+    </div><!-- /contrastePanel -->
   </main>
 </div>
 

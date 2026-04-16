@@ -6,6 +6,7 @@
 import {
   SYSTEM_PROMPT,
   MINUTA_SYSTEM_PROMPT,
+  MULTISOURCE_SYSTEM_PROMPT,
   PPTX_SYSTEM_PROMPT,
   REPORT_TEMPLATES,
 } from './src/worker/prompts.js';
@@ -329,8 +330,11 @@ export default {
             : '';
 
         const isMinuta = body.reportType === 'minuta';
-        const activeSystemPrompt = isMinuta ? MINUTA_SYSTEM_PROMPT : SYSTEM_PROMPT;
-        const templateInstr = isMinuta ? '' : (REPORT_TEMPLATES[body.reportType] || '');
+        const isMultisource = body.reportType === 'multisource_contrast';
+        const activeSystemPrompt = isMinuta ? MINUTA_SYSTEM_PROMPT
+          : isMultisource ? MULTISOURCE_SYSTEM_PROMPT
+          : SYSTEM_PROMPT;
+        const templateInstr = (isMinuta || isMultisource) ? '' : (REPORT_TEMPLATES[body.reportType] || '');
         const typePref = templateInstr ? `\n${templateInstr}\n` : '';
 
         const userBlocks = [];
@@ -338,6 +342,9 @@ export default {
         const promptPrefix = isMinuta
           ? langPref +
             'Genera la minuta de reunión a partir del siguiente contenido. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n'
+          : isMultisource
+          ? langPref +
+            'Elabora el Informe Ejecutivo de Contraste Multifuente a partir del siguiente input estructurado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n'
           : langPref +
             typePref +
             'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n';
@@ -370,8 +377,8 @@ export default {
           },
           body: JSON.stringify({
             model,
-            max_tokens: 16000,
-            thinking: { type: 'enabled', budget_tokens: 4000 },
+            max_tokens: isMultisource ? 20000 : 16000,
+            thinking: { type: 'enabled', budget_tokens: isMultisource ? 6000 : 4000 },
             stream: true,
             system: activeSystemPrompt,
             messages: [{ role: 'user', content: userBlocks }],
