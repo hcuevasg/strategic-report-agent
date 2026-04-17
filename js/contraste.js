@@ -774,7 +774,7 @@ function renderContrastePreview(r) {
   // Title block
   h += `<div style="padding:40px 40px 28px;border-bottom:1px solid #E0E3E5">
     <span style="font-family:Inter,sans-serif;color:#E74243;font-weight:700;letter-spacing:.25em;text-transform:uppercase;font-size:10px;display:block;margin-bottom:10px">Contraste Multifuente</span>
-    <h1 style="font-family:Manrope,sans-serif;font-size:28px;font-weight:800;color:#1A3350;line-height:1.1;margin:0">${esc(r.title)}</h1>
+    <h1 contenteditable="true" data-ce="title" style="font-family:Manrope,sans-serif;font-size:28px;font-weight:800;color:#1A3350;line-height:1.1;margin:0;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='#BFC4C5'" onmouseout="this.style.borderBottomColor='transparent'">${esc(r.title)}</h1>
     ${r.subtitle ? `<p style="font-family:Inter,sans-serif;font-size:13px;color:#74777D;font-style:italic;margin-top:8px">${esc(r.subtitle)}</p>` : ''}
     <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:14px">
       ${r.sponsor ? `<div style="display:flex;align-items:center;gap:6px"><span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#74777D">Solicitante:</span><span style="font-family:Inter,sans-serif;font-size:12px;color:#1A3350;font-weight:600">${esc(r.sponsor)}</span></div>` : ''}
@@ -829,7 +829,7 @@ function renderContrastePreview(r) {
         <div style="width:4px;background:#E74243;flex-shrink:0"></div>
         <div style="background:#FFF5F5;flex:1;padding:18px 22px">
           <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#E74243;text-transform:uppercase;letter-spacing:.2em">So What?  </span>
-          <p style="font-family:Manrope,sans-serif;font-size:15px;font-weight:700;color:#1A3350;font-style:italic;margin-top:6px;line-height:1.45">${esc(r.central_message)}</p>
+          <p contenteditable="true" data-ce="central_message" style="font-family:Manrope,sans-serif;font-size:15px;font-weight:700;color:#1A3350;font-style:italic;margin-top:6px;line-height:1.45;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='#BFC4C5'" onmouseout="this.style.borderBottomColor='transparent'">${esc(r.central_message)}</p>
         </div>
       </div>
     </div>`;
@@ -842,7 +842,7 @@ function renderContrastePreview(r) {
       <div style="display:flex;gap:0">
         <div style="width:4px;background:#1A3350;flex-shrink:0"></div>
         <div style="background:#F2F4F6;flex:1;padding:18px 22px">
-          <p style="font-family:Inter,sans-serif;font-style:italic;font-size:14px;line-height:1.65;color:#1A3350">${esc(r.executive_summary)}</p>
+          <p contenteditable="true" data-ce="executive_summary" style="font-family:Inter,sans-serif;font-style:italic;font-size:14px;line-height:1.65;color:#1A3350;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='#BFC4C5'" onmouseout="this.style.borderBottomColor='transparent'">${esc(r.executive_summary)}</p>
         </div>
       </div>
     </div>`;
@@ -870,17 +870,6 @@ function renderContrastePreview(r) {
       </tr>`;
     });
     h += `</tbody></table></div>`;
-    const sourceNotes = r.sources_map.filter(source => source.notes);
-    if (sourceNotes.length) {
-      h += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">`;
-      sourceNotes.forEach(source => {
-        h += `<div style="background:#F8F9FB;padding:12px 14px;border-left:3px solid #4279B0">
-          <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#4279B0;display:block;margin-bottom:6px">${esc(source.name || 'Fuente')}</span>
-          <p style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.55">${esc(source.notes)}</p>
-        </div>`;
-      });
-      h += `</div>`;
-    }
     h += `</div>`;
   }
 
@@ -902,7 +891,7 @@ function renderContrastePreview(r) {
   if (r.methodology) {
     h += `<div style="padding:28px 40px;border-bottom:1px solid #E0E3E5">
       <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1A3350;display:block;margin-bottom:10px">Metodología</span>
-      <p style="font-family:Inter,sans-serif;font-size:13px;color:#44474C;line-height:1.65">${esc(r.methodology)}</p>
+      <p contenteditable="true" data-ce="methodology" style="font-family:Inter,sans-serif;font-size:13px;color:#44474C;line-height:1.65;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='#BFC4C5'" onmouseout="this.style.borderBottomColor='transparent'">${esc(r.methodology)}</p>
     </div>`;
   }
 
@@ -925,13 +914,13 @@ function renderContrastePreview(r) {
       if (ap.consolidated_reading) {
         h += `<div style="margin-bottom:12px">
           <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#1A3350;text-transform:uppercase;letter-spacing:.12em;display:block;margin-bottom:5px">Lectura consolidada</span>
-          <p style="font-family:Inter,sans-serif;font-size:12px;color:#44474C;line-height:1.6">${esc(ap.consolidated_reading)}</p>
+          <p contenteditable="true" data-ce="abp-${i}-consolidated_reading" style="font-family:Inter,sans-serif;font-size:12px;color:#44474C;line-height:1.6;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='#BFC4C5'" onmouseout="this.style.borderBottomColor='transparent'">${esc(ap.consolidated_reading)}</p>
         </div>`;
       }
       if (ap.contrast) {
         h += `<div style="margin-bottom:14px">
           <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#1A3350;text-transform:uppercase;letter-spacing:.12em;display:block;margin-bottom:5px">Contraste multifuente</span>
-          <p style="font-family:Inter,sans-serif;font-size:12px;color:#44474C;line-height:1.6">${esc(ap.contrast)}</p>
+          <p contenteditable="true" data-ce="abp-${i}-contrast" style="font-family:Inter,sans-serif;font-size:12px;color:#44474C;line-height:1.6;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='#BFC4C5'" onmouseout="this.style.borderBottomColor='transparent'">${esc(ap.contrast)}</p>
         </div>`;
       }
       // Convergences / Divergences / Gaps — 3-col grid
@@ -963,14 +952,14 @@ function renderContrastePreview(r) {
       if (ap.executive_finding) {
         h += `<div style="background:#1A3350;padding:11px 16px;margin-bottom:10px">
           <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.12em;display:block;margin-bottom:3px">Hallazgo ejecutivo</span>
-          <p style="font-family:Manrope,sans-serif;font-weight:700;font-size:13px;color:#fff;line-height:1.4">${esc(ap.executive_finding)}</p>
+          <p contenteditable="true" data-ce="abp-${i}-executive_finding" style="font-family:Manrope,sans-serif;font-weight:700;font-size:13px;color:#fff;line-height:1.4;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='rgba(255,255,255,0.4)'" onmouseout="this.style.borderBottomColor='transparent'">${esc(ap.executive_finding)}</p>
         </div>`;
       }
       if (ap.implication || ap.risk_opportunity || ap.next_step) {
         h += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
-          <div>${ap.implication ? `<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#E74243;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px">Implicancia</span><p style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.4">${esc(ap.implication)}</p>` : ''}</div>
-          <div>${ap.risk_opportunity ? `<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#1A3350;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px">Riesgo / Oportunidad</span><p style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.4">${esc(ap.risk_opportunity)}</p>` : ''}</div>
-          <div>${ap.next_step ? `<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#4279B0;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px">Próximo paso</span><p style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.4">${esc(ap.next_step)}</p>` : ''}</div>
+          <div>${ap.implication ? `<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#E74243;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px">Implicancia</span><p contenteditable="true" data-ce="abp-${i}-implication" style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.4;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='#BFC4C5'" onmouseout="this.style.borderBottomColor='transparent'">${esc(ap.implication)}</p>` : ''}</div>
+          <div>${ap.risk_opportunity ? `<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#1A3350;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px">Riesgo / Oportunidad</span><p contenteditable="true" data-ce="abp-${i}-risk_opportunity" style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.4;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='#BFC4C5'" onmouseout="this.style.borderBottomColor='transparent'">${esc(ap.risk_opportunity)}</p>` : ''}</div>
+          <div>${ap.next_step ? `<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#4279B0;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px">Próximo paso</span><p contenteditable="true" data-ce="abp-${i}-next_step" style="font-family:Inter,sans-serif;font-size:11px;color:#44474C;line-height:1.4;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='#BFC4C5'" onmouseout="this.style.borderBottomColor='transparent'">${esc(ap.next_step)}</p>` : ''}</div>
         </div>`;
       }
       h += `</div>`;
@@ -1101,7 +1090,7 @@ function renderContrastePreview(r) {
       <div style="display:flex;gap:0">
         <div style="width:4px;background:#1A3350;flex-shrink:0"></div>
         <div style="background:#F2F4F6;flex:1;padding:18px 22px">
-          <p style="font-family:Manrope,sans-serif;font-style:italic;font-size:14px;font-weight:600;line-height:1.65;color:#1A3350">${esc(r.conclusion)}</p>
+          <p contenteditable="true" data-ce="conclusion" style="font-family:Manrope,sans-serif;font-style:italic;font-size:14px;font-weight:600;line-height:1.65;color:#1A3350;outline:none;cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s" onmouseover="this.style.borderBottomColor='#BFC4C5'" onmouseout="this.style.borderBottomColor='transparent'">${esc(r.conclusion)}</p>
         </div>
       </div>
     </div>`;
@@ -1111,25 +1100,309 @@ function renderContrastePreview(r) {
   card.innerHTML = h;
 }
 
-// ── PDF export (html2canvas screenshot) ──────────────────────
+// ── Sync contenteditable edits back to _contrasteResult ──────
+function syncContrasteEdits() {
+  const container = document.getElementById('contrasteReportContent');
+  if (!container || !_contrasteResult) return;
+  container.querySelectorAll('[data-ce]').forEach(el => {
+    const key = el.getAttribute('data-ce');
+    const text = el.innerText.trim();
+    if (key.startsWith('abp-')) {
+      const parts = key.split('-');
+      const idx = parseInt(parts[1], 10);
+      const field = parts.slice(2).join('-');
+      if (_contrasteResult.analysis_by_point && _contrasteResult.analysis_by_point[idx]) {
+        _contrasteResult.analysis_by_point[idx][field] = text;
+      }
+    } else {
+      _contrasteResult[key] = text;
+    }
+  });
+  result = _contrasteResult;
+}
+
+// ── PDF export (real jsPDF text) ─────────────────────────────
 async function downloadContrastePDF() {
-  const reportEl = document.getElementById('contrasteReportContent');
-  if (!reportEl) return;
+  const r = _contrasteResult;
+  if (!r) return;
+  syncContrasteEdits();
   showContrasteStatus('Generando PDF...');
   try {
-    await Promise.all([loadLib('html2canvas'), loadLib('jspdf')]);
-    const canvas = await html2canvas(reportEl, {
-      backgroundColor: '#fff',
-      scale: 1.5,
-      useCORS: true,
-      logging: false,
-    });
-    const imgData = canvas.toDataURL('image/png');
+    await loadLib('jspdf');
     const { jsPDF } = window.jspdf;
-    const pdfW = 210;
-    const pdfH = Math.round((canvas.height * pdfW) / canvas.width);
-    const pdf = new jsPDF('p', 'mm', [pdfW, pdfH]);
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pw = 210, ph = 297, ml = 20, mr = 20, mt = 25, mb = 25;
+    const cw = pw - ml - mr; // 170
+    let y = mt;
+    const meta = r.metadata || {};
+    const dateStr = meta.report_date || new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    function hexToRgb(hex) { const h = hex.replace('#',''); return [parseInt(h.substring(0,2),16), parseInt(h.substring(2,4),16), parseInt(h.substring(4,6),16)]; }
+    const cNAVY = hexToRgb('1A3350'), cRED = hexToRgb('E74243'), cBODY = hexToRgb('44474C'), cGRAY = hexToRgb('676766'), cBLUE = hexToRgb('4279B0');
+
+    function addHeader() {
+      pdf.setFillColor(...cNAVY);
+      pdf.rect(0, 0, pw, 12, 'F');
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(255,255,255);
+      pdf.text('ALTO', ml, 7);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6); pdf.setTextColor(200,200,200);
+      pdf.text('Confidencial', pw - mr, 7, { align: 'right' });
+    }
+    function addFooter(pageNum) {
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.setTextColor(150,150,150);
+      pdf.text('Pagina ' + pageNum, pw / 2, ph - 10, { align: 'center' });
+    }
+    function checkPage(needed) {
+      if (y + needed > ph - mb) { addFooter(pdf.getNumberOfPages()); pdf.addPage(); addHeader(); y = mt + 8; }
+    }
+    function sectionTitle(txt) {
+      checkPage(16);
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(...cRED);
+      pdf.text(txt.toUpperCase(), ml, y); y += 5;
+      pdf.setDrawColor(...cRED); pdf.setLineWidth(0.4); pdf.line(ml, y, ml + cw, y); y += 8;
+    }
+    function bodyText(txt, fontSize, color, bold) {
+      if (!txt) return;
+      pdf.setFont('helvetica', bold ? 'bold' : 'normal'); pdf.setFontSize(fontSize || 9); pdf.setTextColor(...(color || cBODY));
+      const lines = pdf.splitTextToSize(String(txt), cw);
+      const lineH = (fontSize || 9) * 0.5;
+      lines.forEach(line => { checkPage(lineH + 2); pdf.text(line, ml, y); y += lineH; });
+      y += 4;
+    }
+    function labelValue(label, value) {
+      if (!value) return;
+      checkPage(8);
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cGRAY);
+      pdf.text(label.toUpperCase(), ml, y);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9); pdf.setTextColor(...cNAVY);
+      pdf.text(String(value), ml + 50, y);
+      y += 6;
+    }
+    function grayBox(txt) {
+      if (!txt) return;
+      const lines = pdf.splitTextToSize(String(txt), cw - 12);
+      const boxH = lines.length * 5 + 10;
+      checkPage(boxH + 4);
+      pdf.setFillColor(242, 244, 246);
+      pdf.rect(ml, y - 2, cw, boxH, 'F');
+      pdf.setFillColor(...cNAVY);
+      pdf.rect(ml, y - 2, 1.5, boxH, 'F');
+      pdf.setFont('helvetica', 'italic'); pdf.setFontSize(9); pdf.setTextColor(...cNAVY);
+      let ty = y + 4;
+      lines.forEach(line => { pdf.text(line, ml + 6, ty); ty += 5; });
+      y += boxH + 6;
+    }
+    function redBox(label, txt) {
+      if (!txt) return;
+      const lines = pdf.splitTextToSize(String(txt), cw - 12);
+      const boxH = lines.length * 5 + 14;
+      checkPage(boxH + 4);
+      pdf.setFillColor(255, 245, 245);
+      pdf.rect(ml, y - 2, cw, boxH, 'F');
+      pdf.setFillColor(...cRED);
+      pdf.rect(ml, y - 2, 1.5, boxH, 'F');
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cRED);
+      pdf.text(label.toUpperCase(), ml + 6, y + 3);
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(...cNAVY);
+      let ty = y + 9;
+      lines.forEach(line => { pdf.text(line, ml + 6, ty); ty += 5; });
+      y += boxH + 6;
+    }
+    function bulletList(items, color) {
+      if (!items || !items.length) return;
+      items.forEach(item => {
+        const lines = pdf.splitTextToSize(String(typeof item === 'string' ? item : item.risk || item.opportunity || item.action || ''), cw - 8);
+        checkPage(lines.length * 5 + 4);
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(...(color || cRED));
+        pdf.text('\u25B8', ml, y);
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9); pdf.setTextColor(...cBODY);
+        let ty = y;
+        lines.forEach(line => { pdf.text(line, ml + 6, ty); ty += 5; });
+        y = ty + 3;
+      });
+      y += 4;
+    }
+
+    // Page 1 header
+    addHeader();
+    y = mt + 8;
+
+    // Cover
+    y += 12;
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...cRED);
+    pdf.text('CONTRASTE MULTIFUENTE', ml, y); y += 10;
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(20); pdf.setTextColor(...cNAVY);
+    const titleLines = pdf.splitTextToSize(r.title || '', cw);
+    titleLines.forEach(line => { pdf.text(line, ml, y); y += 9; });
+    y += 2;
+    if (r.subtitle) { pdf.setFont('helvetica', 'italic'); pdf.setFontSize(10); pdf.setTextColor(...cGRAY); pdf.text(r.subtitle, ml, y); y += 8; }
+    pdf.setDrawColor(...cRED); pdf.setLineWidth(0.8); pdf.line(ml, y, ml + 40, y); y += 10;
+    if (r.sponsor) { labelValue('Solicitante', r.sponsor); }
+    if (r.scope) { labelValue('Alcance', r.scope); }
+    labelValue('Fecha', dateStr);
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...cNAVY);
+    pdf.text('CONFIDENCIAL', ml, y); y += 12;
+
+    // Ficha Tecnica
+    sectionTitle('Ficha Tecnica del Contraste');
+    [['Fecha del informe', meta.report_date], ['Responsable', meta.fieldwork_lead], ['Pais', meta.country], ['Tipo de contraste', formatCmTokenLabel(meta.contrast_type)], ['Sensibilidad', formatCmTokenLabel(meta.sensitivity)], ['Fecha levantamiento', meta.fieldwork_date], ['Unidad', meta.business_unit], ['Tono', formatCmTokenLabel(meta.tone)], ['Profundidad', formatCmTokenLabel(meta.depth)]].forEach(([l,v]) => { if (v) labelValue(l, v); });
+    y += 6;
+
+    // Central Message
+    if (r.central_message) { sectionTitle('Mensaje Central'); redBox('So What?', r.central_message); }
+
+    // Executive Summary
+    if (r.executive_summary) { sectionTitle('Resumen Ejecutivo'); grayBox(r.executive_summary); }
+
+    // Sources Map
+    if (r.sources_map && r.sources_map.length) {
+      sectionTitle('Mapa de Fuentes Contrastadas');
+      r.sources_map.forEach((s, idx) => {
+        checkPage(14);
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...cNAVY);
+        pdf.text((idx+1) + '. ' + (s.name || ''), ml, y);
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.setTextColor(...cGRAY);
+        const info = [s.role, s.unit, s.type].filter(Boolean).join(' | ');
+        if (info) { pdf.text(info, ml + 50, y); }
+        y += 6;
+      });
+      y += 6;
+    }
+
+    // Key Messages
+    if (r.key_messages && r.key_messages.length) { sectionTitle('Mensajes Clave'); bulletList(r.key_messages); }
+
+    // Methodology
+    if (r.methodology) { sectionTitle('Metodologia'); bodyText(r.methodology); y += 4; }
+
+    // Analysis by Point
+    if (r.analysis_by_point && r.analysis_by_point.length) {
+      sectionTitle('Desarrollo Analitico por Punto');
+      r.analysis_by_point.forEach((ap, idx) => {
+        checkPage(20);
+        pdf.setFillColor(...cNAVY); pdf.rect(ml, y - 4, 8, 8, 'F');
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(255,255,255);
+        pdf.text(String(idx + 1), ml + 3, y + 1);
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(10); pdf.setTextColor(...cNAVY);
+        pdf.text(ap.point || '', ml + 12, y + 1);
+        y += 10;
+        if (ap.consolidated_reading) { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cGRAY); pdf.text('LECTURA CONSOLIDADA', ml, y); y += 4; bodyText(ap.consolidated_reading); }
+        if (ap.contrast) { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cGRAY); pdf.text('CONTRASTE MULTIFUENTE', ml, y); y += 4; bodyText(ap.contrast); }
+        if (ap.convergences && ap.convergences.length) { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cBLUE); checkPage(6); pdf.text('CONVERGENCIAS', ml, y); y += 4; bulletList(ap.convergences, cBLUE); }
+        if (ap.divergences && ap.divergences.length) { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cRED); checkPage(6); pdf.text('DIVERGENCIAS', ml, y); y += 4; bulletList(ap.divergences, cRED); }
+        if (ap.gaps && ap.gaps.length) { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cGRAY); checkPage(6); pdf.text('VACIOS DE INFORMACION', ml, y); y += 4; bulletList(ap.gaps, cGRAY); }
+        if (ap.executive_finding) {
+          const efLines = pdf.splitTextToSize(ap.executive_finding, cw - 12);
+          const efH = efLines.length * 5 + 10;
+          checkPage(efH + 4);
+          pdf.setFillColor(...cNAVY); pdf.rect(ml, y - 2, cw, efH, 'F');
+          pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(200,200,200);
+          pdf.text('HALLAZGO EJECUTIVO', ml + 5, y + 3);
+          pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(255,255,255);
+          let ey = y + 9;
+          efLines.forEach(line => { pdf.text(line, ml + 5, ey); ey += 5; });
+          y += efH + 6;
+        }
+        if (ap.implication) { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cRED); checkPage(6); pdf.text('IMPLICANCIA', ml, y); y += 4; bodyText(ap.implication); }
+        if (ap.risk_opportunity) { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cNAVY); checkPage(6); pdf.text('RIESGO / OPORTUNIDAD', ml, y); y += 4; bodyText(ap.risk_opportunity); }
+        if (ap.next_step) { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cBLUE); checkPage(6); pdf.text('PROXIMO PASO', ml, y); y += 4; bodyText(ap.next_step); }
+        y += 8;
+      });
+    }
+
+    // Comparison Matrix
+    if (r.comparison_matrix && r.comparison_matrix.length) {
+      sectionTitle('Matriz Comparativa Consolidada');
+      r.comparison_matrix.forEach((row, idx) => {
+        checkPage(16);
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(...cNAVY);
+        pdf.text((idx+1) + '. ' + (row.point || ''), ml, y); y += 6;
+        Object.entries(row.source_views || {}).forEach(([src, view]) => {
+          checkPage(10);
+          pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(...cBLUE);
+          pdf.text(src + ':', ml + 4, y);
+          pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(...cBODY);
+          const vLines = pdf.splitTextToSize(String(view), cw - 40);
+          vLines.forEach(line => { pdf.text(line, ml + 40, y); y += 4; });
+          y += 2;
+        });
+        if (row.convergence_divergence) { bodyText('Conv/Div: ' + row.convergence_divergence, 8, cGRAY); }
+        if (row.preliminary_finding) { bodyText('Hallazgo: ' + row.preliminary_finding, 8, cNAVY, true); }
+        if (row.risk_opportunity) { bodyText('Riesgo/Op: ' + row.risk_opportunity, 8, cRED); }
+        if (row.suggested_action) { bodyText('Accion: ' + row.suggested_action, 8, cBLUE); }
+        y += 4;
+      });
+    }
+
+    // Transversal Findings
+    if (r.transversal_findings && r.transversal_findings.length) { sectionTitle('Hallazgos Transversales'); bulletList(r.transversal_findings, cBLUE); }
+
+    // Risks
+    if (r.risks && r.risks.length) {
+      sectionTitle('Riesgos');
+      r.risks.forEach(rk => {
+        const lines = pdf.splitTextToSize(rk.risk || '', cw - 12);
+        const bh = lines.length * 5 + (rk.nature ? 12 : 6);
+        checkPage(bh + 4);
+        pdf.setFillColor(255,245,245); pdf.rect(ml, y - 2, cw, bh, 'F');
+        pdf.setFillColor(...cRED); pdf.rect(ml, y - 2, 1.5, bh, 'F');
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(...cRED);
+        let ry = y + 3;
+        lines.forEach(line => { pdf.text(line, ml + 6, ry); ry += 5; });
+        if (rk.nature) { pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.setTextColor(...cGRAY); pdf.text(rk.nature, ml + 6, ry); }
+        y += bh + 6;
+      });
+    }
+
+    // Opportunities
+    if (r.opportunities && r.opportunities.length) {
+      sectionTitle('Oportunidades');
+      r.opportunities.forEach(op => {
+        checkPage(10);
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(...cBLUE);
+        pdf.text('\u25B8', ml, y);
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9); pdf.setTextColor(...cBODY);
+        const lines = pdf.splitTextToSize(op.opportunity || '', cw - 8);
+        lines.forEach(line => { pdf.text(line, ml + 6, y); y += 5; });
+        if (op.improvement_type) { pdf.setFont('helvetica', 'italic'); pdf.setFontSize(7); pdf.setTextColor(...cBLUE); pdf.text(op.improvement_type, ml + 6, y); y += 4; }
+        y += 3;
+      });
+    }
+
+    // Recommendations
+    if (r.recommendations) {
+      sectionTitle('Recomendaciones');
+      [{ key: 'immediate', label: 'INMEDIATAS', c: cRED }, { key: 'short_term', label: 'CORTO PLAZO', c: cNAVY }, { key: 'structural', label: 'ESTRUCTURALES', c: cGRAY }].forEach(hz => {
+        const items = r.recommendations[hz.key];
+        if (!items || !items.length) return;
+        checkPage(12);
+        pdf.setFillColor(...hz.c); pdf.rect(ml, y - 3, 40, 7, 'F');
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(255,255,255);
+        pdf.text(hz.label, ml + 2, y + 1); y += 10;
+        items.forEach((rec, idx) => {
+          checkPage(16);
+          pdf.setFillColor(...cNAVY); pdf.rect(ml, y - 3, 7, 7, 'F');
+          pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(255,255,255);
+          pdf.text(String(idx + 1), ml + 2.5, y + 1);
+          pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(...cNAVY);
+          const aLines = pdf.splitTextToSize(rec.action || '', cw - 12);
+          let ay = y;
+          aLines.forEach(line => { pdf.text(line, ml + 10, ay + 1); ay += 5; });
+          y = ay + 2;
+          if (rec.rationale) { pdf.setFont('helvetica', 'italic'); pdf.setFontSize(8); pdf.setTextColor(...cGRAY); const rLines = pdf.splitTextToSize(rec.rationale, cw - 12); rLines.forEach(line => { checkPage(5); pdf.text(line, ml + 10, y); y += 4; }); y += 1; }
+          if (rec.impact) { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...cRED); checkPage(6); pdf.text('Impacto: ' + rec.impact, ml + 10, y); y += 5; }
+          y += 4;
+        });
+        y += 4;
+      });
+    }
+
+    // Conclusion
+    if (r.conclusion) { sectionTitle('Conclusion Ejecutiva'); grayBox(r.conclusion); }
+
+    // Final footer
+    addFooter(pdf.getNumberOfPages());
+
     pdf.save('Contraste_ALTO_' + new Date().toISOString().slice(0, 10) + '.pdf');
     showContrasteStatus('PDF descargado');
   } catch (err) {
@@ -1137,10 +1410,196 @@ async function downloadContrastePDF() {
   }
 }
 
+// ── DOCX export ──────────────────────────────────────────────
+async function downloadContrasteDocx() {
+  const r = _contrasteResult;
+  if (!r) return;
+  syncContrasteEdits();
+  showContrasteStatus('Generando documento Word...');
+  try {
+    await loadLib('docx');
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, BorderStyle, WidthType, ShadingType, Header, Footer, PageNumber, PageBreak, ImageRun } = docx;
+    const A = ALTO;
+    const noBdr = { style: BorderStyle.NONE, size: 0, color: A.WHITE };
+    const noBorders = { top: noBdr, bottom: noBdr, left: noBdr, right: noBdr };
+    const children = [];
+    const sp = n => new Paragraph({ spacing: { after: n || 120 }, children: [] });
+    const meta = r.metadata || {};
+
+    function govBox(t) {
+      return new Table({ width: { size: 9360, type: WidthType.DXA }, columnWidths: [200, 9160], rows: [new TableRow({ children: [new TableCell({ borders: noBorders, shading: { fill: A.NAVY, type: ShadingType.CLEAR }, width: { size: 200, type: WidthType.DXA }, children: [new Paragraph({ children: [] })] }), new TableCell({ borders: noBorders, shading: { fill: A.LGRAY, type: ShadingType.CLEAR }, margins: { top: 120, bottom: 120, left: 160, right: 160 }, width: { size: 9160, type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: t, font: 'Calibri', size: 21, bold: true, color: A.NAVY })] })] })] })] });
+    }
+    function grayBox(l, t) {
+      return new Table({ width: { size: 9360, type: WidthType.DXA }, columnWidths: [9360], rows: [new TableRow({ children: [new TableCell({ borders: noBorders, shading: { fill: A.LGRAY, type: ShadingType.CLEAR }, margins: { top: 160, bottom: 160, left: 200, right: 200 }, width: { size: 9360, type: WidthType.DXA }, children: [new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: l, font: 'Calibri', size: 16, bold: true, color: A.BLUE })] }), new Paragraph({ children: [new TextRun({ text: t, font: 'Calibri', size: 22, italics: true, color: A.DGRAY })] })] })] })] });
+    }
+    function secH(t) {
+      return [new Paragraph({ spacing: { before: 360, after: 100 }, children: [new TextRun({ text: t.toUpperCase(), font: 'Calibri', size: 24, bold: true, color: A.NAVY })] }), new Paragraph({ spacing: { after: 60 }, border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: A.MGRAY, space: 1 } }, children: [] })];
+    }
+    function blt(t, c) {
+      return new Table({ width: { size: 9360, type: WidthType.DXA }, columnWidths: [360, 9000], rows: [new TableRow({ children: [new TableCell({ borders: noBorders, width: { size: 360, type: WidthType.DXA }, margins: { top: 40, bottom: 40, left: 80, right: 0 }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: '\u25B8', font: 'Calibri', size: 20, color: c || A.RED })] })] }), new TableCell({ borders: noBorders, width: { size: 9000, type: WidthType.DXA }, margins: { top: 40, bottom: 40, left: 80, right: 80 }, children: [new Paragraph({ children: [new TextRun({ text: t, font: 'Calibri', size: 21, color: A.DGRAY })] })] })] })] });
+    }
+    function swBox(t) {
+      return new Table({ width: { size: 9360, type: WidthType.DXA }, columnWidths: [9360], rows: [new TableRow({ children: [new TableCell({ borders: { top: { style: BorderStyle.SINGLE, size: 1, color: A.RED }, bottom: { style: BorderStyle.SINGLE, size: 1, color: A.RED }, left: { style: BorderStyle.SINGLE, size: 4, color: A.RED }, right: { style: BorderStyle.SINGLE, size: 1, color: A.RED } }, margins: { top: 100, bottom: 100, left: 160, right: 160 }, width: { size: 9360, type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: 'So what?  ', font: 'Calibri', size: 20, bold: true, color: A.RED }), new TextRun({ text: t, font: 'Calibri', size: 20, italics: true, color: A.SGRAY })] })] })] })] });
+    }
+    function numS(n, t) {
+      return new Table({ width: { size: 9360, type: WidthType.DXA }, columnWidths: [600, 8760], rows: [new TableRow({ children: [new TableCell({ borders: noBorders, shading: { fill: A.NAVY, type: ShadingType.CLEAR }, width: { size: 600, type: WidthType.DXA }, margins: { top: 100, bottom: 100, left: 80, right: 80 }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: String(n), font: 'Calibri', size: 22, bold: true, color: A.WHITE })] })] }), new TableCell({ borders: noBorders, shading: { fill: A.LGRAY, type: ShadingType.CLEAR }, width: { size: 8760, type: WidthType.DXA }, margins: { top: 100, bottom: 100, left: 160, right: 160 }, children: [new Paragraph({ children: [new TextRun({ text: t, font: 'Calibri', size: 21, color: A.DGRAY })] })] })] })] });
+    }
+
+    // Cover
+    children.push(sp(1200));
+    if (typeof logoBase64 !== 'undefined' && logoBase64) {
+      try {
+        const logoBytes = Uint8Array.from(atob(logoBase64), c => c.charCodeAt(0));
+        children.push(new Paragraph({ children: [new ImageRun({ data: logoBytes, transformation: { width: 200, height: 79 }, type: 'png' })] }));
+      } catch (e) {
+        children.push(new Paragraph({ children: [new TextRun({ text: 'ALTO', font: 'Calibri', size: 40, bold: true, color: A.RED })] }));
+      }
+    }
+    children.push(sp(400));
+    children.push(new Paragraph({ spacing: { after: 200 }, children: [new TextRun({ text: r.title || 'Contraste Multifuente', font: 'Calibri', size: 56, bold: true, color: A.NAVY })] }));
+    if (r.subtitle) children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: r.subtitle, font: 'Calibri', size: 28, italics: true, color: A.SGRAY })] }));
+    children.push(new Paragraph({ spacing: { before: 200, after: 200 }, border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: A.RED, space: 1 } }, children: [] }));
+    if (r.sponsor) children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: 'Solicitante: ', font: 'Calibri', size: 20, bold: true, color: A.SGRAY }), new TextRun({ text: r.sponsor, font: 'Calibri', size: 20, color: A.NAVY })] }));
+    if (r.scope) children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: 'Alcance: ', font: 'Calibri', size: 20, bold: true, color: A.SGRAY }), new TextRun({ text: r.scope, font: 'Calibri', size: 20, color: A.NAVY })] }));
+    children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: 'CONFIDENCIAL', font: 'Calibri', size: 18, bold: true, color: A.NAVY })] }));
+    children.push(new Paragraph({ spacing: { after: 600 }, children: [new TextRun({ text: meta.report_date || new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' }), font: 'Calibri', size: 20, color: A.SGRAY })] }));
+    children.push(new Paragraph({ children: [new PageBreak()] }));
+
+    // Ficha Tecnica
+    children.push(...secH('Ficha Tecnica del Contraste'));
+    [['Fecha del informe', meta.report_date], ['Responsable del levantamiento', meta.fieldwork_lead], ['Pais / Geografia', meta.country], ['Tipo de contraste', formatCmTokenLabel(meta.contrast_type)], ['Nivel de sensibilidad', formatCmTokenLabel(meta.sensitivity)], ['Fecha del levantamiento', meta.fieldwork_date], ['Unidad / Gerencia / Area', meta.business_unit], ['Tono solicitado', formatCmTokenLabel(meta.tone)], ['Profundidad solicitada', formatCmTokenLabel(meta.depth)]].forEach(([label, value]) => {
+      if (!value) return;
+      children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: label + ': ', font: 'Calibri', size: 19, bold: true, color: A.SGRAY }), new TextRun({ text: value, font: 'Calibri', size: 19, color: A.NAVY })] }));
+    });
+    children.push(sp(200));
+
+    // Central Message
+    if (r.central_message) { children.push(...secH('Mensaje Central')); children.push(swBox(r.central_message)); children.push(sp(200)); }
+
+    // Executive Summary
+    if (r.executive_summary) { children.push(...secH('Resumen Ejecutivo')); children.push(grayBox('RESUMEN EJECUTIVO', r.executive_summary)); children.push(sp(200)); }
+
+    // Sources Map
+    if (r.sources_map && r.sources_map.length) {
+      children.push(...secH('Mapa de Fuentes Contrastadas'));
+      const srcHeaderRow = new TableRow({ children: ['Fuente', 'Rol / Cargo', 'Pais / Unidad', 'Tipo'].map(h => new TableCell({ borders: noBorders, shading: { fill: A.NAVY, type: ShadingType.CLEAR }, margins: { top: 60, bottom: 60, left: 80, right: 80 }, children: [new Paragraph({ children: [new TextRun({ text: h, font: 'Calibri', size: 16, bold: true, color: A.WHITE })] })] })) });
+      const srcRows = r.sources_map.map((s, idx) => new TableRow({ children: [s.name || '', s.role || '', s.unit || '', s.type || ''].map(v => new TableCell({ borders: { top: noBdr, bottom: { style: BorderStyle.SINGLE, size: 1, color: A.MGRAY }, left: noBdr, right: noBdr }, shading: { fill: idx % 2 === 0 ? A.LGRAY : A.WHITE, type: ShadingType.CLEAR }, margins: { top: 60, bottom: 60, left: 80, right: 80 }, children: [new Paragraph({ children: [new TextRun({ text: v, font: 'Calibri', size: 19, color: A.DGRAY })] })] })) }));
+      children.push(new Table({ width: { size: 9360, type: WidthType.DXA }, rows: [srcHeaderRow, ...srcRows] }));
+      children.push(sp(200));
+    }
+
+    // Key Messages
+    if (r.key_messages && r.key_messages.length) { children.push(...secH('Mensajes Clave')); r.key_messages.forEach(m => children.push(blt(m))); children.push(sp(200)); }
+
+    // Methodology
+    if (r.methodology) { children.push(...secH('Metodologia')); children.push(new Paragraph({ spacing: { after: 200 }, children: [new TextRun({ text: r.methodology, font: 'Calibri', size: 21, color: A.DGRAY })] })); }
+
+    // Analysis by Point
+    if (r.analysis_by_point && r.analysis_by_point.length) {
+      children.push(...secH('Desarrollo Analitico por Punto'));
+      r.analysis_by_point.forEach((ap, idx) => {
+        children.push(new Paragraph({ spacing: { before: 240, after: 80 }, children: [new TextRun({ text: (idx + 1) + '. ' + (ap.point || ''), font: 'Calibri', size: 24, bold: true, color: A.NAVY })] }));
+        if (ap.consolidated_reading) { children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: 'Lectura consolidada', font: 'Calibri', size: 16, bold: true, color: A.SGRAY })] })); children.push(new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: ap.consolidated_reading, font: 'Calibri', size: 21, color: A.DGRAY })] })); }
+        if (ap.contrast) { children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: 'Contraste multifuente', font: 'Calibri', size: 16, bold: true, color: A.SGRAY })] })); children.push(new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: ap.contrast, font: 'Calibri', size: 21, color: A.DGRAY })] })); }
+        if (ap.convergences && ap.convergences.length) { children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: 'Convergencias', font: 'Calibri', size: 16, bold: true, color: '4279B0' })] })); ap.convergences.forEach(c => children.push(blt(c, '4279B0'))); }
+        if (ap.divergences && ap.divergences.length) { children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: 'Divergencias', font: 'Calibri', size: 16, bold: true, color: A.RED })] })); ap.divergences.forEach(d => children.push(blt(d, A.RED))); }
+        if (ap.gaps && ap.gaps.length) { children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: 'Vacios de informacion', font: 'Calibri', size: 16, bold: true, color: A.SGRAY })] })); ap.gaps.forEach(g => children.push(blt(g, A.SGRAY))); }
+        if (ap.executive_finding) { children.push(govBox(ap.executive_finding)); children.push(sp(80)); }
+        if (ap.implication) { children.push(new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: 'Implicancia: ', font: 'Calibri', size: 19, bold: true, color: A.RED }), new TextRun({ text: ap.implication, font: 'Calibri', size: 19, color: A.BODY })] })); }
+        if (ap.risk_opportunity) { children.push(new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: 'Riesgo / Oportunidad: ', font: 'Calibri', size: 19, bold: true, color: A.NAVY }), new TextRun({ text: ap.risk_opportunity, font: 'Calibri', size: 19, color: A.BODY })] })); }
+        if (ap.next_step) { children.push(new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: 'Proximo paso: ', font: 'Calibri', size: 19, bold: true, color: '4279B0' }), new TextRun({ text: ap.next_step, font: 'Calibri', size: 19, color: A.BODY })] })); }
+        children.push(sp(160));
+      });
+    }
+
+    // Comparison Matrix
+    if (r.comparison_matrix && r.comparison_matrix.length) {
+      children.push(...secH('Matriz Comparativa Consolidada'));
+      r.comparison_matrix.forEach((row, idx) => {
+        children.push(new Paragraph({ spacing: { before: 160, after: 60 }, children: [new TextRun({ text: (idx+1) + '. ' + (row.point || ''), font: 'Calibri', size: 22, bold: true, color: A.NAVY })] }));
+        Object.entries(row.source_views || {}).forEach(([src, view]) => {
+          children.push(new Paragraph({ spacing: { after: 40 }, indent: { left: 360 }, children: [new TextRun({ text: src + ': ', font: 'Calibri', size: 19, bold: true, color: '4279B0' }), new TextRun({ text: String(view), font: 'Calibri', size: 19, color: A.DGRAY })] }));
+        });
+        if (row.convergence_divergence) children.push(new Paragraph({ spacing: { after: 40 }, indent: { left: 360 }, children: [new TextRun({ text: 'Conv/Div: ', font: 'Calibri', size: 19, bold: true, color: A.SGRAY }), new TextRun({ text: row.convergence_divergence, font: 'Calibri', size: 19, color: A.DGRAY })] }));
+        if (row.preliminary_finding) children.push(new Paragraph({ spacing: { after: 40 }, indent: { left: 360 }, children: [new TextRun({ text: 'Hallazgo: ', font: 'Calibri', size: 19, bold: true, color: A.NAVY }), new TextRun({ text: row.preliminary_finding, font: 'Calibri', size: 19, color: A.DGRAY })] }));
+        if (row.risk_opportunity) children.push(new Paragraph({ spacing: { after: 40 }, indent: { left: 360 }, children: [new TextRun({ text: 'Riesgo/Op: ', font: 'Calibri', size: 19, bold: true, color: A.RED }), new TextRun({ text: row.risk_opportunity, font: 'Calibri', size: 19, color: A.DGRAY })] }));
+        if (row.suggested_action) children.push(new Paragraph({ spacing: { after: 80 }, indent: { left: 360 }, children: [new TextRun({ text: 'Accion: ', font: 'Calibri', size: 19, bold: true, color: '4279B0' }), new TextRun({ text: row.suggested_action, font: 'Calibri', size: 19, color: A.DGRAY })] }));
+      });
+      children.push(sp(200));
+    }
+
+    // Transversal Findings
+    if (r.transversal_findings && r.transversal_findings.length) { children.push(...secH('Hallazgos Transversales')); r.transversal_findings.forEach(f => children.push(blt(f, '4279B0'))); children.push(sp(200)); }
+
+    // Risks
+    if (r.risks && r.risks.length) {
+      children.push(...secH('Riesgos'));
+      r.risks.forEach(rk => {
+        children.push(new Table({ width: { size: 9360, type: WidthType.DXA }, columnWidths: [9360], rows: [new TableRow({ children: [new TableCell({ borders: { top: noBdr, bottom: noBdr, left: { style: BorderStyle.SINGLE, size: 4, color: A.RED }, right: noBdr }, margins: { top: 100, bottom: 100, left: 160, right: 160 }, width: { size: 9360, type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: rk.risk || '', font: 'Calibri', size: 21, bold: true, color: A.RED })] }), new Paragraph({ children: [new TextRun({ text: rk.nature || '', font: 'Calibri', size: 20, color: A.SGRAY })] })] })] })] }));
+        children.push(sp(100));
+      });
+      children.push(sp(200));
+    }
+
+    // Opportunities
+    if (r.opportunities && r.opportunities.length) {
+      children.push(...secH('Oportunidades'));
+      r.opportunities.forEach(op => {
+        children.push(blt(op.opportunity || '', '4279B0'));
+        if (op.improvement_type) children.push(new Paragraph({ spacing: { after: 40 }, indent: { left: 720 }, children: [new TextRun({ text: op.improvement_type, font: 'Calibri', size: 17, italics: true, color: '4279B0' })] }));
+      });
+      children.push(sp(200));
+    }
+
+    // Recommendations
+    if (r.recommendations) {
+      children.push(...secH('Recomendaciones'));
+      [{ key: 'immediate', label: 'INMEDIATAS' }, { key: 'short_term', label: 'CORTO PLAZO' }, { key: 'structural', label: 'ESTRUCTURALES' }].forEach(hz => {
+        const items = r.recommendations[hz.key];
+        if (!items || !items.length) return;
+        children.push(new Paragraph({ spacing: { before: 200, after: 100 }, children: [new TextRun({ text: hz.label, font: 'Calibri', size: 20, bold: true, color: A.BLUE })] }));
+        items.forEach((rec, idx) => {
+          children.push(numS(idx + 1, rec.action || ''));
+          if (rec.rationale) children.push(new Paragraph({ spacing: { after: 40 }, indent: { left: 720 }, children: [new TextRun({ text: rec.rationale, font: 'Calibri', size: 19, color: A.SGRAY, italics: true })] }));
+          if (rec.impact) children.push(new Paragraph({ spacing: { after: 120 }, indent: { left: 720 }, children: [new TextRun({ text: 'Impacto: ', font: 'Calibri', size: 19, bold: true, color: A.RED }), new TextRun({ text: rec.impact, font: 'Calibri', size: 19, color: A.BODY })] }));
+        });
+      });
+      children.push(sp(200));
+    }
+
+    // Conclusion
+    if (r.conclusion) { children.push(...secH('Conclusion Ejecutiva')); children.push(grayBox('CONCLUSION', r.conclusion)); }
+
+    // Assemble document
+    const doc = new Document({
+      styles: { default: { document: { run: { font: 'Calibri', size: 22 } } } },
+      sections: [{
+        properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } },
+        headers: { default: new Header({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: A.RED, space: 4 } }, children: [new TextRun({ text: 'CONFIDENCIAL  |  ', font: 'Calibri', size: 14, color: '999999' }), new TextRun({ text: 'ALTO', font: 'Calibri', size: 14, bold: true, color: A.RED })] })] }) },
+        footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, border: { top: { style: BorderStyle.SINGLE, size: 1, color: A.MGRAY, space: 4 } }, children: [new TextRun({ text: 'Pagina ', font: 'Calibri', size: 16, color: '999999' }), new TextRun({ children: [PageNumber.CURRENT], font: 'Calibri', size: 16, color: '999999' })] })] }) },
+        children
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Contraste_ALTO_' + new Date().toISOString().slice(0, 10) + '.docx';
+    a.click();
+    URL.revokeObjectURL(url);
+    showContrasteStatus('Documento Word descargado');
+  } catch (err) {
+    console.error(err);
+    showContrasteStatus('Error DOCX: ' + err.message);
+  }
+}
+
 // ── Markdown copy ─────────────────────────────────────────────
 function copyContrasteMarkdown() {
   const r = _contrasteResult;
   if (!r) return;
+  syncContrasteEdits();
   const meta = r.metadata || {};
   let md = `# ${r.title}\n*${r.subtitle || 'Informe Ejecutivo de Contraste Multifuente'}*\n\n`;
   if (r.sponsor) md += `**Solicitante:** ${r.sponsor}  \n`;
