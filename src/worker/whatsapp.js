@@ -5,6 +5,7 @@
 import { WA_SYSTEM_PROMPT } from './prompts.js';
 import { extractTextFromDocument } from './document-parser.js';
 import { trackEvent } from './analytics.js';
+import { validateWhatsAppReport } from './validation.js';
 
 // ── Format report as WhatsApp message ────────────────────────
 export function formatBriefForWhatsApp(report) {
@@ -148,7 +149,8 @@ export async function generateReportFromContent(content, env) {
     .map(b => b.text)
     .join('');
   try {
-    return JSON.parse(txt.replace(/```json|```/g, '').trim());
+    const parsed = JSON.parse(txt.replace(/```json|```/g, '').trim());
+    return validateWhatsAppReport(parsed) ? parsed : null;
   } catch {
     return null;
   }

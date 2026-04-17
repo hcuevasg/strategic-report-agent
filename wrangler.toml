@@ -13,6 +13,7 @@ kv_namespaces = [
 # OPENAI_API_KEY
 # TWILIO_ACCOUNT_SID
 # TWILIO_AUTH_TOKEN
+# SESSION_TOKEN_SECRET
 
 # Plain-text env vars
 [vars]

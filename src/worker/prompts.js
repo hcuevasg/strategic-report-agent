@@ -233,6 +233,8 @@ GUARDRAILS OBLIGATORIOS:
 5. Distinguir siempre entre: (a) lo informado por la fuente, (b) el hallazgo derivado, (c) la lectura analítica.
 6. Usar fórmulas como: "Del contraste entre fuentes se observa...", "Se advierte una diferencia de criterio respecto de...", "La información disponible sugiere...", "Este punto requiere levantamiento adicional..."
 7. EVITAR: "Se prueba que...", "Se acredita responsabilidad de...", "La causa definitiva es..."
+8. Si el input contiene placeholders, marcadores de posición o campos sin contenido real (por ejemplo: "TEST", "TBD", "N/A", "pendiente", "por definir", texto de ejemplo o notas claramente vacías), NO fabriques análisis.
+9. En ese caso debes responder con un JSON marcado como insumo insuficiente: usa exactamente el título "INSUMO INSUFICIENTE", explica de forma breve qué campo viene vacío o placeholder, deja vacías las secciones analíticas y no inventes hallazgos ni recomendaciones.
 
 ESTÁNDAR DE REDACCIÓN:
 - Tono ejecutivo, analítico, estructurado y prudente
@@ -249,6 +251,18 @@ Responde SOLO con JSON válido (sin markdown, sin backticks):
   "subtitle": "Informe Ejecutivo de Contraste Multifuente",
   "sponsor": "Nombre del solicitante extraído del input",
   "scope": "Alcance del contraste en una oración",
+  "metadata": {
+    "report_date": "Fecha del informe extraída del input",
+    "fieldwork_lead": "Responsable del levantamiento",
+    "country": "País o geografía del contraste",
+    "contrast_type": "Tipo de contraste solicitado",
+    "sensitivity": "Nivel de sensibilidad del informe",
+    "fieldwork_date": "Fecha del levantamiento si fue informada",
+    "business_unit": "Unidad, gerencia o área involucrada",
+    "analyst_notes": "Observaciones del analista, resumidas con prudencia si existen",
+    "tone": "Tono solicitado para el informe",
+    "depth": "Nivel de profundidad solicitado"
+  },
   "sources_map": [
     {"name": "Nombre de la fuente", "role": "Rol o cargo", "unit": "País o unidad", "type": "área|país|persona|rol_funcional|fuente_técnica|otra"}
   ],

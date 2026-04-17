@@ -1,670 +1,2391 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' data: blob:; connect-src 'self' https://strategic-report-proxy.hcuevas.workers.dev https://strategic-report-agent.pages.dev;"/>
-<title>Strategic Report Agent — ALTO v3.16</title>
-<link rel="manifest" href="manifest.json"/>
-<link rel="stylesheet" href="css/tailwind.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="css/styles.css"/>
-</head>
-<body class="min-h-screen flex flex-col bg-surface">
-<div id="flashMsg"><span id="flashText"></span><div class="flash-bar" id="flashBar"></div></div>
-
-<!-- Nav -->
-<header class="bg-[#1A3350] flex justify-between items-center w-full px-4 md:px-12 py-5 fixed top-0 z-50">
-  <div class="flex items-center gap-3">
-    <button onclick="toggleMobileMenu()" class="flex md:hidden items-center justify-center text-white/80 hover:text-white transition-colors mr-1" aria-label="Menú">
-      <span class="material-symbols-outlined" style="font-size:22px">menu</span>
-    </button>
-    <img src="assets/alto-logo-white.png" alt="ALTO" class="h-6"/>
-    <div class="w-px h-5 bg-white/20"></div>
-    <span class="font-['Inter'] text-xs text-slate-400 tracking-wide">Strategic Report Agent</span>
-  </div>
-  <div class="flex items-center gap-4">
-    <div class="w-px h-4 bg-white/20"></div>
-    <div class="flex items-center gap-2">
-      <div class="w-2 h-2" id="statusDot" style="background:#64748b"></div>
-      <span class="hidden sm:inline font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400" id="statusDotLabel" data-i18n="uiOffline">Sin conexión</span>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' data: blob:; connect-src 'self' https://strategic-report-proxy.hcuevas.workers.dev https://strategic-report-agent.pages.dev;"
+    />
+    <title>Strategic Report Agent — ALTO v3.16</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="css/tailwind.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,wght@0,400;0,500;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="min-h-screen flex flex-col bg-surface">
+    <div id="flashMsg">
+      <span id="flashText"></span>
+      <div class="flash-bar" id="flashBar"></div>
     </div>
-    <div class="w-px h-4 bg-white/20"></div>
-    <div class="flex items-center gap-1">
-      <button onclick="setUILang('es')" id="uiLangEs" class="font-['Inter'] text-[10px] uppercase tracking-widest text-white font-bold px-1.5 py-0.5 transition-all" style="background:rgba(187,0,20,0.8);border-radius:2px">ES</button>
-      <button onclick="setUILang('en')" id="uiLangEn" class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400 px-1.5 py-0.5 transition-all hover:text-white" style="border-radius:2px">EN</button>
-    </div>
-  </div>
-</header>
 
-<div class="flex min-h-screen pt-16">
-  <!-- Sidebar nav -->
-  <aside id="navSidebar" class="flex flex-col w-64 bg-[#1A3350] fixed left-0 top-16 bottom-0 z-40" style="overflow-y:auto;scrollbar-width:none">
-    <!-- Nav tabs -->
-    <nav style="border-bottom:1px solid rgba(255,255,255,0.08);padding:10px 0">
-      <button id="navMinutas" onclick="switchNavTab('minutas')" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:#fff;background:rgba(187,0,20,0.12);border:none;border-left:3px solid #E74243;cursor:pointer;text-align:left">
-        <span class="material-symbols-outlined" style="font-size:18px">event_note</span>
-        <span data-i18n="uiNavMinutas">Minutas</span>
-      </button>
-      <button id="navInformes" onclick="switchNavTab('informes')" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);background:transparent;border:none;border-left:3px solid transparent;cursor:pointer;text-align:left">
-        <span class="material-symbols-outlined" style="font-size:18px">bar_chart</span>
-        <span data-i18n="uiNavInformes">Informes</span>
-      </button>
-      <button id="navContraste" onclick="switchNavTab('contraste')" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);background:transparent;border:none;border-left:3px solid transparent;cursor:pointer;text-align:left">
-        <span class="material-symbols-outlined" style="font-size:18px">compare_arrows</span>
-        <span data-i18n="uiNavContraste">Contraste Multifuente</span>
-      </button>
-    </nav>
-    <!-- Calendar (Minutas tab) -->
-    <div id="sidebarCalendar" style="padding:14px 12px;flex:1"></div>
-    <!-- Quarter Planner (Informes tab) -->
-    <div id="sidebarHistory" style="display:none;flex:1;overflow-y:auto">
-      <div id="sidebarPlanner" style="padding:20px 16px 8px"></div>
-      <!-- History search -->
-      <div id="historySearchWrap" style="display:none;padding:0 12px 8px">
-        <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.07);border-radius:6px;padding:6px 10px">
-          <span class="material-symbols-outlined" style="font-size:14px;color:rgba(255,255,255,0.35)">search</span>
-          <input id="historySearch" type="text" placeholder="Buscar informe..." data-i18n-placeholder="uiHistorySearch" oninput="filterHistory(this.value)" style="background:transparent;border:none;outline:none;width:100%;font-family:Inter,sans-serif;font-size:11px;color:rgba(255,255,255,0.8);placeholder-color:rgba(255,255,255,0.3)">
-        </div>
-      </div>
-      <div id="historyList" style="display:none;padding:0 12px 16px"></div>
-    </div>
-  </aside>
-
-  <!-- Mobile sidebar overlay -->
-  <div id="sidebarOverlay" onclick="toggleMobileMenu()"></div>
-
-  <!-- Main Content -->
-  <main class="flex-grow md:ml-64">
-
-    <!-- ── MINUTAS PANEL ── -->
-    <div id="minutasPanel" class="panel-content" style="display:none">
-      <header style="margin-bottom:32px">
-        <span style="font-family:Inter,sans-serif;color:#E74243;font-weight:700;letter-spacing:.25em;text-transform:uppercase;font-size:10px;display:block;margin-bottom:8px" data-i18n="uiMeetingMgmt">Gestión de Reuniones</span>
-        <h1 style="font-family:Manrope,sans-serif;font-size:36px;font-weight:800;color:#1A3350;line-height:1" data-i18n="uiMinutas">Minutas</h1>
-        <div style="width:64px;height:4px;background:#E74243;margin-top:16px"></div>
-      </header>
-      <!-- Action bar -->
-      <div id="minutasActionBar" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-        <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:8px 14px;flex:1;min-width:200px">
-          <span class="material-symbols-outlined" style="font-size:16px;color:#9ca3af">search</span>
-          <input id="minutaSearch" type="text" placeholder="Buscar minuta..." data-i18n-placeholder="uiSearchMinuta" oninput="filterMinutas(this.value)" style="border:none;outline:none;font-family:Inter,sans-serif;font-size:13px;color:#374151;background:transparent;width:100%" />
-        </div>
-        <button onclick="showNuevaMinuta()" style="display:flex;align-items:center;gap:6px;background:#E74243;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
-          <span class="material-symbols-outlined" style="font-size:16px">add</span>
-          <span data-i18n="uiNewMinuta">Nueva Minuta</span>
+    <!-- Nav -->
+    <header
+      class="bg-[#1A3350] flex justify-between items-center w-full px-4 md:px-12 py-5 fixed top-0 z-50"
+    >
+      <div class="flex items-center gap-3">
+        <button
+          id="mobileMenuBtn"
+          class="flex md:hidden items-center justify-center text-white/80 hover:text-white transition-colors mr-1"
+          aria-label="Menú"
+        >
+          <span class="material-symbols-outlined" style="font-size: 22px">menu</span>
         </button>
+        <img src="assets/alto-logo-white.png" alt="ALTO" class="h-6" />
+        <div class="w-px h-5 bg-white/20"></div>
+        <span class="font-['Inter'] text-xs text-slate-400 tracking-wide"
+          >Strategic Report Agent</span
+        >
       </div>
-      <!-- New minuta input (hidden by default) -->
-      <div id="nuevaMinutaSection" style="display:none;background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-        <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:8px" data-i18n="uiMeetingNotes">Notas de la Reunión</label>
-        <textarea id="minutaInput" rows="6" placeholder="Pega las notas de la reunión, transcripción o resumen..." data-i18n-placeholder="uiMinutaPlaceholder" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:16px;font-family:Inter,sans-serif;font-size:14px;color:#191C1E;resize:vertical;outline:none"></textarea>
-        <div style="display:flex;gap:12px;margin-top:16px;align-items:center">
-          <button onclick="generateMinuta()" id="btnGenerateMinuta" style="background:#1A3350;color:#fff;border:none;padding:12px 24px;font-family:Manrope,sans-serif;font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:8px">
-            <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1">psychology</span>
-            <span data-i18n="uiGenerateMinuta">Generar Minuta</span>
-          </button>
-          <button onclick="document.getElementById('nuevaMinutaSection').style.display='none'" style="background:transparent;border:1px solid #BFC4C5;color:#6b7280;padding:12px 16px;font-family:Inter,sans-serif;font-size:12px;cursor:pointer">
-            <span data-i18n="uiCancel">Cancelar</span>
-          </button>
-          <div id="minutaProgress" style="display:none;flex:1">
-            <div style="height:3px;background:#E0E3E5;border-radius:2px"><div id="minutaProgressFill" style="height:3px;background:#E74243;border-radius:2px;width:0%;transition:width 0.3s"></div></div>
-            <span id="minutaProgressLabel" style="font-family:Inter,sans-serif;font-size:10px;color:#E74243;text-transform:uppercase;letter-spacing:.1em;font-weight:600;display:block;margin-top:4px"></span>
-          </div>
+      <div class="flex items-center gap-4">
+        <div class="w-px h-4 bg-white/20"></div>
+        <div class="flex items-center gap-2">
+          <div class="w-2 h-2" id="statusDot" style="background: #64748b"></div>
+          <span
+            class="hidden sm:inline font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400"
+            id="statusDotLabel"
+            data-i18n="uiOffline"
+            >Sin conexión</span
+          >
         </div>
-      </div>
-      <!-- Saved minutas list -->
-      <div id="minutasList"></div>
-    </div>
-
-    <!-- ── INFORMES PANEL ── -->
-    <div id="informesPanel" class="panel-content">
-
-    <!-- ── DASHBOARD VIEW (default) ── -->
-    <div id="informesDashboard">
-      <header class="mb-10 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <span class="font-['Inter'] text-[#E74243] font-bold tracking-[0.25em] uppercase text-[10px] mb-2 block" data-i18n="uiConsulting">Consultoría Estratégica</span>
-          <h1 style="font-family:Manrope,sans-serif;font-size:36px;font-weight:800;color:#1A3350;line-height:1" data-i18n="uiReportsStrategic">Informes Estratégicos</h1>
-          <p class="font-['Inter'] text-[#676766] text-sm mt-2 font-medium" data-i18n="uiReportsSubtitle">Gestión de análisis crítico y reportes ejecutivos trimestrales.</p>
-        </div>
-        <button onclick="nuevoInforme()" class="flex items-center gap-2 bg-gradient-to-br from-[#E74243] to-[#B93536] text-white px-5 py-2.5 font-['Manrope'] font-bold text-[11px] uppercase tracking-wider rounded-lg shadow-md hover:opacity-90 active:scale-95 transition-all mt-1 shrink-0">
-          <span class="material-symbols-outlined text-sm">add</span><span data-i18n="uiNewReport">Nuevo Informe</span>
-        </button>
-      </header>
-      <!-- Reports grid (populated by JS) -->
-      <div id="informesGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"></div>
-      <!-- Empty state -->
-      <div id="informesEmpty" class="hidden text-center py-16">
-        <span class="material-symbols-outlined text-5xl text-outline-variant block mb-3">folder_open</span>
-        <p class="font-['Inter'] text-sm text-outline italic mb-6" data-i18n="uiNoReportsSaved">Sin informes guardados aún.</p>
-        <button onclick="nuevoInforme()" class="inline-flex items-center gap-2 bg-[#1A3350] text-white px-5 py-2.5 font-['Manrope'] font-bold text-[11px] uppercase tracking-wider hover:bg-[#2A313E] transition-all rounded-lg">
-          <span class="material-symbols-outlined text-sm">add</span><span data-i18n="uiCreateFirst">Crear primer informe</span>
-        </button>
-      </div>
-      <!-- Central de Inteligencia banner -->
-      <div class="mt-4 bg-surface-container-low rounded-xl overflow-hidden relative flex items-center px-10 py-8">
-        <div class="relative z-10">
-          <h4 class="font-['Manrope'] text-base font-bold text-[#1A3350] mb-1" data-i18n="uiIntelCenter">Central de Inteligencia</h4>
-          <p class="font-['Inter'] text-[#676766] text-sm" data-i18n="uiIntelDesc">Acceda a los dashboards interactivos para profundizar en los datos de cada reporte operativo.</p>
-          <button onclick="openDashboard()" class="mt-3 text-[#E74243] font-['Manrope'] font-bold text-[10px] flex items-center hover:translate-x-1 transition-transform uppercase tracking-wider">
-            <span data-i18n="uiViewDashboards">Ver Dashboards</span> <span class="material-symbols-outlined text-sm ml-1">arrow_forward</span>
+        <div class="w-px h-4 bg-white/20"></div>
+        <div class="flex items-center gap-1">
+          <button
+            id="uiLangEs"
+            class="font-['Inter'] text-[10px] uppercase tracking-widest text-white font-bold px-1.5 py-0.5 transition-all"
+            style="background: rgba(187, 0, 20, 0.8); border-radius: 2px"
+          >
+            ES
+          </button>
+          <button
+            id="uiLangEn"
+            class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-400 px-1.5 py-0.5 transition-all hover:text-white"
+            style="border-radius: 2px"
+          >
+            EN
           </button>
         </div>
       </div>
-    </div><!-- /informesDashboard -->
+    </header>
 
-    <!-- ── GENERATION FORM (hidden by default) ── -->
-    <div id="informesNewSection" style="display:none">
-      <!-- Back button -->
-      <div class="mb-8">
-        <button onclick="hideNuevoInformeForm()" class="flex items-center gap-2 font-['Inter'] text-sm text-outline hover:text-[#1A3350] transition-colors group">
-          <span class="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
-          <span data-i18n="uiBack">Volver a Informes</span>
-        </button>
-      </div>
-      <!-- Form header -->
-      <header class="mb-10">
-        <span class="font-['Inter'] text-[#E74243] font-bold tracking-[0.25em] uppercase text-[10px] mb-2 block" data-i18n="uiConsulting">Consultoría Estratégica</span>
-        <h1 style="font-family:Manrope,sans-serif;font-size:36px;font-weight:800;color:#1A3350;line-height:1" data-i18n="uiReports">Informes Ejecutivos</h1>
-        <div class="w-16 h-1 bg-[#E74243] mt-4"></div>
-      </header>
-
-    <!-- Main input card -->
-    <section id="newReportInputCard" class="bg-white border-l-4 border-[#1A3350] p-8 md:p-10 mb-0" style="box-shadow:0 2px 32px rgba(4,22,39,0.06)">
-      <div class="space-y-7">
-        <div class="space-y-1.5">
-          <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold" data-i18n="uiReportType">Tipo de Informe</label>
-          <div class="flex flex-wrap gap-2" id="reportTypeChips">
-            <button data-type="strategic" onclick="setReportType(this)" class="rtype-chip active" data-i18n="uiStrategic" data-i18n-title="tipStrategic" title="Análisis estratégico con hallazgos, riesgos, oportunidades y recomendaciones por horizonte">Estratégico</button>
-            <button data-type="financial" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiFinancial" data-i18n-title="tipFinancial" title="Enfoque en impacto financiero, ROI, métricas de rentabilidad y proyecciones">Financiero</button>
-            <button data-type="operational" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiOperational" data-i18n-title="tipOperational" title="Diagnóstico de procesos, eficiencia operacional, cuellos de botella y mejoras">Operacional</button>
-            <button data-type="risk" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiRisks" data-i18n-title="tipRisk" title="Matriz de riesgos, probabilidad e impacto, mitigación y planes de contingencia">Riesgos</button>
-            <button data-type="competitive" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiCompetitive" data-i18n-title="tipCompetitive" title="Benchmarking competitivo, posicionamiento, ventajas y brechas vs competencia">Competitivo</button>
-            <button data-type="due_diligence" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiDueDiligence" data-i18n-title="tipDueDiligence" title="Due diligence: evaluación de viabilidad, red flags, fortalezas y riesgos">Due Diligence</button>
-            <button data-type="general" onclick="setReportType(this)" class="rtype-chip" data-i18n="uiGeneral" data-i18n-title="tipGeneral" title="Análisis general sin enfoque específico">General</button>
-          </div>
-        </div>
-        <div class="space-y-1.5">
-          <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold" data-i18n="uiReportLang">Idioma del Informe</label>
-          <div class="flex flex-wrap gap-2" id="langChips">
-            <button data-lang="es" onclick="setOutputLang(this)" class="rtype-chip active">Español</button>
-            <button data-lang="en" onclick="setOutputLang(this)" class="rtype-chip">English</button>
-          </div>
-        </div>
-        <div class="space-y-1.5">
-          <div class="flex justify-between items-end">
-            <label class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold" data-i18n="uiSourceDoc">Documento Fuente</label>
-            <div class="flex gap-4">
-              <button onclick="document.getElementById('fileInput').click()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#E74243] transition-all flex items-center gap-1" style="position:relative;z-index:10">
-                <span class="material-symbols-outlined text-[13px]">upload_file</span> <span data-i18n="uiUploadFile">Subir archivo</span>
-              </button>
-              <button onclick="loadSample()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#1A3350] transition-all flex items-center gap-1" style="position:relative;z-index:10">
-                <span data-i18n="uiExample">Ejemplo</span> <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
-              </button>
-            </div>
-          </div>
-          <input type="file" id="fileInput" accept=".txt,.md,.csv,.pdf,.docx,.doc,.png,.jpg,.jpeg,.gif,.webp" class="hidden" onchange="handleFile(event)"/>
-          <div id="dropZone" class="drop-zone relative">
-            <textarea id="inputText" class="w-full bg-[#F8F9FB] border-0 border-b border-outline-variant p-4 text-[#191C1E] placeholder:text-slate-400 transition-all resize-none text-sm leading-relaxed focus:border-[#1A3350]" placeholder="Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí..." data-i18n-placeholder="uiPlaceholder" rows="8" oninput="updateCharCount(this)"></textarea>
-          </div>
-          <div id="fileInfo" class="hidden font-['Inter'] text-[10px] text-slate-500 flex items-center gap-2">
-            <span class="material-symbols-outlined text-sm text-[#4174B9]">check_circle</span>
-            <span id="fileName"></span>
-            <button onclick="clearFile()" class="text-[#E74243] hover:text-red-700 ml-2">✕</button>
-          </div>
-          <div class="flex justify-end pt-1">
-            <span id="charCount" class="font-['Inter'] text-[10px] text-slate-400"></span>
-          </div>
-        </div>
-        <!-- Progress bar -->
-        <div id="progressSection" class="hidden space-y-2">
-          <div class="progress-track"><div id="progressFill" class="progress-fill" style="width:0%"></div></div>
-          <div class="flex justify-between">
-            <span id="progressStep" class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-medium"></span>
-            <span id="progressPct" class="font-['Inter'] text-[10px] text-slate-500 font-mono"></span>
-          </div>
-        </div>
-        <!-- Buttons -->
-        <div class="flex flex-col sm:flex-row gap-3 pt-2">
-          <button id="btnAnalyze" onclick="analyze()" class="flex-1 bg-[#1A3350] hover:bg-[#2A313E] text-white font-['Manrope'] font-bold h-13 py-3.5 flex items-center justify-center gap-3 transition-all group disabled:opacity-40 disabled:cursor-not-allowed">
-            <span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform" style="font-variation-settings:'FILL'1;">psychology</span>
-            <span class="text-xs uppercase tracking-[0.2em]" data-i18n="uiGenerate">Generar Informe Ejecutivo</span>
+    <div class="flex min-h-screen pt-16">
+      <!-- Sidebar nav -->
+      <aside
+        id="navSidebar"
+        class="flex flex-col w-64 bg-[#1A3350] fixed left-0 top-16 bottom-0 z-40"
+        style="overflow-y: auto; scrollbar-width: none"
+      >
+        <!-- Nav tabs -->
+        <nav style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 10px 0">
+          <button
+            id="navMinutas"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              width: 100%;
+              padding: 10px 18px;
+              font-family: Inter, sans-serif;
+              font-size: 13px;
+              font-weight: 500;
+              color: #fff;
+              background: rgba(187, 0, 20, 0.12);
+              border: none;
+              border-left: 3px solid #e74243;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            <span class="material-symbols-outlined" style="font-size: 18px">event_note</span>
+            <span data-i18n="uiNavMinutas">Minutas</span>
           </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Export buttons — shown whenever a report is available -->
-    <div id="exportBtnsRow" class="flex flex-col sm:flex-row gap-3 mt-4">
-<div class="tooltip-wrap"><span class="tooltip" data-i18n="uiExportPdf">Exportar PDF</span><button id="btnPdf" onclick="downloadPdf()" class="hidden bg-[#E74243] hover:bg-red-800 text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
-            <span class="material-symbols-outlined text-base">picture_as_pdf</span> PDF
-          </button></div>
-          <div class="tooltip-wrap"><span class="tooltip" data-i18n="uiGenPptx">Generar PPTX</span><button id="btnPptx" onclick="downloadPptx()" class="hidden bg-[#1A3350] hover:bg-[#2A313E] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex disabled:opacity-40 disabled:cursor-not-allowed">
-            <span class="material-symbols-outlined text-base">slideshow</span> PPTX
-          </button></div>
-          <div class="tooltip-wrap"><span class="tooltip" data-i18n="uiExportWord">Exportar Word</span><button id="btnDocx" onclick="downloadDocx()" class="hidden bg-[#4174B9] hover:bg-[#345D94] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex">
-            <span class="material-symbols-outlined text-base">download</span> DOCX
-          </button></div>
-          <div class="tooltip-wrap"><span class="tooltip" data-i18n="uiBrief">Brief 1 página</span><button id="btnBrief" onclick="downloadBrief()" class="hidden bg-[#F2F4F6] hover:bg-[#E0E3E5] text-[#1A3350] border border-[#BFC4C5] font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex" title="">
-            <span class="material-symbols-outlined text-base">bolt</span> Brief
-          </button></div>
-    </div>
-
-    <!-- Status & error -->
-    <div id="statusMsg" class="mt-4 font-['Inter'] text-sm text-[#E74243] font-medium hidden"></div>
-    <div id="errorBox" class="mt-4 bg-red-50 border-l-4 border-[#E74243] p-4 text-[#E74243] font-['Inter'] text-sm hidden"></div>
-
-    <!-- PPTX Progress -->
-    <div id="pptxProgressSection" class="hidden mt-6 bg-white border-l-4 border-[#1A3350] overflow-hidden fade-in" style="box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-      <div class="px-6 py-3 bg-[#1A3350] flex items-center gap-2">
-        <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL'1;">auto_awesome</span>
-        <span class="font-['Manrope'] text-[10px] uppercase tracking-widest text-white font-bold" id="pptxProgressLabel" data-i18n="uiDesigningSlides">Diseñando slides...</span>
-      </div>
-      <div class="px-6 pb-5 pt-4 space-y-2">
-        <div class="progress-track"><div id="pptxProgressFill" class="progress-fill" style="width:0%"></div></div>
-        <div class="flex justify-between items-center">
-          <span id="pptxProgressStep" class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-medium"></span>
-          <span id="pptxProgressPct" class="font-['Inter'] text-[10px] text-slate-500 font-mono"></span>
-        </div>
-      </div>
-    </div>
-
-
-
-    <!-- Validation warning -->
-    <div id="validationWarn" class="hidden mt-6 border-l-4 p-4 flex items-start justify-between gap-3" style="background:#FFFBEB;border-color:#D97706">
-      <div class="flex gap-2 items-start">
-        <span class="material-symbols-outlined text-base mt-0.5" style="color:#D97706;font-size:16px">warning</span>
-        <p id="validationWarnText" class="font-['Inter'] text-xs leading-relaxed" style="color:#92400E"></p>
-      </div>
-      <div class="flex gap-2 shrink-0 items-center">
-        <button onclick="analyze()" class="font-['Inter'] text-[10px] uppercase tracking-wide px-3 py-1.5 transition-all" style="background:#FEF3C7;color:#92400E;border:1px solid #D97706" data-i18n="uiRetry">Reintentar</button>
-        <button onclick="document.getElementById('validationWarn').classList.add('hidden')" class="font-['Inter'] text-[10px] px-2" style="color:#D97706">✕</button>
-      </div>
-    </div>
-
-    <!-- Report preview -->
-    <div id="previewCard" class="hidden fade-in mt-10"></div>
-    <div id="editBanner" class="hidden mt-4 bg-[#F2F4F6] border-l-4 border-[#E74243] p-4 flex items-center justify-between">
-      <div class="flex items-center gap-2 font-['Inter'] text-xs text-slate-500">
-        <span class="material-symbols-outlined text-sm text-[#E74243]">edit_note</span>
-        <span data-i18n="uiEditBanner">Haz click en cualquier texto para editarlo antes de exportar</span>
-      </div>
-      <button onclick="resetEdits()" class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] hover:text-red-700 font-bold" data-i18n="uiRestore">Restaurar</button>
-    </div>
-
-    <!-- Chat -->
-    <!-- chatSection placeholder — chat moved to floating panel -->
-    <div id="chatSection" class="hidden"></div>
-
-    <!-- Method cards -->
-    <section id="methodCards" class="mt-16 grid md:grid-cols-3 gap-0 border border-outline-variant/30">
-      <div class="p-8 bg-white border-r border-outline-variant/30">
-        <div class="flex items-center gap-3 mb-4">
-          <span class="material-symbols-outlined text-[#E74243] text-xl" style="font-variation-settings:'FILL'1;">analytics</span>
-          <h3 class="font-['Manrope'] text-sm font-bold text-[#1A3350] uppercase tracking-widest">MECE</h3>
-        </div>
-        <p class="font-['Inter'] text-xs text-slate-500 leading-relaxed" data-i18n="uiMece">Mutuamente excluyente, colectivamente exhaustivo. Sin solapamientos ni vacíos.</p>
-      </div>
-      <div class="p-8 bg-white border-r border-outline-variant/30 border-l-4 border-l-[#E74243]">
-        <div class="flex items-center gap-3 mb-4">
-          <span class="material-symbols-outlined text-[#E74243] text-xl" style="font-variation-settings:'FILL'1;">account_tree</span>
-          <h3 class="font-['Manrope'] text-sm font-bold text-[#1A3350] uppercase tracking-widest" data-i18n="uiPyramidTitle">Principio Piramidal</h3>
-        </div>
-        <p class="font-['Inter'] text-xs text-slate-500 leading-relaxed" data-i18n="uiPyramid">Conclusión primero, argumentos después. Estructura de arriba hacia abajo.</p>
-      </div>
-      <div class="p-8 bg-white">
-        <div class="flex items-center gap-3 mb-4">
-          <span class="material-symbols-outlined text-[#E74243] text-xl" style="font-variation-settings:'FILL'1;">verified</span>
-          <h3 class="font-['Manrope'] text-sm font-bold text-[#1A3350] uppercase tracking-widest" data-i18n="uiFacts">Basado en Hechos</h3>
-        </div>
-        <p class="font-['Inter'] text-xs text-slate-500 leading-relaxed" data-i18n="uiFactsDesc">Hechos observados, inferencias razonables e hipótesis diferenciados explícitamente.</p>
-      </div>
-    </section>
-
-    </div><!-- /informesNewSection -->
-    </div><!-- /informesPanel -->
-
-    <!-- ── CONTRASTE MULTIFUENTE PANEL ── -->
-    <div id="contrastePanel" class="panel-content" style="display:none">
-
-      <!-- ── FORM SECTION ── -->
-      <div id="contrasteFormSection">
-        <header style="margin-bottom:32px">
-          <span style="font-family:Inter,sans-serif;color:#E74243;font-weight:700;letter-spacing:.25em;text-transform:uppercase;font-size:10px;display:block;margin-bottom:8px" data-i18n="uiContrasteModule">Contraste Multifuente</span>
-          <h1 style="font-family:Manrope,sans-serif;font-size:36px;font-weight:800;color:#1A3350;line-height:1">Informe de Contraste Multifuente</h1>
-          <p style="font-family:Inter,sans-serif;color:#676766;font-size:14px;margin-top:8px;font-weight:500" data-i18n="uiContrasteSubtitle">Valida y contrasta puntos críticos entre múltiples fuentes internas.</p>
-          <div style="width:64px;height:4px;background:#E74243;margin-top:16px"></div>
-        </header>
-
-        <!-- ── OBLIGATORIOS ── -->
-        <div style="margin-bottom:6px;padding:4px 0">
-          <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#E74243">Campos obligatorios</span>
-        </div>
-
-        <!-- Metadatos obligatorios -->
-        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:16px">Identificación del Informe</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-            <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">Solicitante / Sponsor</label>
-              <input id="cmSponsor" type="text" placeholder="Ej: Country Manager Colombia" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
-            </div>
-            <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">Fecha del Informe</label>
-              <input id="cmFecha" type="text" placeholder="Ej: 15 de abril 2026" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
-            </div>
-            <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">Responsable del Levantamiento</label>
-              <input id="cmAnalista" type="text" placeholder="Ej: Gerencia de Análisis" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
-            </div>
-            <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">País / Geografía</label>
-              <input id="cmPais" type="text" placeholder="Ej: Colombia" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
-            </div>
-          </div>
-          <!-- Tipo de contraste chips -->
-          <div style="margin-top:20px">
-            <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:10px">Tipo de Contraste</label>
-            <div style="display:flex;flex-wrap:wrap;gap:8px" id="cmTipoChips">
-              <button data-tipo="operativo_legal" onclick="setCmTipo(this)" class="rtype-chip active">Operativo-Legal</button>
-              <button data-tipo="financiero" onclick="setCmTipo(this)" class="rtype-chip">Financiero</button>
-              <button data-tipo="recursos_humanos" onclick="setCmTipo(this)" class="rtype-chip">Recursos Humanos</button>
-              <button data-tipo="regulatorio" onclick="setCmTipo(this)" class="rtype-chip">Regulatorio / Compliance</button>
-              <button data-tipo="estrategico" onclick="setCmTipo(this)" class="rtype-chip">Estratégico</button>
-              <button data-tipo="comercial" onclick="setCmTipo(this)" class="rtype-chip">Comercial</button>
-              <button data-tipo="tecnico" onclick="setCmTipo(this)" class="rtype-chip">Técnico</button>
-              <button data-tipo="otro" onclick="setCmTipo(this)" class="rtype-chip">Otro</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Objetivo -->
-        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:12px">Objetivo del Informe</label>
-          <textarea id="cmObjetivo" rows="3" placeholder="Ej: Validar los puntos levantados por Country Manager respecto de operación legal en Colombia." style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;resize:vertical;outline:none"></textarea>
-        </div>
-
-        <!-- Notas o insumo principal -->
-        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:12px">Notas o Insumo Principal</label>
-          <textarea id="cmNotasInsumo" rows="4" placeholder="Contexto general, antecedentes relevantes, o insumo principal que da origen a este contraste..." style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;resize:vertical;outline:none"></textarea>
-        </div>
-
-        <!-- Puntos a contrastar -->
-        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:16px" data-i18n="uiContrastePuntos">Puntos a Contrastar</label>
-          <div id="cmPuntosList"></div>
-          <button onclick="addCmPunto()" style="margin-top:10px;background:transparent;border:1px dashed #BFC4C5;color:#74777D;padding:7px 16px;font-family:Inter,sans-serif;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px" data-i18n="uiContrasteAddPunto">
-            <span class="material-symbols-outlined" style="font-size:14px">add</span>+ Agregar punto
+          <button
+            id="navInformes"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              width: 100%;
+              padding: 10px 18px;
+              font-family: Inter, sans-serif;
+              font-size: 13px;
+              font-weight: 500;
+              color: rgba(255, 255, 255, 0.55);
+              background: transparent;
+              border: none;
+              border-left: 3px solid transparent;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            <span class="material-symbols-outlined" style="font-size: 18px">bar_chart</span>
+            <span data-i18n="uiNavInformes">Informes</span>
           </button>
-        </div>
-
-        <!-- Fuentes contrastadas -->
-        <div style="background:#fff;border-left:4px solid #1A3350;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#E74243;font-weight:700;display:block;margin-bottom:16px" data-i18n="uiContrasteFuentes">Fuentes Contrastadas</label>
-          <div id="cmFuentesList"></div>
-          <button onclick="addCmFuente()" style="margin-top:10px;background:transparent;border:1px dashed #BFC4C5;color:#74777D;padding:7px 16px;font-family:Inter,sans-serif;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px" data-i18n="uiContrasteAddFuente">
-            <span class="material-symbols-outlined" style="font-size:14px">add</span>+ Agregar fuente
+          <button
+            id="navContraste"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              width: 100%;
+              padding: 10px 18px;
+              font-family: Inter, sans-serif;
+              font-size: 13px;
+              font-weight: 500;
+              color: rgba(255, 255, 255, 0.55);
+              background: transparent;
+              border: none;
+              border-left: 3px solid transparent;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            <span class="material-symbols-outlined" style="font-size: 18px">compare_arrows</span>
+            <span data-i18n="uiNavContraste">Contraste Multifuente</span>
           </button>
-        </div>
-
-        <!-- ── RECOMENDADOS ── -->
-        <div style="margin-top:32px;margin-bottom:6px;padding:4px 0">
-          <span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#4279B0">Campos recomendados</span>
-        </div>
-
-        <!-- Metadatos recomendados -->
-        <div style="background:#fff;border-left:4px solid #4279B0;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#4279B0;font-weight:700;display:block;margin-bottom:16px">Contexto del Levantamiento</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-            <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">Fecha del Levantamiento</label>
-              <input id="cmFechaLevantamiento" type="text" placeholder="Ej: 10 de abril 2026" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
-            </div>
-            <div>
-              <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:6px">Unidad / Gerencia / Área</label>
-              <input id="cmUnidad" type="text" placeholder="Ej: Gerencia de Operaciones" style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:9px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
-            </div>
-          </div>
-          <!-- Nivel de sensibilidad -->
-          <div>
-            <label style="font-family:Inter,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1A3350;font-weight:700;display:block;margin-bottom:10px">Nivel de Sensibilidad</label>
-            <div style="display:flex;flex-wrap:wrap;gap:8px" id="cmSensibilidadChips">
-              <button data-sens="uso_interno" onclick="setCmSensibilidad(this)" class="rtype-chip active">Uso interno</button>
-              <button data-sens="reservado" onclick="setCmSensibilidad(this)" class="rtype-chip">Reservado</button>
-              <button data-sens="confidencial" onclick="setCmSensibilidad(this)" class="rtype-chip">Confidencial</button>
-              <button data-sens="publico" onclick="setCmSensibilidad(this)" class="rtype-chip">Público</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Observaciones del analista -->
-        <div style="background:#fff;border-left:4px solid #4279B0;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#4279B0;font-weight:700;display:block;margin-bottom:12px" data-i18n="uiContrasteObservaciones">Observaciones del Analista</label>
-          <textarea id="cmObservaciones" rows="4" placeholder="Hipótesis, alertas, lecturas contextuales o notas propias del analista que no provienen directamente de las fuentes..." style="width:100%;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;resize:vertical;outline:none"></textarea>
-        </div>
-
-        <!-- Tono + Profundidad -->
-        <div style="background:#fff;border-left:4px solid #4279B0;padding:28px 32px;margin-bottom:20px;box-shadow:0 2px 16px rgba(4,22,39,0.06)">
-          <div style="margin-bottom:20px">
-            <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#4279B0;font-weight:700;display:block;margin-bottom:10px" data-i18n="uiContrasteTono">Tono del Informe</label>
-            <div style="display:flex;flex-wrap:wrap;gap:8px" id="cmTonoChips">
-              <button data-tono="ejecutivo_prudente" onclick="setCmTono(this)" class="rtype-chip active">Ejecutivo prudente</button>
-              <button data-tono="ejecutivo_directo" onclick="setCmTono(this)" class="rtype-chip">Ejecutivo directo</button>
-              <button data-tono="analitico" onclick="setCmTono(this)" class="rtype-chip">Analítico</button>
-              <button data-tono="diplomatico" onclick="setCmTono(this)" class="rtype-chip">Diplomático</button>
-              <button data-tono="escalamiento_interno" onclick="setCmTono(this)" class="rtype-chip">Escalamiento interno</button>
-              <button data-tono="alta_direccion" onclick="setCmTono(this)" class="rtype-chip">Alta dirección</button>
+        </nav>
+        <!-- Calendar (Minutas tab) -->
+        <div id="sidebarCalendar" style="padding: 14px 12px; flex: 1"></div>
+        <!-- Quarter Planner (Informes tab) -->
+        <div id="sidebarHistory" style="display: none; flex: 1; overflow-y: auto">
+          <div id="sidebarPlanner" style="padding: 20px 16px 8px"></div>
+          <!-- History search -->
+          <div id="historySearchWrap" style="display: none; padding: 0 12px 8px">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                background: rgba(255, 255, 255, 0.07);
+                border-radius: 6px;
+                padding: 6px 10px;
+              "
+            >
+              <span
+                class="material-symbols-outlined"
+                style="font-size: 14px; color: rgba(255, 255, 255, 0.35)"
+                >search</span
+              >
+              <input
+                id="historySearch"
+                type="text"
+                placeholder="Buscar informe..."
+                data-i18n-placeholder="uiHistorySearch"
+                oninput="filterHistory(this.value)"
+                style="
+                  background: transparent;
+                  border: none;
+                  outline: none;
+                  width: 100%;
+                  font-family: Inter, sans-serif;
+                  font-size: 11px;
+                  color: rgba(255, 255, 255, 0.8);
+                  placeholder-color: rgba(255, 255, 255, 0.3);
+                "
+              />
             </div>
           </div>
-          <div>
-            <label style="font-family:Inter,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#4279B0;font-weight:700;display:block;margin-bottom:10px" data-i18n="uiContrasteProfundidad">Nivel de Profundidad</label>
-            <div style="display:flex;flex-wrap:wrap;gap:8px" id="cmProfundidadChips">
-              <button data-prof="breve" onclick="setCmProfundidad(this)" class="rtype-chip">Breve</button>
-              <button data-prof="estandar" onclick="setCmProfundidad(this)" class="rtype-chip active">Estándar</button>
-              <button data-prof="profundo" onclick="setCmProfundidad(this)" class="rtype-chip">Profundo</button>
-              <button data-prof="profundo_recomendaciones" onclick="setCmProfundidad(this)" class="rtype-chip">Profundo con recomendaciones</button>
+          <div id="historyList" style="display: none; padding: 0 12px 16px"></div>
+        </div>
+      </aside>
+
+      <!-- Mobile sidebar overlay -->
+      <div id="sidebarOverlay"></div>
+
+      <!-- Main Content -->
+      <main class="flex-grow md:ml-64">
+        <!-- ── MINUTAS PANEL ── -->
+        <div id="minutasPanel" class="panel-content" style="display: none">
+          <header style="margin-bottom: 32px">
+            <span
+              style="
+                font-family: Inter, sans-serif;
+                color: #e74243;
+                font-weight: 700;
+                letter-spacing: 0.25em;
+                text-transform: uppercase;
+                font-size: 10px;
+                display: block;
+                margin-bottom: 8px;
+              "
+              data-i18n="uiMeetingMgmt"
+              >Gestión de Reuniones</span
+            >
+            <h1
+              style="
+                font-family: Manrope, sans-serif;
+                font-size: 36px;
+                font-weight: 800;
+                color: #1a3350;
+                line-height: 1;
+              "
+              data-i18n="uiMinutas"
+            >
+              Minutas
+            </h1>
+            <div style="width: 64px; height: 4px; background: #e74243; margin-top: 16px"></div>
+          </header>
+          <!-- Action bar -->
+          <div
+            id="minutasActionBar"
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 20px;
+              flex-wrap: wrap;
+              gap: 10px;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 8px 14px;
+                flex: 1;
+                min-width: 200px;
+              "
+            >
+              <span class="material-symbols-outlined" style="font-size: 16px; color: #9ca3af"
+                >search</span
+              >
+              <input
+                id="minutaSearch"
+                type="text"
+                placeholder="Buscar minuta..."
+                data-i18n-placeholder="uiSearchMinuta"
+                oninput="filterMinutas(this.value)"
+                style="
+                  border: none;
+                  outline: none;
+                  font-family: Inter, sans-serif;
+                  font-size: 13px;
+                  color: #374151;
+                  background: transparent;
+                  width: 100%;
+                "
+              />
             </div>
-          </div>
-        </div>
-
-        <!-- Generate button + progress -->
-        <div style="margin-top:8px;margin-bottom:40px">
-          <button id="btnSubmitContraste" onclick="submitContraste()" style="background:#1A3350;color:#fff;border:none;padding:14px 32px;font-family:Manrope,sans-serif;font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:10px">
-            <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1">compare_arrows</span>
-            <span data-i18n="uiContrasteGenerate">Generar Contraste Multifuente</span>
-          </button>
-          <div id="contrasteProgress" style="display:none;margin-top:16px;max-width:480px">
-            <div style="height:3px;background:#E0E3E5;border-radius:2px"><div id="contrasteProgressFill" style="height:3px;background:#E74243;border-radius:2px;width:0%;transition:width 0.3s"></div></div>
-            <span id="contrasteProgressLabel" style="font-family:Inter,sans-serif;font-size:10px;color:#E74243;text-transform:uppercase;letter-spacing:.1em;font-weight:600;display:block;margin-top:6px" data-i18n="uiContrasteProgressThinking">Analizando fuentes y puntos críticos...</span>
-          </div>
-          <div id="contrasteError" style="display:none;margin-top:14px;background:#FFF5F5;border-left:3px solid #E74243;padding:10px 14px;font-family:Inter,sans-serif;font-size:12px;color:#E74243"></div>
-        </div>
-      </div><!-- /contrasteFormSection -->
-
-      <!-- ── PREVIEW SECTION ── -->
-      <div id="contrastePreviewSection" style="display:none">
-        <!-- Toolbar -->
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:28px">
-          <button onclick="showContrasteForm()" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;font-family:Inter,sans-serif;font-size:13px;color:#74777D;cursor:pointer" data-i18n="uiContrasteBack">
-            <span class="material-symbols-outlined" style="font-size:16px">arrow_back</span>Nuevo Contraste
-          </button>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button onclick="downloadContrastePDF()" style="display:flex;align-items:center;gap:6px;background:#E74243;color:#fff;border:none;padding:9px 18px;font-family:Manrope,sans-serif;font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer" data-i18n="uiContrastePdf">
-              <span class="material-symbols-outlined" style="font-size:14px">picture_as_pdf</span>Exportar PDF
-            </button>
-            <button onclick="copyContrasteMarkdown()" style="display:flex;align-items:center;gap:6px;background:#1A3350;color:#fff;border:none;padding:9px 18px;font-family:Manrope,sans-serif;font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer" data-i18n="uiContrasteMarkdown">
-              <span class="material-symbols-outlined" style="font-size:14px">content_copy</span>Markdown
+            <button
+              onclick="showNuevaMinuta()"
+              style="
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                background: #e74243;
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                padding: 9px 16px;
+                font-family: Inter, sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+              "
+            >
+              <span class="material-symbols-outlined" style="font-size: 16px">add</span>
+              <span data-i18n="uiNewMinuta">Nueva Minuta</span>
             </button>
           </div>
+          <!-- New minuta input (hidden by default) -->
+          <div
+            id="nuevaMinutaSection"
+            style="
+              display: none;
+              background: #fff;
+              border-left: 4px solid #1a3350;
+              padding: 28px 32px;
+              margin-bottom: 20px;
+              box-shadow: 0 2px 16px rgba(4, 22, 39, 0.06);
+            "
+          >
+            <label
+              style="
+                font-family: Inter, sans-serif;
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 0.15em;
+                color: #e74243;
+                font-weight: 700;
+                display: block;
+                margin-bottom: 8px;
+              "
+              data-i18n="uiMeetingNotes"
+              >Notas de la Reunión</label
+            >
+            <textarea
+              id="minutaInput"
+              rows="6"
+              placeholder="Pega las notas de la reunión, transcripción o resumen..."
+              data-i18n-placeholder="uiMinutaPlaceholder"
+              style="
+                width: 100%;
+                background: #f8f9fb;
+                border: none;
+                border-bottom: 1px solid #bfc4c5;
+                padding: 16px;
+                font-family: Inter, sans-serif;
+                font-size: 14px;
+                color: #191c1e;
+                resize: vertical;
+                outline: none;
+              "
+            ></textarea>
+            <div style="display: flex; gap: 12px; margin-top: 16px; align-items: center">
+              <button
+                onclick="generateMinuta()"
+                id="btnGenerateMinuta"
+                style="
+                  background: #1a3350;
+                  color: #fff;
+                  border: none;
+                  padding: 12px 24px;
+                  font-family: Manrope, sans-serif;
+                  font-weight: 700;
+                  font-size: 12px;
+                  letter-spacing: 0.15em;
+                  text-transform: uppercase;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                <span
+                  class="material-symbols-outlined"
+                  style="font-size: 16px; font-variation-settings: 'FILL' 1"
+                  >psychology</span
+                >
+                <span data-i18n="uiGenerateMinuta">Generar Minuta</span>
+              </button>
+              <button
+                onclick="document.getElementById('nuevaMinutaSection').style.display = 'none'"
+                style="
+                  background: transparent;
+                  border: 1px solid #bfc4c5;
+                  color: #6b7280;
+                  padding: 12px 16px;
+                  font-family: Inter, sans-serif;
+                  font-size: 12px;
+                  cursor: pointer;
+                "
+              >
+                <span data-i18n="uiCancel">Cancelar</span>
+              </button>
+              <div id="minutaProgress" style="display: none; flex: 1">
+                <div style="height: 3px; background: #e0e3e5; border-radius: 2px">
+                  <div
+                    id="minutaProgressFill"
+                    style="
+                      height: 3px;
+                      background: #e74243;
+                      border-radius: 2px;
+                      width: 0%;
+                      transition: width 0.3s;
+                    "
+                  ></div>
+                </div>
+                <span
+                  id="minutaProgressLabel"
+                  style="
+                    font-family: Inter, sans-serif;
+                    font-size: 10px;
+                    color: #e74243;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    font-weight: 600;
+                    display: block;
+                    margin-top: 4px;
+                  "
+                ></span>
+              </div>
+            </div>
+          </div>
+          <!-- Saved minutas list -->
+          <div id="minutasList"></div>
         </div>
-        <div id="contrasteStatusMsg" style="display:none;font-family:Inter,sans-serif;font-size:11px;color:#4279B0;margin-bottom:12px"></div>
-        <!-- Report card -->
-        <div id="contrastePreviewCard"></div>
-      </div><!-- /contrastePreviewSection -->
 
-    </div><!-- /contrastePanel -->
-  </main>
-</div>
+        <!-- ── INFORMES PANEL ── -->
+        <div id="informesPanel" class="panel-content">
+          <!-- ── DASHBOARD VIEW (default) ── -->
+          <div id="informesDashboard">
+            <header class="mb-10 flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <span
+                  class="font-['Inter'] text-[#E74243] font-bold tracking-[0.25em] uppercase text-[10px] mb-2 block"
+                  data-i18n="uiConsulting"
+                  >Consultoría Estratégica</span
+                >
+                <h1
+                  style="
+                    font-family: Manrope, sans-serif;
+                    font-size: 36px;
+                    font-weight: 800;
+                    color: #1a3350;
+                    line-height: 1;
+                  "
+                  data-i18n="uiReportsStrategic"
+                >
+                  Informes Estratégicos
+                </h1>
+                <p
+                  class="font-['Inter'] text-[#676766] text-sm mt-2 font-medium"
+                  data-i18n="uiReportsSubtitle"
+                >
+                  Gestión de análisis crítico y reportes ejecutivos trimestrales.
+                </p>
+              </div>
+              <button
+                onclick="nuevoInforme()"
+                class="flex items-center gap-2 bg-gradient-to-br from-[#E74243] to-[#B93536] text-white px-5 py-2.5 font-['Manrope'] font-bold text-[11px] uppercase tracking-wider rounded-lg shadow-md hover:opacity-90 active:scale-95 transition-all mt-1 shrink-0"
+              >
+                <span class="material-symbols-outlined text-sm">add</span
+                ><span data-i18n="uiNewReport">Nuevo Informe</span>
+              </button>
+            </header>
+            <!-- Reports grid (populated by JS) -->
+            <div id="informesGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"></div>
+            <!-- Empty state -->
+            <div id="informesEmpty" class="hidden text-center py-16">
+              <span class="material-symbols-outlined text-5xl text-outline-variant block mb-3"
+                >folder_open</span
+              >
+              <p
+                class="font-['Inter'] text-sm text-outline italic mb-6"
+                data-i18n="uiNoReportsSaved"
+              >
+                Sin informes guardados aún.
+              </p>
+              <button
+                onclick="nuevoInforme()"
+                class="inline-flex items-center gap-2 bg-[#1A3350] text-white px-5 py-2.5 font-['Manrope'] font-bold text-[11px] uppercase tracking-wider hover:bg-[#2A313E] transition-all rounded-lg"
+              >
+                <span class="material-symbols-outlined text-sm">add</span
+                ><span data-i18n="uiCreateFirst">Crear primer informe</span>
+              </button>
+            </div>
+            <!-- Central de Inteligencia banner -->
+            <div
+              class="mt-4 bg-surface-container-low rounded-xl overflow-hidden relative flex items-center px-10 py-8"
+            >
+              <div class="relative z-10">
+                <h4
+                  class="font-['Manrope'] text-base font-bold text-[#1A3350] mb-1"
+                  data-i18n="uiIntelCenter"
+                >
+                  Central de Inteligencia
+                </h4>
+                <p class="font-['Inter'] text-[#676766] text-sm" data-i18n="uiIntelDesc">
+                  Acceda a los dashboards interactivos para profundizar en los datos de cada reporte
+                  operativo.
+                </p>
+                <button
+                  onclick="openDashboard()"
+                  class="mt-3 text-[#E74243] font-['Manrope'] font-bold text-[10px] flex items-center hover:translate-x-1 transition-transform uppercase tracking-wider"
+                >
+                  <span data-i18n="uiViewDashboards">Ver Dashboards</span>
+                  <span class="material-symbols-outlined text-sm ml-1">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- /informesDashboard -->
 
-<footer class="fixed bottom-0 left-0 w-full z-50 bg-[#F2F4F6] border-l-4 border-[#E74243] flex justify-between items-center px-8 md:px-12 py-3">
-  <div class="flex items-center gap-3">
-    <img src="assets/alto-logo.png" alt="ALTO" class="h-4 opacity-70"/>
-    <span class="font-['Manrope'] font-bold text-[#1A3350] text-xs">ALTO</span>
-  </div>
-  <div class="flex gap-6">
-    <span class="font-['Inter'] italic text-[10px] text-slate-500" data-i18n="uiConfidentialInternal">Confidencial · Uso interno</span>
-    
-  </div>
-</footer>
+          <!-- ── GENERATION FORM (hidden by default) ── -->
+          <div id="informesNewSection" style="display: none">
+            <!-- Back button -->
+            <div class="mb-8">
+              <button
+                onclick="hideNuevoInformeForm()"
+                class="flex items-center gap-2 font-['Inter'] text-sm text-outline hover:text-[#1A3350] transition-colors group"
+              >
+                <span
+                  class="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform"
+                  >arrow_back</span
+                >
+                <span data-i18n="uiBack">Volver a Informes</span>
+              </button>
+            </div>
+            <!-- Form header -->
+            <header class="mb-10">
+              <span
+                class="font-['Inter'] text-[#E74243] font-bold tracking-[0.25em] uppercase text-[10px] mb-2 block"
+                data-i18n="uiConsulting"
+                >Consultoría Estratégica</span
+              >
+              <h1
+                style="
+                  font-family: Manrope, sans-serif;
+                  font-size: 36px;
+                  font-weight: 800;
+                  color: #1a3350;
+                  line-height: 1;
+                "
+                data-i18n="uiReports"
+              >
+                Informes Ejecutivos
+              </h1>
+              <div class="w-16 h-1 bg-[#E74243] mt-4"></div>
+            </header>
 
-<!-- Libraries loaded on-demand via js/lib-loader.js -->
+            <!-- Main input card -->
+            <section
+              id="newReportInputCard"
+              class="bg-white border-l-4 border-[#1A3350] p-8 md:p-10 mb-0"
+              style="box-shadow: 0 2px 32px rgba(4, 22, 39, 0.06)"
+            >
+              <div class="space-y-7">
+                <div class="space-y-1.5">
+                  <label
+                    class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold"
+                    data-i18n="uiReportType"
+                    >Tipo de Informe</label
+                  >
+                  <div class="flex flex-wrap gap-2" id="reportTypeChips">
+                    <button
+                      data-type="strategic"
+                      onclick="setReportType(this)"
+                      class="rtype-chip active"
+                      data-i18n="uiStrategic"
+                      data-i18n-title="tipStrategic"
+                      title="Análisis estratégico con hallazgos, riesgos, oportunidades y recomendaciones por horizonte"
+                    >
+                      Estratégico
+                    </button>
+                    <button
+                      data-type="financial"
+                      onclick="setReportType(this)"
+                      class="rtype-chip"
+                      data-i18n="uiFinancial"
+                      data-i18n-title="tipFinancial"
+                      title="Enfoque en impacto financiero, ROI, métricas de rentabilidad y proyecciones"
+                    >
+                      Financiero
+                    </button>
+                    <button
+                      data-type="operational"
+                      onclick="setReportType(this)"
+                      class="rtype-chip"
+                      data-i18n="uiOperational"
+                      data-i18n-title="tipOperational"
+                      title="Diagnóstico de procesos, eficiencia operacional, cuellos de botella y mejoras"
+                    >
+                      Operacional
+                    </button>
+                    <button
+                      data-type="risk"
+                      onclick="setReportType(this)"
+                      class="rtype-chip"
+                      data-i18n="uiRisks"
+                      data-i18n-title="tipRisk"
+                      title="Matriz de riesgos, probabilidad e impacto, mitigación y planes de contingencia"
+                    >
+                      Riesgos
+                    </button>
+                    <button
+                      data-type="competitive"
+                      onclick="setReportType(this)"
+                      class="rtype-chip"
+                      data-i18n="uiCompetitive"
+                      data-i18n-title="tipCompetitive"
+                      title="Benchmarking competitivo, posicionamiento, ventajas y brechas vs competencia"
+                    >
+                      Competitivo
+                    </button>
+                    <button
+                      data-type="due_diligence"
+                      onclick="setReportType(this)"
+                      class="rtype-chip"
+                      data-i18n="uiDueDiligence"
+                      data-i18n-title="tipDueDiligence"
+                      title="Due diligence: evaluación de viabilidad, red flags, fortalezas y riesgos"
+                    >
+                      Due Diligence
+                    </button>
+                    <button
+                      data-type="general"
+                      onclick="setReportType(this)"
+                      class="rtype-chip"
+                      data-i18n="uiGeneral"
+                      data-i18n-title="tipGeneral"
+                      title="Análisis general sin enfoque específico"
+                    >
+                      General
+                    </button>
+                  </div>
+                </div>
+                <div class="space-y-1.5">
+                  <label
+                    class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold"
+                    data-i18n="uiReportLang"
+                    >Idioma del Informe</label
+                  >
+                  <div class="flex flex-wrap gap-2" id="langChips">
+                    <button data-lang="es" onclick="setOutputLang(this)" class="rtype-chip active">
+                      Español
+                    </button>
+                    <button data-lang="en" onclick="setOutputLang(this)" class="rtype-chip">
+                      English
+                    </button>
+                  </div>
+                </div>
+                <div class="space-y-1.5">
+                  <div class="flex justify-between items-end">
+                    <label
+                      class="block font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold"
+                      data-i18n="uiSourceDoc"
+                      >Documento Fuente</label
+                    >
+                    <div class="flex gap-4">
+                      <button
+                        onclick="document.getElementById('fileInput').click()"
+                        class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#E74243] transition-all flex items-center gap-1"
+                        style="position: relative; z-index: 10"
+                      >
+                        <span class="material-symbols-outlined text-[13px]">upload_file</span>
+                        <span data-i18n="uiUploadFile">Subir archivo</span>
+                      </button>
+                      <button
+                        onclick="loadSample()"
+                        class="font-['Inter'] text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#1A3350] transition-all flex items-center gap-1"
+                        style="position: relative; z-index: 10"
+                      >
+                        <span data-i18n="uiExample">Ejemplo</span>
+                        <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+                      </button>
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    id="fileInput"
+                    accept=".txt,.md,.csv,.pdf,.docx,.doc,.png,.jpg,.jpeg,.gif,.webp"
+                    class="hidden"
+                    onchange="handleFile(event)"
+                  />
+                  <div id="dropZone" class="drop-zone relative">
+                    <textarea
+                      id="inputText"
+                      class="w-full bg-[#F8F9FB] border-0 border-b border-outline-variant p-4 text-[#191C1E] placeholder:text-slate-400 transition-all resize-none text-sm leading-relaxed focus:border-[#1A3350]"
+                      placeholder="Pega texto, o arrastra un archivo .txt / .pdf / .docx aquí..."
+                      data-i18n-placeholder="uiPlaceholder"
+                      rows="8"
+                      oninput="updateCharCount(this)"
+                    ></textarea>
+                  </div>
+                  <div
+                    id="fileInfo"
+                    class="hidden font-['Inter'] text-[10px] text-slate-500 flex items-center gap-2"
+                  >
+                    <span class="material-symbols-outlined text-sm text-[#4174B9]"
+                      >check_circle</span
+                    >
+                    <span id="fileName"></span>
+                    <button onclick="clearFile()" class="text-[#E74243] hover:text-red-700 ml-2">
+                      ✕
+                    </button>
+                  </div>
+                  <div class="flex justify-end pt-1">
+                    <span id="charCount" class="font-['Inter'] text-[10px] text-slate-400"></span>
+                  </div>
+                </div>
+                <!-- Progress bar -->
+                <div id="progressSection" class="hidden space-y-2">
+                  <div class="progress-track">
+                    <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                  </div>
+                  <div class="flex justify-between">
+                    <span
+                      id="progressStep"
+                      class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-medium"
+                    ></span>
+                    <span
+                      id="progressPct"
+                      class="font-['Inter'] text-[10px] text-slate-500 font-mono"
+                    ></span>
+                  </div>
+                </div>
+                <!-- Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                  <button
+                    id="btnAnalyze"
+                    onclick="analyze()"
+                    class="flex-1 bg-[#1A3350] hover:bg-[#2A313E] text-white font-['Manrope'] font-bold h-13 py-3.5 flex items-center justify-center gap-3 transition-all group disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span
+                      class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform"
+                      style="font-variation-settings: 'FILL' 1"
+                      >psychology</span
+                    >
+                    <span class="text-xs uppercase tracking-[0.2em]" data-i18n="uiGenerate"
+                      >Generar Informe Ejecutivo</span
+                    >
+                  </button>
+                </div>
+              </div>
+            </section>
 
-<script src="js/lib-loader.js"></script>
-<script src="js/i18n.js"></script>
-<script src="js/state.js"></script>
-<script src="js/ui-helpers.js"></script>
-<script src="js/history.js"></script>
-<script src="js/app.js"></script>
-<script src="js/pptx-gen.js"></script>
-<script src="js/exports.js"></script>
-<script src="js/dashboard.js"></script>
-<script src="js/minutas.js"></script>
-<script src="js/contraste.js"></script>
+            <!-- Export buttons — shown whenever a report is available -->
+            <div id="exportBtnsRow" class="flex flex-col sm:flex-row gap-3 mt-4">
+              <div class="tooltip-wrap">
+                <span class="tooltip" data-i18n="uiExportPdf">Exportar PDF</span
+                ><button
+                  id="btnPdf"
+                  onclick="downloadPdf()"
+                  class="hidden bg-[#E74243] hover:bg-red-800 text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex"
+                >
+                  <span class="material-symbols-outlined text-base">picture_as_pdf</span> PDF
+                </button>
+              </div>
+              <div class="tooltip-wrap">
+                <span class="tooltip" data-i18n="uiGenPptx">Generar PPTX</span
+                ><button
+                  id="btnPptx"
+                  onclick="downloadPptx()"
+                  class="hidden bg-[#1A3350] hover:bg-[#2A313E] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span class="material-symbols-outlined text-base">slideshow</span> PPTX
+                </button>
+              </div>
+              <div class="tooltip-wrap">
+                <span class="tooltip" data-i18n="uiExportWord">Exportar Word</span
+                ><button
+                  id="btnDocx"
+                  onclick="downloadDocx()"
+                  class="hidden bg-[#4174B9] hover:bg-[#345D94] text-white font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex"
+                >
+                  <span class="material-symbols-outlined text-base">download</span> DOCX
+                </button>
+              </div>
+              <div class="tooltip-wrap">
+                <span class="tooltip" data-i18n="uiBrief">Brief 1 página</span
+                ><button
+                  id="btnBrief"
+                  onclick="downloadBrief()"
+                  class="hidden bg-[#F2F4F6] hover:bg-[#E0E3E5] text-[#1A3350] border border-[#BFC4C5] font-['Manrope'] font-bold h-13 py-3.5 px-5 items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider flex"
+                  title=""
+                >
+                  <span class="material-symbols-outlined text-base">bolt</span> Brief
+                </button>
+              </div>
+            </div>
 
-<!-- ── Floating AI Chat ── -->
-<style>
-  #aiFloatBtn {
-    position:fixed;bottom:28px;right:28px;z-index:1000;
-    display:none;
-    background:#E74243;color:#fff;border:none;border-radius:50px;
-    padding:12px 20px 12px 14px;
-    font-family:Manrope,sans-serif;font-size:13px;font-weight:800;
-    cursor:pointer;box-shadow:0 4px 20px rgba(187,0,20,0.4);
-    align-items:center;gap:8px;
-    transition:transform .15s,box-shadow .15s;
-  }
-  #aiFloatBtn:hover { transform:translateY(-2px);box-shadow:0 6px 24px rgba(187,0,20,0.5); }
-  #aiFloatBtn .notif {
-    position:absolute;top:-4px;right:-4px;
-    width:10px;height:10px;background:#fff;border-radius:50%;
-    display:none;
-  }
-  #aiFloatPanel {
-    position:fixed;bottom:28px;right:28px;z-index:1000;
-    width:360px;
-    display:none;flex-direction:column;
-    background:#fff;border-radius:16px;
-    box-shadow:0 8px 40px rgba(4,22,39,0.18);
-    overflow:hidden;
-    transform:translateY(16px);opacity:0;
-    transition:transform .2s ease,opacity .2s ease;
-  }
-  #aiFloatPanel.open { transform:translateY(0);opacity:1; }
-  #aiFloatMessages { flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:80px;max-height:340px;background:#FAFBFC; }
-  /* Typing dots */
-  .typing-bubble { display:flex;align-items:center;gap:4px;padding:10px 14px;background:#fff;border:1px solid #E0E3E5;border-left:3px solid #E74243;border-radius:2px 10px 10px 10px;width:fit-content }
-  .typing-bubble span { width:6px;height:6px;background:#E74243;border-radius:50%;animation:typingDot 1.2s infinite ease-in-out }
-  .typing-bubble span:nth-child(2){ animation-delay:.2s }
-  .typing-bubble span:nth-child(3){ animation-delay:.4s }
-  @keyframes typingDot { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-5px);opacity:1} }
-  /* Regen inline progress */
-  .regen-progress-wrap { display:flex;flex-direction:column;gap:4px;min-width:140px }
-  .regen-progress-bar { height:3px;background:#E0E3E5;border-radius:2px;overflow:hidden }
-  .regen-progress-fill { height:100%;background:#E74243;border-radius:2px;transition:width .4s ease }
-  .regen-progress-label { font-family:Inter,sans-serif;font-size:10px;color:#E74243;font-weight:600;letter-spacing:.03em }
-  /* Section dimming while regenerating */
-  .section-regen-loading { opacity:.45;pointer-events:none;transition:opacity .3s }
-  @media(max-width:600px){
-    #aiFloatPanel{width:calc(100vw - 32px);right:16px;bottom:16px;}
-    #aiFloatBtn{right:16px;bottom:16px;}
-  }
-</style>
+            <!-- Status & error -->
+            <div
+              id="statusMsg"
+              class="mt-4 font-['Inter'] text-sm text-[#E74243] font-medium hidden"
+            ></div>
+            <div
+              id="errorBox"
+              class="mt-4 bg-red-50 border-l-4 border-[#E74243] p-4 text-[#E74243] font-['Inter'] text-sm hidden"
+            ></div>
 
-<!-- Collapsed button -->
-<button id="aiFloatBtn" onclick="toggleAiPanel()">
-  <span class="notif" id="aiFloatNotif"></span>
-  <div style="width:26px;height:26px;background:rgba(255,255,255,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-    <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1">smart_toy</span>
-  </div>
-  <span data-i18n="uiAiAssistant">Asistente IA</span>
-</button>
+            <!-- PPTX Progress -->
+            <div
+              id="pptxProgressSection"
+              class="hidden mt-6 bg-white border-l-4 border-[#1A3350] overflow-hidden fade-in"
+              style="box-shadow: 0 2px 16px rgba(4, 22, 39, 0.06)"
+            >
+              <div class="px-6 py-3 bg-[#1A3350] flex items-center gap-2">
+                <span
+                  class="material-symbols-outlined text-white text-base"
+                  style="font-variation-settings: 'FILL' 1"
+                  >auto_awesome</span
+                >
+                <span
+                  class="font-['Manrope'] text-[10px] uppercase tracking-widest text-white font-bold"
+                  id="pptxProgressLabel"
+                  data-i18n="uiDesigningSlides"
+                  >Diseñando slides...</span
+                >
+              </div>
+              <div class="px-6 pb-5 pt-4 space-y-2">
+                <div class="progress-track">
+                  <div id="pptxProgressFill" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span
+                    id="pptxProgressStep"
+                    class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-medium"
+                  ></span>
+                  <span
+                    id="pptxProgressPct"
+                    class="font-['Inter'] text-[10px] text-slate-500 font-mono"
+                  ></span>
+                </div>
+              </div>
+            </div>
 
-<!-- Expanded panel -->
-<div id="aiFloatPanel">
-  <!-- Header -->
-  <div style="background:#1A3350;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-    <div style="display:flex;align-items:center;gap:9px">
-      <div style="width:26px;height:26px;background:#E74243;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <span class="material-symbols-outlined" style="font-size:14px;color:#fff;font-variation-settings:'FILL' 1">smart_toy</span>
+            <!-- Validation warning -->
+            <div
+              id="validationWarn"
+              class="hidden mt-6 border-l-4 p-4 flex items-start justify-between gap-3"
+              style="background: #fffbeb; border-color: #d97706"
+            >
+              <div class="flex gap-2 items-start">
+                <span
+                  class="material-symbols-outlined text-base mt-0.5"
+                  style="color: #d97706; font-size: 16px"
+                  >warning</span
+                >
+                <p
+                  id="validationWarnText"
+                  class="font-['Inter'] text-xs leading-relaxed"
+                  style="color: #92400e"
+                ></p>
+              </div>
+              <div class="flex gap-2 shrink-0 items-center">
+                <button
+                  onclick="analyze()"
+                  class="font-['Inter'] text-[10px] uppercase tracking-wide px-3 py-1.5 transition-all"
+                  style="background: #fef3c7; color: #92400e; border: 1px solid #d97706"
+                  data-i18n="uiRetry"
+                >
+                  Reintentar
+                </button>
+                <button
+                  onclick="document.getElementById('validationWarn').classList.add('hidden')"
+                  class="font-['Inter'] text-[10px] px-2"
+                  style="color: #d97706"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <!-- Report preview -->
+            <div id="previewCard" class="hidden fade-in mt-10"></div>
+            <div
+              id="editBanner"
+              class="hidden mt-4 bg-[#F2F4F6] border-l-4 border-[#E74243] p-4 flex items-center justify-between"
+            >
+              <div class="flex items-center gap-2 font-['Inter'] text-xs text-slate-500">
+                <span class="material-symbols-outlined text-sm text-[#E74243]">edit_note</span>
+                <span data-i18n="uiEditBanner"
+                  >Haz click en cualquier texto para editarlo antes de exportar</span
+                >
+              </div>
+              <button
+                onclick="resetEdits()"
+                class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] hover:text-red-700 font-bold"
+                data-i18n="uiRestore"
+              >
+                Restaurar
+              </button>
+            </div>
+
+            <!-- Chat -->
+            <!-- chatSection placeholder — chat moved to floating panel -->
+            <div id="chatSection" class="hidden"></div>
+
+            <!-- Method cards -->
+            <section
+              id="methodCards"
+              class="mt-16 grid md:grid-cols-3 gap-0 border border-outline-variant/30"
+            >
+              <div class="p-8 bg-white border-r border-outline-variant/30">
+                <div class="flex items-center gap-3 mb-4">
+                  <span
+                    class="material-symbols-outlined text-[#E74243] text-xl"
+                    style="font-variation-settings: 'FILL' 1"
+                    >analytics</span
+                  >
+                  <h3
+                    class="font-['Manrope'] text-sm font-bold text-[#1A3350] uppercase tracking-widest"
+                  >
+                    MECE
+                  </h3>
+                </div>
+                <p class="font-['Inter'] text-xs text-slate-500 leading-relaxed" data-i18n="uiMece">
+                  Mutuamente excluyente, colectivamente exhaustivo. Sin solapamientos ni vacíos.
+                </p>
+              </div>
+              <div
+                class="p-8 bg-white border-r border-outline-variant/30 border-l-4 border-l-[#E74243]"
+              >
+                <div class="flex items-center gap-3 mb-4">
+                  <span
+                    class="material-symbols-outlined text-[#E74243] text-xl"
+                    style="font-variation-settings: 'FILL' 1"
+                    >account_tree</span
+                  >
+                  <h3
+                    class="font-['Manrope'] text-sm font-bold text-[#1A3350] uppercase tracking-widest"
+                    data-i18n="uiPyramidTitle"
+                  >
+                    Principio Piramidal
+                  </h3>
+                </div>
+                <p
+                  class="font-['Inter'] text-xs text-slate-500 leading-relaxed"
+                  data-i18n="uiPyramid"
+                >
+                  Conclusión primero, argumentos después. Estructura de arriba hacia abajo.
+                </p>
+              </div>
+              <div class="p-8 bg-white">
+                <div class="flex items-center gap-3 mb-4">
+                  <span
+                    class="material-symbols-outlined text-[#E74243] text-xl"
+                    style="font-variation-settings: 'FILL' 1"
+                    >verified</span
+                  >
+                  <h3
+                    class="font-['Manrope'] text-sm font-bold text-[#1A3350] uppercase tracking-widest"
+                    data-i18n="uiFacts"
+                  >
+                    Basado en Hechos
+                  </h3>
+                </div>
+                <p
+                  class="font-['Inter'] text-xs text-slate-500 leading-relaxed"
+                  data-i18n="uiFactsDesc"
+                >
+                  Hechos observados, inferencias razonables e hipótesis diferenciados
+                  explícitamente.
+                </p>
+              </div>
+            </section>
+          </div>
+          <!-- /informesNewSection -->
+        </div>
+        <!-- /informesPanel -->
+
+        <!-- ── CONTRASTE MULTIFUENTE PANEL ── -->
+        <div id="contrastePanel" class="panel-content" style="display: none">
+          <div id="contrasteDashboard">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 20px;
+                flex-wrap: wrap;
+                margin-bottom: 28px;
+              "
+            >
+              <div>
+                <span
+                  style="
+                    font-family: Inter, sans-serif;
+                    color: #e74243;
+                    font-weight: 700;
+                    letter-spacing: 0.25em;
+                    text-transform: uppercase;
+                    font-size: 10px;
+                    display: block;
+                    margin-bottom: 8px;
+                  "
+                  >Contraste Multifuente</span
+                >
+                <h1
+                  style="
+                    font-family: Manrope, sans-serif;
+                    font-size: 36px;
+                    font-weight: 800;
+                    color: #1a3350;
+                    line-height: 1;
+                    margin: 0;
+                  "
+                >
+                  Historial de Contrastes
+                </h1>
+                <p
+                  style="
+                    font-family: Inter, sans-serif;
+                    color: #676766;
+                    font-size: 14px;
+                    margin-top: 8px;
+                    font-weight: 500;
+                  "
+                >
+                  Reabre contrastes guardados o crea un nuevo informe con la estructura ALTO.
+                </p>
+              </div>
+              <button
+                onclick="nuevoContraste()"
+                style="
+                  background: #1a3350;
+                  color: #fff;
+                  border: none;
+                  padding: 12px 20px;
+                  font-family: Manrope, sans-serif;
+                  font-weight: 700;
+                  font-size: 11px;
+                  letter-spacing: 0.12em;
+                  text-transform: uppercase;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                <span class="material-symbols-outlined" style="font-size: 15px">add</span>Nuevo
+                contraste
+              </button>
+            </div>
+
+            <div id="contrastesGrid" style="display: none; margin-bottom: 28px"></div>
+            <div
+              id="contrastesEmpty"
+              style="
+                background: #fff;
+                border: 1px dashed #d4d9de;
+                padding: 34px 28px;
+                text-align: center;
+                color: #676766;
+                font-family: Inter, sans-serif;
+                font-size: 14px;
+                margin-bottom: 28px;
+              "
+            >
+              Aún no hay contrastes guardados. Crea el primero desde esta pestaña.
+            </div>
+          </div>
+
+          <!-- ── FORM SECTION ── -->
+          <div id="contrasteFormSection" style="display: none">
+            <header style="margin-bottom: 32px">
+              <span
+                style="
+                  font-family: Inter, sans-serif;
+                  color: #e74243;
+                  font-weight: 700;
+                  letter-spacing: 0.25em;
+                  text-transform: uppercase;
+                  font-size: 10px;
+                  display: block;
+                  margin-bottom: 8px;
+                "
+                data-i18n="uiContrasteModule"
+                >Contraste Multifuente</span
+              >
+              <h1
+                style="
+                  font-family: Manrope, sans-serif;
+                  font-size: 36px;
+                  font-weight: 800;
+                  color: #1a3350;
+                  line-height: 1;
+                "
+              >
+                Informe de Contraste Multifuente
+              </h1>
+              <p
+                style="
+                  font-family: Inter, sans-serif;
+                  color: #676766;
+                  font-size: 14px;
+                  margin-top: 8px;
+                  font-weight: 500;
+                "
+                data-i18n="uiContrasteSubtitle"
+              >
+                Valida y contrasta puntos críticos entre múltiples fuentes internas.
+              </p>
+              <div style="width: 64px; height: 4px; background: #e74243; margin-top: 16px"></div>
+            </header>
+
+            <!-- ── OBLIGATORIOS ── -->
+            <div style="margin-bottom: 6px; padding: 4px 0">
+              <span
+                style="
+                  font-family: Inter, sans-serif;
+                  font-size: 9px;
+                  font-weight: 700;
+                  letter-spacing: 0.2em;
+                  text-transform: uppercase;
+                  color: #e74243;
+                "
+                >Campos obligatorios</span
+              >
+            </div>
+
+            <!-- Metadatos obligatorios -->
+            <div
+              style="
+                background: #fff;
+                border-left: 4px solid #1a3350;
+                padding: 28px 32px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 16px rgba(4, 22, 39, 0.06);
+              "
+            >
+              <label
+                style="
+                  font-family: Inter, sans-serif;
+                  font-size: 10px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.15em;
+                  color: #e74243;
+                  font-weight: 700;
+                  display: block;
+                  margin-bottom: 16px;
+                "
+                >Identificación del Informe</label
+              >
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+                <div>
+                  <label
+                    style="
+                      font-family: Inter, sans-serif;
+                      font-size: 9px;
+                      text-transform: uppercase;
+                      letter-spacing: 0.12em;
+                      color: #1a3350;
+                      font-weight: 700;
+                      display: block;
+                      margin-bottom: 6px;
+                    "
+                    >Solicitante / Sponsor</label
+                  >
+                  <input
+                    id="cmSponsor"
+                    type="text"
+                    placeholder="Ej: Country Manager Colombia"
+                    style="
+                      width: 100%;
+                      background: #f8f9fb;
+                      border: none;
+                      border-bottom: 1px solid #bfc4c5;
+                      padding: 9px 12px;
+                      font-family: Inter, sans-serif;
+                      font-size: 13px;
+                      color: #191c1e;
+                      outline: none;
+                    "
+                  />
+                </div>
+                <div>
+                  <label
+                    style="
+                      font-family: Inter, sans-serif;
+                      font-size: 9px;
+                      text-transform: uppercase;
+                      letter-spacing: 0.12em;
+                      color: #1a3350;
+                      font-weight: 700;
+                      display: block;
+                      margin-bottom: 6px;
+                    "
+                    >Fecha del Informe</label
+                  >
+                  <input
+                    id="cmFecha"
+                    type="text"
+                    placeholder="Ej: 15 de abril 2026"
+                    style="
+                      width: 100%;
+                      background: #f8f9fb;
+                      border: none;
+                      border-bottom: 1px solid #bfc4c5;
+                      padding: 9px 12px;
+                      font-family: Inter, sans-serif;
+                      font-size: 13px;
+                      color: #191c1e;
+                      outline: none;
+                    "
+                  />
+                </div>
+                <div>
+                  <label
+                    style="
+                      font-family: Inter, sans-serif;
+                      font-size: 9px;
+                      text-transform: uppercase;
+                      letter-spacing: 0.12em;
+                      color: #1a3350;
+                      font-weight: 700;
+                      display: block;
+                      margin-bottom: 6px;
+                    "
+                    >Responsable del Levantamiento</label
+                  >
+                  <input
+                    id="cmAnalista"
+                    type="text"
+                    placeholder="Ej: Gerencia de Análisis"
+                    style="
+                      width: 100%;
+                      background: #f8f9fb;
+                      border: none;
+                      border-bottom: 1px solid #bfc4c5;
+                      padding: 9px 12px;
+                      font-family: Inter, sans-serif;
+                      font-size: 13px;
+                      color: #191c1e;
+                      outline: none;
+                    "
+                  />
+                </div>
+                <div>
+                  <label
+                    style="
+                      font-family: Inter, sans-serif;
+                      font-size: 9px;
+                      text-transform: uppercase;
+                      letter-spacing: 0.12em;
+                      color: #1a3350;
+                      font-weight: 700;
+                      display: block;
+                      margin-bottom: 6px;
+                    "
+                    >País / Geografía</label
+                  >
+                  <input
+                    id="cmPais"
+                    type="text"
+                    placeholder="Ej: Colombia"
+                    style="
+                      width: 100%;
+                      background: #f8f9fb;
+                      border: none;
+                      border-bottom: 1px solid #bfc4c5;
+                      padding: 9px 12px;
+                      font-family: Inter, sans-serif;
+                      font-size: 13px;
+                      color: #191c1e;
+                      outline: none;
+                    "
+                  />
+                </div>
+              </div>
+              <!-- Tipo de contraste chips -->
+              <div style="margin-top: 20px">
+                <label
+                  style="
+                    font-family: Inter, sans-serif;
+                    font-size: 9px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.12em;
+                    color: #1a3350;
+                    font-weight: 700;
+                    display: block;
+                    margin-bottom: 10px;
+                  "
+                  >Tipo de Contraste</label
+                >
+                <div style="display: flex; flex-wrap: wrap; gap: 8px" id="cmTipoChips">
+                  <button
+                    data-tipo="operativo_legal"
+                    onclick="setCmTipo(this)"
+                    class="rtype-chip active"
+                  >
+                    Operativo-Legal
+                  </button>
+                  <button data-tipo="financiero" onclick="setCmTipo(this)" class="rtype-chip">
+                    Financiero
+                  </button>
+                  <button data-tipo="recursos_humanos" onclick="setCmTipo(this)" class="rtype-chip">
+                    Recursos Humanos
+                  </button>
+                  <button data-tipo="regulatorio" onclick="setCmTipo(this)" class="rtype-chip">
+                    Regulatorio / Compliance
+                  </button>
+                  <button data-tipo="estrategico" onclick="setCmTipo(this)" class="rtype-chip">
+                    Estratégico
+                  </button>
+                  <button data-tipo="comercial" onclick="setCmTipo(this)" class="rtype-chip">
+                    Comercial
+                  </button>
+                  <button data-tipo="tecnico" onclick="setCmTipo(this)" class="rtype-chip">
+                    Técnico
+                  </button>
+                  <button data-tipo="otro" onclick="setCmTipo(this)" class="rtype-chip">
+                    Otro
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Objetivo -->
+            <div
+              style="
+                background: #fff;
+                border-left: 4px solid #1a3350;
+                padding: 28px 32px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 16px rgba(4, 22, 39, 0.06);
+              "
+            >
+              <label
+                style="
+                  font-family: Inter, sans-serif;
+                  font-size: 10px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.15em;
+                  color: #e74243;
+                  font-weight: 700;
+                  display: block;
+                  margin-bottom: 12px;
+                "
+                >Objetivo del Informe</label
+              >
+              <textarea
+                id="cmObjetivo"
+                rows="3"
+                placeholder="Ej: Validar los puntos levantados por Country Manager respecto de operación legal en Colombia."
+                style="
+                  width: 100%;
+                  background: #f8f9fb;
+                  border: none;
+                  border-bottom: 1px solid #bfc4c5;
+                  padding: 12px;
+                  font-family: Inter, sans-serif;
+                  font-size: 13px;
+                  color: #191c1e;
+                  resize: vertical;
+                  outline: none;
+                "
+              ></textarea>
+            </div>
+
+            <!-- Notas o insumo principal -->
+            <div
+              style="
+                background: #fff;
+                border-left: 4px solid #1a3350;
+                padding: 28px 32px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 16px rgba(4, 22, 39, 0.06);
+              "
+            >
+              <label
+                style="
+                  font-family: Inter, sans-serif;
+                  font-size: 10px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.15em;
+                  color: #e74243;
+                  font-weight: 700;
+                  display: block;
+                  margin-bottom: 12px;
+                "
+                >Notas o Insumo Principal</label
+              >
+              <textarea
+                id="cmNotasInsumo"
+                rows="4"
+                placeholder="Contexto general, antecedentes relevantes, o insumo principal que da origen a este contraste..."
+                style="
+                  width: 100%;
+                  background: #f8f9fb;
+                  border: none;
+                  border-bottom: 1px solid #bfc4c5;
+                  padding: 12px;
+                  font-family: Inter, sans-serif;
+                  font-size: 13px;
+                  color: #191c1e;
+                  resize: vertical;
+                  outline: none;
+                "
+              ></textarea>
+            </div>
+
+            <!-- Puntos a contrastar -->
+            <div
+              style="
+                background: #fff;
+                border-left: 4px solid #1a3350;
+                padding: 28px 32px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 16px rgba(4, 22, 39, 0.06);
+              "
+            >
+              <label
+                style="
+                  font-family: Inter, sans-serif;
+                  font-size: 10px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.15em;
+                  color: #e74243;
+                  font-weight: 700;
+                  display: block;
+                  margin-bottom: 16px;
+                "
+                data-i18n="uiContrastePuntos"
+                >Puntos a Contrastar</label
+              >
+              <div id="cmPuntosList"></div>
+              <button
+                onclick="addCmPunto()"
+                style="
+                  margin-top: 10px;
+                  background: transparent;
+                  border: 1px dashed #bfc4c5;
+                  color: #74777d;
+                  padding: 7px 16px;
+                  font-family: Inter, sans-serif;
+                  font-size: 11px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                "
+                data-i18n="uiContrasteAddPunto"
+              >
+                <span class="material-symbols-outlined" style="font-size: 14px">add</span>+ Agregar
+                punto
+              </button>
+            </div>
+
+            <!-- Fuentes contrastadas -->
+            <div
+              style="
+                background: #fff;
+                border-left: 4px solid #1a3350;
+                padding: 28px 32px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 16px rgba(4, 22, 39, 0.06);
+              "
+            >
+              <label
+                style="
+                  font-family: Inter, sans-serif;
+                  font-size: 10px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.15em;
+                  color: #e74243;
+                  font-weight: 700;
+                  display: block;
+                  margin-bottom: 16px;
+                "
+                data-i18n="uiContrasteFuentes"
+                >Fuentes Contrastadas</label
+              >
+              <div id="cmFuentesList"></div>
+              <button
+                onclick="addCmFuente()"
+                style="
+                  margin-top: 10px;
+                  background: transparent;
+                  border: 1px dashed #bfc4c5;
+                  color: #74777d;
+                  padding: 7px 16px;
+                  font-family: Inter, sans-serif;
+                  font-size: 11px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                "
+                data-i18n="uiContrasteAddFuente"
+              >
+                <span class="material-symbols-outlined" style="font-size: 14px">add</span>+ Agregar
+                fuente
+              </button>
+            </div>
+
+            <!-- ── RECOMENDADOS ── -->
+            <div style="margin-top: 32px; margin-bottom: 6px; padding: 4px 0">
+              <span
+                style="
+                  font-family: Inter, sans-serif;
+                  font-size: 9px;
+                  font-weight: 700;
+                  letter-spacing: 0.2em;
+                  text-transform: uppercase;
+                  color: #4279b0;
+                "
+                >Campos recomendados</span
+              >
+            </div>
+
+            <!-- Metadatos recomendados -->
+            <div
+              style="
+                background: #fff;
+                border-left: 4px solid #4279b0;
+                padding: 28px 32px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 16px rgba(4, 22, 39, 0.06);
+              "
+            >
+              <label
+                style="
+                  font-family: Inter, sans-serif;
+                  font-size: 10px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.15em;
+                  color: #4279b0;
+                  font-weight: 700;
+                  display: block;
+                  margin-bottom: 16px;
+                "
+                >Contexto del Levantamiento</label
+              >
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 16px;
+                  margin-bottom: 20px;
+                "
+              >
+                <div>
+                  <label
+                    style="
+                      font-family: Inter, sans-serif;
+                      font-size: 9px;
+                      text-transform: uppercase;
+                      letter-spacing: 0.12em;
+                      color: #1a3350;
+                      font-weight: 700;
+                      display: block;
+                      margin-bottom: 6px;
+                    "
+                    >Fecha del Levantamiento</label
+                  >
+                  <input
+                    id="cmFechaLevantamiento"
+                    type="text"
+                    placeholder="Ej: 10 de abril 2026"
+                    style="
+                      width: 100%;
+                      background: #f8f9fb;
+                      border: none;
+                      border-bottom: 1px solid #bfc4c5;
+                      padding: 9px 12px;
+                      font-family: Inter, sans-serif;
+                      font-size: 13px;
+                      color: #191c1e;
+                      outline: none;
+                    "
+                  />
+                </div>
+                <div>
+                  <label
+                    style="
+                      font-family: Inter, sans-serif;
+                      font-size: 9px;
+                      text-transform: uppercase;
+                      letter-spacing: 0.12em;
+                      color: #1a3350;
+                      font-weight: 700;
+                      display: block;
+                      margin-bottom: 6px;
+                    "
+                    >Unidad / Gerencia / Área</label
+                  >
+                  <input
+                    id="cmUnidad"
+                    type="text"
+                    placeholder="Ej: Gerencia de Operaciones"
+                    style="
+                      width: 100%;
+                      background: #f8f9fb;
+                      border: none;
+                      border-bottom: 1px solid #bfc4c5;
+                      padding: 9px 12px;
+                      font-family: Inter, sans-serif;
+                      font-size: 13px;
+                      color: #191c1e;
+                      outline: none;
+                    "
+                  />
+                </div>
+              </div>
+              <!-- Nivel de sensibilidad -->
+              <div>
+                <label
+                  style="
+                    font-family: Inter, sans-serif;
+                    font-size: 9px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.12em;
+                    color: #1a3350;
+                    font-weight: 700;
+                    display: block;
+                    margin-bottom: 10px;
+                  "
+                  >Nivel de Sensibilidad</label
+                >
+                <div style="display: flex; flex-wrap: wrap; gap: 8px" id="cmSensibilidadChips">
+                  <button
+                    data-sens="uso_interno"
+                    onclick="setCmSensibilidad(this)"
+                    class="rtype-chip active"
+                  >
+                    Uso interno
+                  </button>
+                  <button
+                    data-sens="reservado"
+                    onclick="setCmSensibilidad(this)"
+                    class="rtype-chip"
+                  >
+                    Reservado
+                  </button>
+                  <button
+                    data-sens="confidencial"
+                    onclick="setCmSensibilidad(this)"
+                    class="rtype-chip"
+                  >
+                    Confidencial
+                  </button>
+                  <button data-sens="publico" onclick="setCmSensibilidad(this)" class="rtype-chip">
+                    Público
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Observaciones del analista -->
+            <div
+              style="
+                background: #fff;
+                border-left: 4px solid #4279b0;
+                padding: 28px 32px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 16px rgba(4, 22, 39, 0.06);
+              "
+            >
+              <label
+                style="
+                  font-family: Inter, sans-serif;
+                  font-size: 10px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.15em;
+                  color: #4279b0;
+                  font-weight: 700;
+                  display: block;
+                  margin-bottom: 12px;
+                "
+                data-i18n="uiContrasteObservaciones"
+                >Observaciones del Analista</label
+              >
+              <textarea
+                id="cmObservaciones"
+                rows="4"
+                placeholder="Hipótesis, alertas, lecturas contextuales o notas propias del analista que no provienen directamente de las fuentes..."
+                style="
+                  width: 100%;
+                  background: #f8f9fb;
+                  border: none;
+                  border-bottom: 1px solid #bfc4c5;
+                  padding: 12px;
+                  font-family: Inter, sans-serif;
+                  font-size: 13px;
+                  color: #191c1e;
+                  resize: vertical;
+                  outline: none;
+                "
+              ></textarea>
+            </div>
+
+            <!-- Tono + Profundidad -->
+            <div
+              style="
+                background: #fff;
+                border-left: 4px solid #4279b0;
+                padding: 28px 32px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 16px rgba(4, 22, 39, 0.06);
+              "
+            >
+              <div style="margin-bottom: 20px">
+                <label
+                  style="
+                    font-family: Inter, sans-serif;
+                    font-size: 10px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.15em;
+                    color: #4279b0;
+                    font-weight: 700;
+                    display: block;
+                    margin-bottom: 10px;
+                  "
+                  data-i18n="uiContrasteTono"
+                  >Tono del Informe</label
+                >
+                <div style="display: flex; flex-wrap: wrap; gap: 8px" id="cmTonoChips">
+                  <button
+                    data-tono="ejecutivo_prudente"
+                    onclick="setCmTono(this)"
+                    class="rtype-chip active"
+                  >
+                    Ejecutivo prudente
+                  </button>
+                  <button
+                    data-tono="ejecutivo_directo"
+                    onclick="setCmTono(this)"
+                    class="rtype-chip"
+                  >
+                    Ejecutivo directo
+                  </button>
+                  <button data-tono="analitico" onclick="setCmTono(this)" class="rtype-chip">
+                    Analítico
+                  </button>
+                  <button data-tono="diplomatico" onclick="setCmTono(this)" class="rtype-chip">
+                    Diplomático
+                  </button>
+                  <button
+                    data-tono="escalamiento_interno"
+                    onclick="setCmTono(this)"
+                    class="rtype-chip"
+                  >
+                    Escalamiento interno
+                  </button>
+                  <button data-tono="alta_direccion" onclick="setCmTono(this)" class="rtype-chip">
+                    Alta dirección
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label
+                  style="
+                    font-family: Inter, sans-serif;
+                    font-size: 10px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.15em;
+                    color: #4279b0;
+                    font-weight: 700;
+                    display: block;
+                    margin-bottom: 10px;
+                  "
+                  data-i18n="uiContrasteProfundidad"
+                  >Nivel de Profundidad</label
+                >
+                <div style="display: flex; flex-wrap: wrap; gap: 8px" id="cmProfundidadChips">
+                  <button data-prof="breve" onclick="setCmProfundidad(this)" class="rtype-chip">
+                    Breve
+                  </button>
+                  <button
+                    data-prof="estandar"
+                    onclick="setCmProfundidad(this)"
+                    class="rtype-chip active"
+                  >
+                    Estándar
+                  </button>
+                  <button data-prof="profundo" onclick="setCmProfundidad(this)" class="rtype-chip">
+                    Profundo
+                  </button>
+                  <button
+                    data-prof="profundo_recomendaciones"
+                    onclick="setCmProfundidad(this)"
+                    class="rtype-chip"
+                  >
+                    Profundo con recomendaciones
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Generate button + progress -->
+            <div style="margin-top: 8px; margin-bottom: 40px">
+              <button
+                id="btnSubmitContraste"
+                onclick="submitContraste()"
+                style="
+                  background: #1a3350;
+                  color: #fff;
+                  border: none;
+                  padding: 14px 32px;
+                  font-family: Manrope, sans-serif;
+                  font-weight: 700;
+                  font-size: 12px;
+                  letter-spacing: 0.15em;
+                  text-transform: uppercase;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                "
+              >
+                <span
+                  class="material-symbols-outlined"
+                  style="font-size: 16px; font-variation-settings: 'FILL' 1"
+                  >compare_arrows</span
+                >
+                <span data-i18n="uiContrasteGenerate">Generar Contraste Multifuente</span>
+              </button>
+              <div id="contrasteProgress" style="display: none; margin-top: 16px; max-width: 480px">
+                <div style="height: 3px; background: #e0e3e5; border-radius: 2px">
+                  <div
+                    id="contrasteProgressFill"
+                    style="
+                      height: 3px;
+                      background: #e74243;
+                      border-radius: 2px;
+                      width: 0%;
+                      transition: width 0.3s;
+                    "
+                  ></div>
+                </div>
+                <span
+                  id="contrasteProgressLabel"
+                  style="
+                    font-family: Inter, sans-serif;
+                    font-size: 10px;
+                    color: #e74243;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    font-weight: 600;
+                    display: block;
+                    margin-top: 6px;
+                  "
+                  data-i18n="uiContrasteProgressThinking"
+                  >Analizando fuentes y puntos críticos...</span
+                >
+              </div>
+              <div
+                id="contrasteError"
+                style="
+                  display: none;
+                  margin-top: 14px;
+                  background: #fff5f5;
+                  border-left: 3px solid #e74243;
+                  padding: 10px 14px;
+                  font-family: Inter, sans-serif;
+                  font-size: 12px;
+                  color: #e74243;
+                "
+              ></div>
+            </div>
+          </div>
+          <!-- /contrasteFormSection -->
+
+          <!-- ── PREVIEW SECTION ── -->
+          <div id="contrastePreviewSection" style="display: none">
+            <!-- Toolbar -->
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-bottom: 28px;
+              "
+            >
+              <button
+                onclick="showContrasteForm()"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  background: transparent;
+                  border: none;
+                  font-family: Inter, sans-serif;
+                  font-size: 13px;
+                  color: #74777d;
+                  cursor: pointer;
+                "
+                data-i18n="uiContrasteBack"
+              >
+                <span class="material-symbols-outlined" style="font-size: 16px">arrow_back</span
+                >Nuevo Contraste
+              </button>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap">
+                <button
+                  onclick="downloadContrastePDF()"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    background: #e74243;
+                    color: #fff;
+                    border: none;
+                    padding: 9px 18px;
+                    font-family: Manrope, sans-serif;
+                    font-weight: 700;
+                    font-size: 11px;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                  "
+                  data-i18n="uiContrastePdf"
+                >
+                  <span class="material-symbols-outlined" style="font-size: 14px"
+                    >picture_as_pdf</span
+                  >Exportar PDF
+                </button>
+                <button
+                  onclick="copyContrasteMarkdown()"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    background: #1a3350;
+                    color: #fff;
+                    border: none;
+                    padding: 9px 18px;
+                    font-family: Manrope, sans-serif;
+                    font-weight: 700;
+                    font-size: 11px;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                  "
+                  data-i18n="uiContrasteMarkdown"
+                >
+                  <span class="material-symbols-outlined" style="font-size: 14px">content_copy</span
+                  >Markdown
+                </button>
+              </div>
+            </div>
+            <div
+              id="contrasteStatusMsg"
+              style="
+                display: none;
+                font-family: Inter, sans-serif;
+                font-size: 11px;
+                color: #4279b0;
+                margin-bottom: 12px;
+              "
+            ></div>
+            <!-- Report card -->
+            <div id="contrastePreviewCard"></div>
+          </div>
+          <!-- /contrastePreviewSection -->
+        </div>
+        <!-- /contrastePanel -->
+      </main>
+    </div>
+
+    <footer
+      class="fixed bottom-0 left-0 w-full z-50 bg-[#F2F4F6] border-l-4 border-[#E74243] flex justify-between items-center px-8 md:px-12 py-3"
+    >
+      <div class="flex items-center gap-3">
+        <img src="assets/alto-logo.png" alt="ALTO" class="h-4 opacity-70" />
+        <span class="font-['Manrope'] font-bold text-[#1A3350] text-xs">ALTO</span>
       </div>
-      <div>
-        <div style="font-family:Manrope,sans-serif;font-size:12px;font-weight:800;color:#fff" data-i18n="uiAiAssistant">Asistente IA</div>
-        <div style="font-family:Inter,sans-serif;font-size:9px;color:rgba(255,255,255,0.4);margin-top:1px" data-i18n="uiAiDesc">Consulta o modifica el informe</div>
+      <div class="flex gap-6">
+        <span
+          class="font-['Inter'] italic text-[10px] text-slate-500"
+          data-i18n="uiConfidentialInternal"
+          >Confidencial · Uso interno</span
+        >
+      </div>
+    </footer>
+
+    <!-- Libraries loaded on-demand via js/lib-loader.js -->
+
+    <script src="js/lib-loader.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/schemas.js"></script>
+    <script src="js/ui-helpers.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/pptx-gen.js"></script>
+    <script src="js/exports.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/minutas.js"></script>
+    <script src="js/contraste.js"></script>
+    <script src="js/app-shell.js"></script>
+
+    <!-- ── Floating AI Chat ── -->
+    <style>
+      #aiFloatBtn {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        z-index: 1000;
+        display: none;
+        background: #e74243;
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 20px 12px 14px;
+        font-family: Manrope, sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(187, 0, 20, 0.4);
+        align-items: center;
+        gap: 8px;
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+      #aiFloatBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(187, 0, 20, 0.5);
+      }
+      #aiFloatBtn .notif {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        width: 10px;
+        height: 10px;
+        background: #fff;
+        border-radius: 50%;
+        display: none;
+      }
+      #aiFloatPanel {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        z-index: 1000;
+        width: 360px;
+        display: none;
+        flex-direction: column;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 40px rgba(4, 22, 39, 0.18);
+        overflow: hidden;
+        transform: translateY(16px);
+        opacity: 0;
+        transition:
+          transform 0.2s ease,
+          opacity 0.2s ease;
+      }
+      #aiFloatPanel.open {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      #aiFloatMessages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 80px;
+        max-height: 340px;
+        background: #fafbfc;
+      }
+      /* Typing dots */
+      .typing-bubble {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 10px 14px;
+        background: #fff;
+        border: 1px solid #e0e3e5;
+        border-left: 3px solid #e74243;
+        border-radius: 2px 10px 10px 10px;
+        width: fit-content;
+      }
+      .typing-bubble span {
+        width: 6px;
+        height: 6px;
+        background: #e74243;
+        border-radius: 50%;
+        animation: typingDot 1.2s infinite ease-in-out;
+      }
+      .typing-bubble span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing-bubble span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      @keyframes typingDot {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        30% {
+          transform: translateY(-5px);
+          opacity: 1;
+        }
+      }
+      /* Regen inline progress */
+      .regen-progress-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 140px;
+      }
+      .regen-progress-bar {
+        height: 3px;
+        background: #e0e3e5;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .regen-progress-fill {
+        height: 100%;
+        background: #e74243;
+        border-radius: 2px;
+        transition: width 0.4s ease;
+      }
+      .regen-progress-label {
+        font-family: Inter, sans-serif;
+        font-size: 10px;
+        color: #e74243;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+      }
+      /* Section dimming while regenerating */
+      .section-regen-loading {
+        opacity: 0.45;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      @media (max-width: 600px) {
+        #aiFloatPanel {
+          width: calc(100vw - 32px);
+          right: 16px;
+          bottom: 16px;
+        }
+        #aiFloatBtn {
+          right: 16px;
+          bottom: 16px;
+        }
+      }
+    </style>
+
+    <!-- Collapsed button -->
+    <button id="aiFloatBtn">
+      <span class="notif" id="aiFloatNotif"></span>
+      <div
+        style="
+          width: 26px;
+          height: 26px;
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        "
+      >
+        <span
+          class="material-symbols-outlined"
+          style="font-size: 16px; font-variation-settings: 'FILL' 1"
+          >smart_toy</span
+        >
+      </div>
+      <span data-i18n="uiAiAssistant">Asistente IA</span>
+    </button>
+
+    <!-- Expanded panel -->
+    <div id="aiFloatPanel">
+      <!-- Header -->
+      <div
+        style="
+          background: #1a3350;
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-shrink: 0;
+        "
+      >
+        <div style="display: flex; align-items: center; gap: 9px">
+          <div
+            style="
+              width: 26px;
+              height: 26px;
+              background: #e74243;
+              border-radius: 7px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              flex-shrink: 0;
+            "
+          >
+            <span
+              class="material-symbols-outlined"
+              style="font-size: 14px; color: #fff; font-variation-settings: 'FILL' 1"
+              >smart_toy</span
+            >
+          </div>
+          <div>
+            <div
+              style="
+                font-family: Manrope, sans-serif;
+                font-size: 12px;
+                font-weight: 800;
+                color: #fff;
+              "
+              data-i18n="uiAiAssistant"
+            >
+              Asistente IA
+            </div>
+            <div
+              style="
+                font-family: Inter, sans-serif;
+                font-size: 9px;
+                color: rgba(255, 255, 255, 0.4);
+                margin-top: 1px;
+              "
+              data-i18n="uiAiDesc"
+            >
+              Consulta o modifica el informe
+            </div>
+          </div>
+        </div>
+        <button
+          id="btnAiMinimize"
+          style="
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            border-radius: 6px;
+            padding: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: #fff;
+          "
+          data-i18n-title="uiMinimize"
+          title="Minimizar"
+        >
+          <span class="material-symbols-outlined" style="font-size: 16px">keyboard_arrow_down</span>
+        </button>
+      </div>
+      <!-- Chips -->
+      <div
+        style="
+          padding: 8px 12px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 5px;
+          background: #fff;
+          border-bottom: 1px solid #f0f0f0;
+          flex-shrink: 0;
+        "
+      >
+        <button
+          class="ai-chip"
+          data-i18n="uiChipDeepen"
+          data-i18n-q="uiChipDeepenQ"
+          style="
+            font-family: Inter, sans-serif;
+            font-size: 10px;
+            color: #44474c;
+            background: #f2f4f6;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+          "
+        >
+          Profundiza hallazgo
+        </button>
+        <button
+          class="ai-chip"
+          data-i18n="uiChipCFO"
+          data-i18n-q="uiChipCFOQ"
+          style="
+            font-family: Inter, sans-serif;
+            font-size: 10px;
+            color: #44474c;
+            background: #f2f4f6;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+          "
+        >
+          Tono para CFO
+        </button>
+        <button
+          class="ai-chip"
+          data-i18n="uiChipRisks"
+          data-i18n-q="uiChipRisksQ"
+          style="
+            font-family: Inter, sans-serif;
+            font-size: 10px;
+            color: #44474c;
+            background: #f2f4f6;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+          "
+        >
+          Ampliar riesgos
+        </button>
+        <button
+          class="ai-chip"
+          data-i18n="uiChipSummary"
+          data-i18n-q="uiChipSummaryQ"
+          style="
+            font-family: Inter, sans-serif;
+            font-size: 10px;
+            color: #44474c;
+            background: #f2f4f6;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+          "
+        >
+          Resumen ejecutivo
+        </button>
+      </div>
+      <!-- Messages -->
+      <div id="chatMessages"></div>
+      <!-- Input -->
+      <div
+        style="
+          padding: 10px 12px;
+          background: #fff;
+          border-top: 1px solid #f0f0f0;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          flex-shrink: 0;
+        "
+      >
+        <input
+          id="chatInput"
+          type="text"
+          data-i18n-placeholder="uiAiInputPlaceholder"
+          style="
+            flex: 1;
+            border: 1px solid #e0e3e5;
+            border-radius: 8px;
+            padding: 8px 12px;
+            outline: none;
+            font-family: Inter, sans-serif;
+            font-size: 13px;
+            color: #191c1e;
+            background: #fafbfc;
+            transition: border-color 0.15s;
+          "
+          placeholder="Pregunta o pide un cambio..."
+        />
+        <button
+          id="btnChat"
+          style="
+            background: #e74243;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.15s;
+          "
+        >
+          <span class="material-symbols-outlined" style="font-size: 16px">send</span>
+        </button>
       </div>
     </div>
-    <button onclick="toggleAiPanel()" style="background:rgba(255,255,255,0.08);border:none;border-radius:6px;padding:5px;cursor:pointer;display:flex;align-items:center;color:#fff" data-i18n-title="uiMinimize" title="Minimizar">
-      <span class="material-symbols-outlined" style="font-size:16px">keyboard_arrow_down</span>
-    </button>
-  </div>
-  <!-- Chips -->
-  <div style="padding:8px 12px;display:flex;flex-wrap:wrap;gap:5px;background:#fff;border-bottom:1px solid #F0F0F0;flex-shrink:0">
-    <button data-i18n="uiChipDeepen" data-i18n-q="uiChipDeepenQ" onclick="setAiInput(window._t('uiChipDeepenQ'))" style="font-family:Inter,sans-serif;font-size:10px;color:#44474C;background:#F2F4F6;border:none;border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#FFE8E8';this.style.color='#E74243'" onmouseout="this.style.background='#F2F4F6';this.style.color='#44474C'">💡 Profundiza hallazgo</button>
-    <button data-i18n="uiChipCFO" data-i18n-q="uiChipCFOQ" onclick="setAiInput(window._t('uiChipCFOQ'))" style="font-family:Inter,sans-serif;font-size:10px;color:#44474C;background:#F2F4F6;border:none;border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#FFE8E8';this.style.color='#E74243'" onmouseout="this.style.background='#F2F4F6';this.style.color='#44474C'">🎯 Tono para CFO</button>
-    <button data-i18n="uiChipRisks" data-i18n-q="uiChipRisksQ" onclick="setAiInput(window._t('uiChipRisksQ'))" style="font-family:Inter,sans-serif;font-size:10px;color:#44474C;background:#F2F4F6;border:none;border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#FFE8E8';this.style.color='#E74243'" onmouseout="this.style.background='#F2F4F6';this.style.color='#44474C'">⚠️ Ampliar riesgos</button>
-    <button data-i18n="uiChipSummary" data-i18n-q="uiChipSummaryQ" onclick="setAiInput(window._t('uiChipSummaryQ'))" style="font-family:Inter,sans-serif;font-size:10px;color:#44474C;background:#F2F4F6;border:none;border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#FFE8E8';this.style.color='#E74243'" onmouseout="this.style.background='#F2F4F6';this.style.color='#44474C'">📋 Resumen ejecutivo</button>
-  </div>
-  <!-- Messages -->
-  <div id="chatMessages" id="aiFloatMessages"></div>
-  <!-- Input -->
-  <div style="padding:10px 12px;background:#fff;border-top:1px solid #F0F0F0;display:flex;gap:8px;align-items:center;flex-shrink:0">
-    <input id="chatInput" type="text" data-i18n-placeholder="uiAiInputPlaceholder" style="flex:1;border:1px solid #E0E3E5;border-radius:8px;padding:8px 12px;outline:none;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;background:#FAFBFC;transition:border-color .15s" placeholder="Pregunta o pide un cambio..." onkeydown="if(event.key==='Enter')sendChat()" onfocus="this.style.borderColor='#E74243'" onblur="this.style.borderColor='#E0E3E5'"/>
-    <button onclick="sendChat()" id="btnChat" style="background:#E74243;color:#fff;border:none;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s" onmouseover="this.style.background='#990010'" onmouseout="this.style.background='#E74243'">
-      <span class="material-symbols-outlined" style="font-size:16px">send</span>
-    </button>
-  </div>
-</div>
 
-<script>
-  function toggleMobileMenu() {
-    document.getElementById('navSidebar').classList.toggle('open');
-    document.getElementById('sidebarOverlay').classList.toggle('open');
-  }
-
-  let _aiPanelOpen = false;
-  function toggleAiPanel() {
-    _aiPanelOpen = !_aiPanelOpen;
-    const panel = document.getElementById('aiFloatPanel');
-    const btn   = document.getElementById('aiFloatBtn');
-    if (_aiPanelOpen) {
-      btn.style.display = 'none';
-      panel.style.display = 'flex';
-      requestAnimationFrame(() => panel.classList.add('open'));
-      document.getElementById('chatInput').focus();
-      const notif = document.getElementById('aiFloatNotif');
-      if(notif) notif.style.display = 'none';
-    } else {
-      panel.classList.remove('open');
-      setTimeout(() => { panel.style.display = 'none'; btn.style.display = 'flex'; }, 200);
-    }
-  }
-  function setAiInput(q) {
-    document.getElementById('chatInput').value = q;
-    document.getElementById('chatInput').focus();
-  }
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    });
-  }
-</script>
-</body>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+  </body>
 </html>

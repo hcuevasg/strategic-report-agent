@@ -9,7 +9,7 @@ import {
   MULTISOURCE_SYSTEM_PROMPT,
   PPTX_SYSTEM_PROMPT,
   REPORT_TEMPLATES,
-} from './src/worker/prompts.js';
+} from './prompts.js';
 import {
   validateTwilioSignature,
   corsHeaders,
@@ -18,9 +18,10 @@ import {
   securityHeaders,
   generateSessionToken,
   validateSessionToken,
-} from './src/worker/security.js';
-import { trackEvent, logAbuse } from './src/worker/analytics.js';
-import { handleWhatsApp } from './src/worker/whatsapp.js';
+} from './security.js';
+import { trackEvent, logAbuse } from './analytics.js';
+import { handleWhatsApp, twimlResponse } from './whatsapp.js';
+import { validateRequestBody } from './validation.js';
 
 // ── Constants ────────────────────────────────────────────────
 const MAX_BODY_SIZE = 10_485_760; // 10 MB
@@ -97,8 +98,7 @@ export default {
     if (request.method === 'GET' && url.pathname === '/token') {
       const allowed = (env.ALLOWED_ORIGIN || '').split(',').map(s => s.trim());
       const originOk =
-        allowed[0] === '*' ||
-        allowed.some(a => requestOrigin === a || requestOrigin.startsWith(a));
+        allowed[0] === '*' || allowed.some(a => requestOrigin === a || requestOrigin.startsWith(a));
       if (!originOk) {
         return jsonResponse(403, { error: 'Origin not allowed' }, env, requestOrigin);
       }
@@ -179,8 +179,7 @@ export default {
     // ── Origin check ──────────────────────────────────────
     const allowed = (env.ALLOWED_ORIGIN || '').split(',').map(s => s.trim());
     const isAllowed =
-      allowed[0] === '*' ||
-      allowed.some(a => requestOrigin === a || requestOrigin.startsWith(a));
+      allowed[0] === '*' || allowed.some(a => requestOrigin === a || requestOrigin.startsWith(a));
     if (!isAllowed) {
       ctx.waitUntil(logAbuse(env, 'origin_rejected', requestOrigin));
       return jsonResponse(403, { error: 'Origin not allowed' }, env, requestOrigin);
@@ -248,9 +247,18 @@ export default {
     try {
       const rawBody = await request.text();
       if (rawBody.length > MAX_BODY_SIZE) {
-        return jsonResponse(413, { error: 'Request body too large. Max 10MB.' }, env, requestOrigin);
+        return jsonResponse(
+          413,
+          { error: 'Request body too large. Max 10MB.' },
+          env,
+          requestOrigin
+        );
       }
       const body = JSON.parse(rawBody);
+      const bodyError = validateRequestBody(body);
+      if (bodyError) {
+        return jsonResponse(400, { error: bodyError }, env, requestOrigin);
+      }
       const model = env.CLAUDE_MODEL || 'claude-sonnet-4-6';
 
       // ── Chat mode ─────────────────────────────────────
@@ -278,7 +286,7 @@ export default {
         const data = await resp.json();
         return jsonResponse(resp.status, data, env, requestOrigin);
 
-      // ── PPTX mode — streaming SSE with extended thinking ─
+        // ── PPTX mode — streaming SSE with extended thinking ─
       } else if (body.userContent === '__PPTX_MODE__' && body.reportJSON) {
         ctx.waitUntil(trackEvent(env, 'pptx'));
         const pptxResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -320,7 +328,7 @@ export default {
 
         return streamSSE(pptxResponse, env, requestOrigin);
 
-      // ── Analysis mode — streaming SSE with extended thinking ─
+        // ── Analysis mode — streaming SSE with extended thinking ─
       } else {
         ctx.waitUntil(trackEvent(env, 'analysis'));
 
@@ -331,10 +339,13 @@ export default {
 
         const isMinuta = body.reportType === 'minuta';
         const isMultisource = body.reportType === 'multisource_contrast';
-        const activeSystemPrompt = isMinuta ? MINUTA_SYSTEM_PROMPT
-          : isMultisource ? MULTISOURCE_SYSTEM_PROMPT
-          : SYSTEM_PROMPT;
-        const templateInstr = (isMinuta || isMultisource) ? '' : (REPORT_TEMPLATES[body.reportType] || '');
+        const activeSystemPrompt = isMinuta
+          ? MINUTA_SYSTEM_PROMPT
+          : isMultisource
+            ? MULTISOURCE_SYSTEM_PROMPT
+            : SYSTEM_PROMPT;
+        const templateInstr =
+          isMinuta || isMultisource ? '' : REPORT_TEMPLATES[body.reportType] || '';
         const typePref = templateInstr ? `\n${templateInstr}\n` : '';
 
         const userBlocks = [];
@@ -343,11 +354,11 @@ export default {
           ? langPref +
             'Genera la minuta de reunión a partir del siguiente contenido. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n'
           : isMultisource
-          ? langPref +
-            'Elabora el Informe Ejecutivo de Contraste Multifuente a partir del siguiente input estructurado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n'
-          : langPref +
-            typePref +
-            'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n';
+            ? langPref +
+              'Elabora el Informe Ejecutivo de Contraste Multifuente a partir del siguiente input estructurado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n'
+            : langPref +
+              typePref +
+              'Transforma el siguiente documento fuente en el informe ejecutivo solicitado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n';
 
         if (body.images && Array.isArray(body.images) && body.images.length > 0) {
           body.images.forEach(img => {

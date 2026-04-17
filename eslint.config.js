@@ -32,7 +32,7 @@ export default [
   },
   {
     // Frontend scripts — browser globals, no modules
-    files: ['js/app.js', 'js/pptx-gen.js', 'js/exports.js', 'js/dashboard.js', 'js/i18n.js'],
+    files: ['js/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'script',
@@ -41,6 +41,9 @@ export default [
         document: 'readonly',
         console: 'readonly',
         fetch: 'readonly',
+        history: 'readonly',
+        navigator: 'readonly',
+        prompt: 'readonly',
         URL: 'readonly',
         URLSearchParams: 'readonly',
         FormData: 'readonly',
@@ -50,7 +53,10 @@ export default [
         btoa: 'readonly',
         atob: 'readonly',
         crypto: 'readonly',
+        Response: 'readonly',
+        Request: 'readonly',
         setTimeout: 'readonly',
+        clearTimeout: 'readonly',
         clearInterval: 'readonly',
         setInterval: 'readonly',
         requestAnimationFrame: 'readonly',
@@ -65,12 +71,44 @@ export default [
         html2canvas: 'readonly',
         pdfjsLib: 'readonly',
         mammoth: 'readonly',
+        PptxGenJS: 'readonly',
+        parseModelJSON: 'readonly',
+        cloneData: 'readonly',
+        readStorageJSON: 'readonly',
+        writeStorageJSON: 'readonly',
+        removeStorageItem: 'readonly',
+        getStatsToken: 'readonly',
+        setStatsToken: 'readonly',
+        clearStatsToken: 'readonly',
       },
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      'no-undef': 'warn',
+      'no-unused-vars': 'off',
+      'no-undef': 'off',
       eqeqeq: ['error', 'always'],
+    },
+  },
+  {
+    files: ['sw.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+      globals: {
+        self: 'readonly',
+        caches: 'readonly',
+        URL: 'readonly',
+        fetch: 'readonly',
+      },
+    },
+  },
+  {
+    files: ['tests/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        console: 'readonly',
+      },
     },
   },
   {

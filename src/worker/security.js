@@ -4,6 +4,10 @@
 
 const TOKEN_TTL_SECONDS = 7200; // 2 hours
 
+function getSessionSecret(env) {
+  return env.SESSION_TOKEN_SECRET || env.ANTHROPIC_API_KEY;
+}
+
 // ── Input sanitization — strip prompt injection patterns ─────
 export function sanitizeInput(text) {
   if (!text || typeof text !== 'string') return text;
@@ -115,7 +119,7 @@ export async function validateTwilioSignature(request, env) {
 
 // ── Session token generation (HMAC-based, IP-bound, time-limited) ──
 export async function generateSessionToken(ip, env) {
-  const secret = env.ANTHROPIC_API_KEY;
+  const secret = getSessionSecret(env);
   const timestamp = Math.floor(Date.now() / 1000);
   const payload = `${ip}:${timestamp}`;
   const encoder = new TextEncoder();
@@ -141,7 +145,7 @@ export async function validateSessionToken(token, ip, env) {
   const now = Math.floor(Date.now() / 1000);
   if (now - timestamp > TOKEN_TTL_SECONDS) return false;
 
-  const secret = env.ANTHROPIC_API_KEY;
+  const secret = getSessionSecret(env);
   const payload = `${ip}:${timestamp}`;
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(

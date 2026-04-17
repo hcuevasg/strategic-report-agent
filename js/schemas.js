@@ -1,0 +1,227 @@
+// ============================================================
+// SCHEMAS — lightweight validators for AI JSON responses
+// ============================================================
+
+function isObject(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function cloneData(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function assertString(value, label, issues, required = true) {
+  if (value === null || value === undefined || value === '') {
+    if (required) issues.push(label + ' is required');
+    return;
+  }
+  if (typeof value !== 'string') issues.push(label + ' must be a string');
+}
+
+function assertArray(value, label, issues) {
+  if (!Array.isArray(value)) issues.push(label + ' must be an array');
+}
+
+const CONTENT_PLACEHOLDER_TOKENS = [
+  'test',
+  'tbd',
+  'lorem',
+  'ipsum',
+  'xxx',
+  'n/a',
+  'na',
+  'pendiente',
+  'por definir',
+  'por completar',
+  'por llenar',
+  'dummy',
+  'sample',
+  'ejemplo',
+];
+
+const CONTRASTE_INSUFFICIENT_PHRASES = [
+  'insumo insuficiente',
+  'documento fuente esta incompleto',
+  'no contiene informacion analizable',
+  'marcadores de posicion',
+  'marcador de posicion',
+  'no puede ser completado',
+  'bloqueo es exclusivamente de contenido',
+];
+
+function normalizeContentText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function hasPlaceholderContent(value) {
+  const text = normalizeContentText(value);
+  if (!text) return false;
+  return CONTENT_PLACEHOLDER_TOKENS.some(token => text === token || text.includes(token));
+}
+
+function isMeaningfulContent(value, minLength = 20) {
+  const raw = String(value || '').trim();
+  if (raw.length < minLength) return false;
+  if (hasPlaceholderContent(raw)) return false;
+  const words = raw.split(/\s+/).filter(Boolean);
+  return words.length >= 4;
+}
+
+function isInsufficientContraste(payload) {
+  const title = normalizeContentText(payload?.title);
+  const summary = normalizeContentText(payload?.executive_summary || payload?.summary);
+  return CONTRASTE_INSUFFICIENT_PHRASES.some(
+    phrase => title.includes(phrase) || summary.includes(phrase)
+  );
+}
+
+function validateReportShape(report) {
+  const issues = [];
+  if (!isObject(report)) return ['Report must be an object'];
+  assertString(report.title, 'title', issues);
+  assertString(report.executive_summary, 'executive_summary', issues);
+  assertArray(report.key_messages, 'key_messages', issues);
+  assertArray(report.findings, 'findings', issues);
+  assertArray(report.analysis_blocks, 'analysis_blocks', issues);
+
+  if (!isObject(report.recommendations)) {
+    issues.push('recommendations must be an object');
+  } else {
+    ['short_term', 'medium_term', 'long_term'].forEach(key => {
+      if (
+        report.recommendations[key] !== null &&
+        report.recommendations[key] !== undefined &&
+        !Array.isArray(report.recommendations[key])
+      ) {
+        issues.push('recommendations.' + key + ' must be an array');
+      }
+    });
+  }
+  return issues;
+}
+
+function validateMinutaShape(minuta) {
+  const issues = [];
+  if (!isObject(minuta)) return ['Minuta must be an object'];
+  assertString(minuta.title, 'title', issues);
+  assertArray(minuta.decisions || [], 'decisions', issues);
+  assertArray(minuta.commitments || [], 'commitments', issues);
+  assertArray(minuta.key_topics || [], 'key_topics', issues);
+  assertString(minuta.summary, 'summary', issues);
+  return issues;
+}
+
+function validateSlidesShape(payload) {
+  const issues = [];
+  if (!isObject(payload)) return ['Slides payload must be an object'];
+  if (!Array.isArray(payload.slides) || payload.slides.length < 3) {
+    issues.push('slides must be a non-empty array');
+  }
+  return issues;
+}
+
+function validateContrasteShape(payload) {
+  const issues = [];
+  if (!isObject(payload)) return ['Contraste payload must be an object'];
+  assertString(payload.title, 'title', issues);
+  assertString(payload.executive_summary || payload.summary, 'summary', issues);
+  if (issues.length) return issues;
+
+  if (!isMeaningfulContent(payload.title, 12)) {
+    issues.push('El contraste generado no contiene un titulo sustantivo. Revisa el insumo.');
+  }
+  if (!isMeaningfulContent(payload.executive_summary || payload.summary, 40)) {
+    issues.push(
+      'El contraste generado no contiene un resumen ejecutivo sustantivo. Revisa el insumo.'
+    );
+  }
+  if (
+    !Array.isArray(payload.key_messages) ||
+    payload.key_messages.filter(m => isMeaningfulContent(m, 16)).length < 2
+  ) {
+    issues.push(
+      'El contraste generado no contiene mensajes clave suficientes para sostener conclusiones.'
+    );
+  }
+  if (
+    !Array.isArray(payload.analysis_by_point) ||
+    payload.analysis_by_point.filter(
+      item =>
+        isMeaningfulContent(item?.point, 8) &&
+        isMeaningfulContent(item?.contrast, 30) &&
+        isMeaningfulContent(item?.executive_finding, 20)
+    ).length === 0
+  ) {
+    issues.push(
+      'El contraste generado no contiene analisis por punto suficientemente desarrollado.'
+    );
+  }
+  if (
+    !Array.isArray(payload.sources_map) ||
+    payload.sources_map.filter(
+      source =>
+        typeof source?.name === 'string' &&
+        source.name.trim().length > 0 &&
+        typeof source?.type === 'string' &&
+        source.type.trim().length > 0
+    ).length < 2
+  ) {
+    issues.push(
+      'El contraste generado no contiene al menos dos fuentes contrastadas identificables.'
+    );
+  }
+  if (!isMeaningfulContent(payload.methodology, 30)) {
+    issues.push('El contraste generado no contiene una metodologia suficientemente desarrollada.');
+  }
+  if (!isMeaningfulContent(payload.central_message, 16)) {
+    issues.push('El contraste generado no contiene un mensaje central claro.');
+  }
+  if (
+    !Array.isArray(payload.comparison_matrix) ||
+    payload.comparison_matrix.filter(
+      row =>
+        isMeaningfulContent(row?.point, 8) &&
+        isMeaningfulContent(row?.convergence_divergence, 8) &&
+        isMeaningfulContent(row?.preliminary_finding, 8)
+    ).length === 0
+  ) {
+    issues.push('El contraste generado no contiene una matriz comparativa consolidada util.');
+  }
+
+  const recs = payload.recommendations || {};
+  const recommendationCount = ['immediate', 'short_term', 'structural']
+    .flatMap(key => (Array.isArray(recs[key]) ? recs[key] : []))
+    .filter(item => isMeaningfulContent(item?.action, 12)).length;
+  if (!recommendationCount) {
+    issues.push('El contraste generado no contiene recomendaciones accionables.');
+  }
+  if (isInsufficientContraste(payload)) {
+    issues.push(
+      'El contraste no se genero porque el insumo estaba incompleto o contenia placeholders como TEST.'
+    );
+  }
+  return issues;
+}
+
+function validateByKind(kind, payload) {
+  if (kind === 'report') return validateReportShape(payload);
+  if (kind === 'minuta') return validateMinutaShape(payload);
+  if (kind === 'slides') return validateSlidesShape(payload);
+  if (kind === 'contraste') return validateContrasteShape(payload);
+  return [];
+}
+
+function parseModelJSON(kind, rawText) {
+  const clean = String(rawText || '')
+    .replace(/```json|```/g, '')
+    .trim();
+  const parsed = JSON.parse(clean);
+  const issues = validateByKind(kind, parsed);
+  if (issues.length) throw new Error(issues[0]);
+  return parsed;
+}

@@ -15,7 +15,11 @@ const STATIC_ASSETS = [
   '/css/styles.css',
   '/js/lib-loader.js',
   '/js/i18n.js',
+  '/js/storage.js',
+  '/js/schemas.js',
   '/js/app.js',
+  '/js/app-shell.js',
+  '/js/home.js',
   '/js/pptx-gen.js',
   '/js/exports.js',
   '/js/dashboard.js',
@@ -25,20 +29,16 @@ const STATIC_ASSETS = [
 
 // ── Install: pre-cache static shell ──────────────────────────
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS)));
   self.skipWaiting();
 });
 
 // ── Activate: remove old caches ───────────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
-    )
+    caches
+      .keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
   );
   self.clients.claim();
 });
