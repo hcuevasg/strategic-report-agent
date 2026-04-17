@@ -281,7 +281,7 @@ function renderContrastesDashboard() {
         <p style="font-family:Inter,sans-serif;font-size:13px;color:#676766;line-height:1.5;margin:0 0 16px">${esc(item.subtitle || 'Informe Ejecutivo de Contraste Multifuente')}</p>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:14px;border-top:1px solid #EEF1F4">
           <span style="font-family:Inter,sans-serif;font-size:12px;color:#1A3350;font-weight:600">${esc(item.sponsor || 'Sin sponsor')}</span>
-          <button onclick="loadContrasteFromHistory(${item.id})" style="display:flex;align-items:center;gap:4px;padding:8px 12px;border:1px solid #d9dee3;background:#fff;font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#374151;cursor:pointer">
+          <button type="button" onclick="loadContrasteFromHistory(${item.id})" style="display:flex;align-items:center;gap:4px;padding:8px 12px;border:1px solid #d9dee3;background:#fff;font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#374151;cursor:pointer">
             <span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>Abrir
           </button>
         </div>
@@ -320,7 +320,7 @@ function loadContrasteFromHistory(id) {
   if (!entry) return;
   try {
     _contrasteResult = parseModelJSON('contraste', entry.data);
-    _contrasteResult = normalizeContrasteResult(_contrasteResult);
+    _contrasteResult = normalizeContrasteResult(_contrasteResult, false);
     result = _contrasteResult;
     currentContrastHistoryId = id;
     const dashboard = document.getElementById('contrasteDashboard');
@@ -377,7 +377,7 @@ function renderCmPuntos() {
         style="flex:1;background:#F8F9FB;border:none;border-bottom:1px solid #BFC4C5;padding:8px 12px;font-family:Inter,sans-serif;font-size:13px;color:#191C1E;outline:none">
       ${
         _cmPuntos.length > 1
-          ? `<button onclick="removeCmPunto(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;padding:4px;display:flex;align-items:center" title="Eliminar">
+          ? `<button type="button" onclick="removeCmPunto(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;padding:4px;display:flex;align-items:center" title="Eliminar">
              <span class="material-symbols-outlined" style="font-size:16px">close</span>
            </button>`
           : ''
@@ -413,7 +413,7 @@ function renderCmFuentes() {
         <span style="font-family:Manrope,sans-serif;font-size:11px;font-weight:700;color:#1A3350">Fuente ${i + 1}</span>
         ${
           _cmFuentes.length > 1
-            ? `<button onclick="removeCmFuente(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;display:flex;align-items:center;gap:4px;font-family:Inter,sans-serif;font-size:10px">
+            ? `<button type="button" onclick="removeCmFuente(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;display:flex;align-items:center;gap:4px;font-family:Inter,sans-serif;font-size:10px">
                <span class="material-symbols-outlined" style="font-size:14px">close</span>Eliminar
              </button>`
             : ''
@@ -572,7 +572,7 @@ async function submitContraste() {
     );
 
     _contrasteResult = parseModelJSON('contraste', txt);
-    _contrasteResult = normalizeContrasteResult(_contrasteResult, false);
+    _contrasteResult = normalizeContrasteResult(_contrasteResult, true);
     result = _contrasteResult; // share with export functions
     saveContrasteToHistory(_contrasteResult);
 

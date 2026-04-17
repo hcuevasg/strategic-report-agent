@@ -1015,6 +1015,7 @@
                 </p>
               </div>
               <button
+                type="button"
                 onclick="nuevoContraste()"
                 style="
                   background: #1a3350;
@@ -1279,31 +1280,67 @@
                 >
                 <div style="display: flex; flex-wrap: wrap; gap: 8px" id="cmTipoChips">
                   <button
+                    type="button"
                     data-tipo="operativo_legal"
                     onclick="setCmTipo(this)"
                     class="rtype-chip active"
                   >
                     Operativo-Legal
                   </button>
-                  <button data-tipo="financiero" onclick="setCmTipo(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-tipo="financiero"
+                    onclick="setCmTipo(this)"
+                    class="rtype-chip"
+                  >
                     Financiero
                   </button>
-                  <button data-tipo="recursos_humanos" onclick="setCmTipo(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-tipo="recursos_humanos"
+                    onclick="setCmTipo(this)"
+                    class="rtype-chip"
+                  >
                     Recursos Humanos
                   </button>
-                  <button data-tipo="regulatorio" onclick="setCmTipo(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-tipo="regulatorio"
+                    onclick="setCmTipo(this)"
+                    class="rtype-chip"
+                  >
                     Regulatorio / Compliance
                   </button>
-                  <button data-tipo="estrategico" onclick="setCmTipo(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-tipo="estrategico"
+                    onclick="setCmTipo(this)"
+                    class="rtype-chip"
+                  >
                     Estratégico
                   </button>
-                  <button data-tipo="comercial" onclick="setCmTipo(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-tipo="comercial"
+                    onclick="setCmTipo(this)"
+                    class="rtype-chip"
+                  >
                     Comercial
                   </button>
-                  <button data-tipo="tecnico" onclick="setCmTipo(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-tipo="tecnico"
+                    onclick="setCmTipo(this)"
+                    class="rtype-chip"
+                  >
                     Técnico
                   </button>
-                  <button data-tipo="otro" onclick="setCmTipo(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-tipo="otro"
+                    onclick="setCmTipo(this)"
+                    class="rtype-chip"
+                  >
                     Otro
                   </button>
                 </div>
@@ -1420,6 +1457,7 @@
               >
               <div id="cmPuntosList"></div>
               <button
+                type="button"
                 onclick="addCmPunto()"
                 style="
                   margin-top: 10px;
@@ -1468,6 +1506,7 @@
               >
               <div id="cmFuentesList"></div>
               <button
+                type="button"
                 onclick="addCmFuente()"
                 style="
                   margin-top: 10px;
@@ -1616,6 +1655,7 @@
                 >
                 <div style="display: flex; flex-wrap: wrap; gap: 8px" id="cmSensibilidadChips">
                   <button
+                    type="button"
                     data-sens="uso_interno"
                     onclick="setCmSensibilidad(this)"
                     class="rtype-chip active"
@@ -1623,6 +1663,7 @@
                     Uso interno
                   </button>
                   <button
+                    type="button"
                     data-sens="reservado"
                     onclick="setCmSensibilidad(this)"
                     class="rtype-chip"
@@ -1630,13 +1671,19 @@
                     Reservado
                   </button>
                   <button
+                    type="button"
                     data-sens="confidencial"
                     onclick="setCmSensibilidad(this)"
                     class="rtype-chip"
                   >
                     Confidencial
                   </button>
-                  <button data-sens="publico" onclick="setCmSensibilidad(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-sens="publico"
+                    onclick="setCmSensibilidad(this)"
+                    class="rtype-chip"
+                  >
                     Público
                   </button>
                 </div>
@@ -1713,6 +1760,7 @@
                 >
                 <div style="display: flex; flex-wrap: wrap; gap: 8px" id="cmTonoChips">
                   <button
+                    type="button"
                     data-tono="ejecutivo_prudente"
                     onclick="setCmTono(this)"
                     class="rtype-chip active"
@@ -1720,26 +1768,43 @@
                     Ejecutivo prudente
                   </button>
                   <button
+                    type="button"
                     data-tono="ejecutivo_directo"
                     onclick="setCmTono(this)"
                     class="rtype-chip"
                   >
                     Ejecutivo directo
                   </button>
-                  <button data-tono="analitico" onclick="setCmTono(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-tono="analitico"
+                    onclick="setCmTono(this)"
+                    class="rtype-chip"
+                  >
                     Analítico
                   </button>
-                  <button data-tono="diplomatico" onclick="setCmTono(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-tono="diplomatico"
+                    onclick="setCmTono(this)"
+                    class="rtype-chip"
+                  >
                     Diplomático
                   </button>
                   <button
+                    type="button"
                     data-tono="escalamiento_interno"
                     onclick="setCmTono(this)"
                     class="rtype-chip"
                   >
                     Escalamiento interno
                   </button>
-                  <button data-tono="alta_direccion" onclick="setCmTono(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-tono="alta_direccion"
+                    onclick="setCmTono(this)"
+                    class="rtype-chip"
+                  >
                     Alta dirección
                   </button>
                 </div>
@@ -1760,20 +1825,32 @@
                   >Nivel de Profundidad</label
                 >
                 <div style="display: flex; flex-wrap: wrap; gap: 8px" id="cmProfundidadChips">
-                  <button data-prof="breve" onclick="setCmProfundidad(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-prof="breve"
+                    onclick="setCmProfundidad(this)"
+                    class="rtype-chip"
+                  >
                     Breve
                   </button>
                   <button
+                    type="button"
                     data-prof="estandar"
                     onclick="setCmProfundidad(this)"
                     class="rtype-chip active"
                   >
                     Estándar
                   </button>
-                  <button data-prof="profundo" onclick="setCmProfundidad(this)" class="rtype-chip">
+                  <button
+                    type="button"
+                    data-prof="profundo"
+                    onclick="setCmProfundidad(this)"
+                    class="rtype-chip"
+                  >
                     Profundo
                   </button>
                   <button
+                    type="button"
                     data-prof="profundo_recomendaciones"
                     onclick="setCmProfundidad(this)"
                     class="rtype-chip"
@@ -1787,6 +1864,7 @@
             <!-- Generate button + progress -->
             <div style="margin-top: 8px; margin-bottom: 40px">
               <button
+                type="button"
                 id="btnSubmitContraste"
                 onclick="submitContraste()"
                 style="
@@ -1872,6 +1950,7 @@
               "
             >
               <button
+                type="button"
                 onclick="showContrasteForm()"
                 style="
                   display: flex;
@@ -1891,6 +1970,7 @@
               </button>
               <div style="display: flex; gap: 10px; flex-wrap: wrap">
                 <button
+                  type="button"
                   onclick="downloadContrastePDF()"
                   style="
                     display: flex;
@@ -1914,6 +1994,7 @@
                   >Exportar PDF
                 </button>
                 <button
+                  type="button"
                   onclick="copyContrasteMarkdown()"
                   style="
                     display: flex;
