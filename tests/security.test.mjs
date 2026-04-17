@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   corsHeaders,
   generateSessionToken,
+  isAllowedOrigin,
   sanitizeInput,
   validateSessionToken,
 } from '../src/worker/security.js';
@@ -31,4 +32,26 @@ test('corsHeaders returns only matching origin', () => {
 
   assert.equal(headers['Access-Control-Allow-Origin'], 'https://app.example.com');
   assert.equal(headers.Vary, 'Origin');
+});
+
+test('isAllowedOrigin accepts Cloudflare Pages preview subdomains', () => {
+  const env = {
+    ALLOWED_ORIGIN: 'https://hcuevasg.github.io,https://strategic-report-agent.pages.dev',
+  };
+
+  assert.equal(isAllowedOrigin(env, 'https://103b5a9e.strategic-report-agent.pages.dev'), true);
+  assert.equal(isAllowedOrigin(env, 'https://strategic-report-agent.pages.dev'), true);
+  assert.equal(isAllowedOrigin(env, 'https://evilstrategic-report-agent.pages.dev'), false);
+});
+
+test('corsHeaders echoes preview origin when allowed', () => {
+  const headers = corsHeaders(
+    { ALLOWED_ORIGIN: 'https://strategic-report-agent.pages.dev' },
+    'https://103b5a9e.strategic-report-agent.pages.dev'
+  );
+
+  assert.equal(
+    headers['Access-Control-Allow-Origin'],
+    'https://103b5a9e.strategic-report-agent.pages.dev'
+  );
 });

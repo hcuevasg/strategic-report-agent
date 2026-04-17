@@ -41,15 +41,44 @@ export function securityHeaders() {
   };
 }
 
+function normalizeAllowedOrigins(env) {
+  return String(env.ALLOWED_ORIGIN || '*')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+function originMatchesRule(requestOrigin, allowedOrigin) {
+  if (!requestOrigin || !allowedOrigin) return false;
+  if (allowedOrigin === '*') return true;
+
+  let requestUrl;
+  let allowedUrl;
+  try {
+    requestUrl = new URL(requestOrigin);
+    allowedUrl = new URL(allowedOrigin);
+  } catch {
+    return requestOrigin === allowedOrigin || requestOrigin.startsWith(allowedOrigin);
+  }
+
+  if (requestUrl.protocol !== allowedUrl.protocol) return false;
+  if (requestUrl.host === allowedUrl.host) return true;
+
+  return requestUrl.hostname.endsWith(`.${allowedUrl.hostname}`);
+}
+
+export function isAllowedOrigin(env, requestOrigin) {
+  const allowed = normalizeAllowedOrigins(env);
+  return allowed.some(origin => originMatchesRule(requestOrigin, origin));
+}
+
 // ── CORS — returns only the matched origin, not the full list ─
 export function corsHeaders(env, requestOrigin) {
   const allowedRaw = env.ALLOWED_ORIGIN || '*';
   let origin = '*';
 
   if (allowedRaw !== '*' && requestOrigin) {
-    const allowed = allowedRaw.split(',').map(s => s.trim());
-    const matched = allowed.find(a => requestOrigin.startsWith(a));
-    origin = matched || 'null';
+    origin = isAllowedOrigin(env, requestOrigin) ? requestOrigin : 'null';
   }
 
   return {

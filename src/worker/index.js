@@ -13,6 +13,7 @@ import {
 import {
   validateTwilioSignature,
   corsHeaders,
+  isAllowedOrigin,
   jsonResponse,
   sanitizeInput,
   securityHeaders,
@@ -96,9 +97,7 @@ export default {
 
     // ── GET /token — issue session token ─────────────────
     if (request.method === 'GET' && url.pathname === '/token') {
-      const allowed = (env.ALLOWED_ORIGIN || '').split(',').map(s => s.trim());
-      const originOk =
-        allowed[0] === '*' || allowed.some(a => requestOrigin === a || requestOrigin.startsWith(a));
+      const originOk = isAllowedOrigin(env, requestOrigin);
       if (!originOk) {
         return jsonResponse(403, { error: 'Origin not allowed' }, env, requestOrigin);
       }
@@ -177,9 +176,7 @@ export default {
     }
 
     // ── Origin check ──────────────────────────────────────
-    const allowed = (env.ALLOWED_ORIGIN || '').split(',').map(s => s.trim());
-    const isAllowed =
-      allowed[0] === '*' || allowed.some(a => requestOrigin === a || requestOrigin.startsWith(a));
+    const isAllowed = isAllowedOrigin(env, requestOrigin);
     if (!isAllowed) {
       ctx.waitUntil(logAbuse(env, 'origin_rejected', requestOrigin));
       return jsonResponse(403, { error: 'Origin not allowed' }, env, requestOrigin);
