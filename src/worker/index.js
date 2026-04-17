@@ -390,7 +390,7 @@ export default {
           },
           body: JSON.stringify({
             model,
-            max_tokens: isMultisource ? (isHighVolumeContrast ? 9000 : 12000) : 16000,
+            max_tokens: 16000,
             thinking: {
               type: 'enabled',
               budget_tokens: isMultisource ? (isHighVolumeContrast ? 1200 : 2500) : 4000,
