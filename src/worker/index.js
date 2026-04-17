@@ -432,6 +432,7 @@ function streamSSE(upstreamResponse, env, requestOrigin) {
     const reader = upstreamResponse.body.getReader();
     const decoder = new TextDecoder();
     let buf = '';
+    let lastWrite = Date.now();
     try {
       while (true) {
         const { done, value } = await reader.read();
@@ -449,16 +450,29 @@ function streamSSE(upstreamResponse, env, requestOrigin) {
               await writer.write(
                 encoder.encode(`data: ${JSON.stringify({ phase: 'thinking' })}\n\n`)
               );
+              lastWrite = Date.now();
             }
             if (evt.type === 'content_block_start' && evt.content_block?.type === 'text') {
               await writer.write(
                 encoder.encode(`data: ${JSON.stringify({ phase: 'writing' })}\n\n`)
               );
+              lastWrite = Date.now();
+            }
+            // Heartbeat during thinking: Anthropic streams thinking_delta events but the client
+            // never sees them. Without this, the client's 45-second idle timer fires when thinking
+            // runs slow (e.g. 50 tok/s × 2500 budget = 50s of silence → client aborts).
+            if (evt.type === 'content_block_delta' && evt.delta?.type === 'thinking_delta') {
+              const now = Date.now();
+              if (now - lastWrite >= 10000) {
+                await writer.write(encoder.encode(`data: ${JSON.stringify({ keepalive: 1 })}\n\n`));
+                lastWrite = now;
+              }
             }
             if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
               await writer.write(
                 encoder.encode(`data: ${JSON.stringify({ text: evt.delta.text })}\n\n`)
               );
+              lastWrite = Date.now();
             }
           } catch {}
         }
