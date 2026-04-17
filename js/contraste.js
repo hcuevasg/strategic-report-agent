@@ -702,8 +702,10 @@ async function submitContraste() {
       }
     );
 
-    _contrasteResult = parseModelJSON('contraste', txt);
+    _contrasteResult = parseModelJSON(null, txt);
     _contrasteResult = normalizeContrasteResult(_contrasteResult, true);
+    const contrasteIssues = validateContrasteShape(_contrasteResult);
+    if (contrasteIssues.length) throw new Error(contrasteIssues[0]);
     result = _contrasteResult; // share with export functions
     saveContrasteToHistory(_contrasteResult);
 
