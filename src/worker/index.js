@@ -385,8 +385,8 @@ export default {
           },
           body: JSON.stringify({
             model,
-            max_tokens: isMultisource ? 20000 : 16000,
-            thinking: { type: 'enabled', budget_tokens: isMultisource ? 6000 : 4000 },
+            max_tokens: isMultisource ? 12000 : 16000,
+            thinking: { type: 'enabled', budget_tokens: isMultisource ? 2500 : 4000 },
             stream: true,
             system: activeSystemPrompt,
             messages: [{ role: 'user', content: userBlocks }],

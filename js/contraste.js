@@ -207,6 +207,11 @@ function normalizeContrasteResult(payload, useFormMetadata = true) {
     metadata,
   };
 
+  const fallbackTitle = [payload.title, payload.central_message, payload.scope, metadata.objective]
+    .map(value => String(value || '').trim())
+    .find(value => value.length >= 6 && value.split(/\s+/).filter(Boolean).length >= 2);
+  hydrated.title = fallbackTitle || 'Contraste ejecutivo multifuente';
+
   const formSources = useFormMetadata ? getContrasteSourcesFromForm() : [];
   if (!Array.isArray(hydrated.sources_map) || hydrated.sources_map.length < 2) {
     hydrated.sources_map = formSources.map(source => ({

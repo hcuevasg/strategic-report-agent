@@ -72,6 +72,14 @@ function isMeaningfulContent(value, minLength = 20) {
   return words.length >= 4;
 }
 
+function isMeaningfulTitle(value) {
+  const raw = String(value || '').trim();
+  if (raw.length < 6) return false;
+  if (hasPlaceholderContent(raw)) return false;
+  const words = raw.split(/\s+/).filter(Boolean);
+  return words.length >= 2;
+}
+
 function isInsufficientContraste(payload) {
   const title = normalizeContentText(payload?.title);
   const summary = normalizeContentText(payload?.executive_summary || payload?.summary);
@@ -132,7 +140,7 @@ function validateContrasteShape(payload) {
   assertString(payload.executive_summary || payload.summary, 'summary', issues);
   if (issues.length) return issues;
 
-  if (!isMeaningfulContent(payload.title, 12)) {
+  if (!isMeaningfulTitle(payload.title)) {
     issues.push('El contraste generado no contiene un titulo sustantivo. Revisa el insumo.');
   }
   if (!isMeaningfulContent(payload.executive_summary || payload.summary, 40)) {

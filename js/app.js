@@ -399,7 +399,13 @@ async function handleMagicLink() {
 async function fetchFromWorker(url, body, onChunk, onPhase) {
   const headers = { 'Content-Type': 'application/json' };
   if (window._sessionToken) headers['X-Session-Token'] = window._sessionToken;
-  const timeoutMs = body.userContent === '__PPTX_MODE__' ? 180000 : 120000;
+  const timeoutMs =
+    body.userContent === '__PPTX_MODE__'
+      ? 180000
+      : body.reportType === 'multisource_contrast'
+        ? 150000
+        : 120000;
+  const streamIdleTimeoutMs = body.reportType === 'multisource_contrast' ? 45000 : 30000;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   let res;
@@ -436,9 +442,33 @@ async function fetchFromWorker(url, body, onChunk, onPhase) {
     const decoder = new TextDecoder();
     let buf = '';
     let streamError = null;
+    let seenWritingPhase = false;
+
+    const readWithTimeout = async () => {
+      let idleTimer;
+      try {
+        return await Promise.race([
+          reader.read(),
+          new Promise((_, reject) => {
+            idleTimer = setTimeout(() => {
+              reject(
+                new Error(
+                  seenWritingPhase
+                    ? 'La generacion del informe se detuvo por demasiado tiempo. Intenta nuevamente.'
+                    : 'El contraste esta tardando demasiado en empezar a redactarse. Reduce la cantidad de puntos o fuentes e intenta nuevamente.'
+                )
+              );
+            }, streamIdleTimeoutMs);
+          }),
+        ]);
+      } finally {
+        clearTimeout(idleTimer);
+      }
+    };
+
     try {
       while (true) {
-        const { done, value } = await reader.read();
+        const { done, value } = await readWithTimeout();
         if (done) break;
         buf += decoder.decode(value, { stream: true });
         const lines = buf.split('\n\n');
@@ -450,6 +480,7 @@ async function fetchFromWorker(url, body, onChunk, onPhase) {
           try {
             const p = JSON.parse(data);
             if (p.phase && onPhase) onPhase(p.phase);
+            if (p.phase === 'writing') seenWritingPhase = true;
             if (p.text) {
               fullText += p.text;
               if (onChunk) onChunk(fullText, p.text);
@@ -459,6 +490,9 @@ async function fetchFromWorker(url, body, onChunk, onPhase) {
       }
     } catch (streamErr) {
       streamError = streamErr;
+      try {
+        await reader.cancel(streamErr.message);
+      } catch {}
     }
     // If stream broke but we have partial content, try to use it
     if (streamError && !fullText) throw streamError;
