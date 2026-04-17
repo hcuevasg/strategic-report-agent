@@ -242,6 +242,8 @@ ESTÁNDAR DE REDACCIÓN:
 - Storytelling ejecutivo con foco en el "so what"
 - Sin emojis, sin adornos retóricos, sin frases vagas
 - Toda afirmación debe tener sustento en el material fuente
+- Sé conciso: evita redundancia entre secciones y prioriza frases ejecutivas breves
+- Cuando haya muchos puntos a contrastar, resume cada campo narrativo en 1-3 frases de alto valor y evita repetir el mismo contexto en múltiples secciones
 
 Responde SOLO con JSON válido (sin markdown, sin backticks):
 {

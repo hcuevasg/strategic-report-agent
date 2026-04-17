@@ -396,9 +396,23 @@ async function handleMagicLink() {
 // ============================================================
 // WORKER FETCH — soporta streaming SSE y JSON legado
 // ============================================================
+function isRetryableWorkerError(message) {
+  const text = String(message || '').toLowerCase();
+  return (
+    text.includes('llego incompleta') ||
+    text.includes('tiempo de espera agotado') ||
+    text.includes('se detuvo por demasiado tiempo') ||
+    text.includes('tardando demasiado') ||
+    text.includes('failed to fetch') ||
+    text.includes('networkerror')
+  );
+}
+
 async function fetchFromWorker(url, body, onChunk, onPhase) {
   const headers = { 'Content-Type': 'application/json' };
   if (window._sessionToken) headers['X-Session-Token'] = window._sessionToken;
+  const retryCount = Number(body._retryCount || 0);
+  const maxRetries = body.reportType === 'multisource_contrast' ? 1 : 0;
   const timeoutMs =
     body.userContent === '__PPTX_MODE__'
       ? 180000
@@ -418,8 +432,16 @@ async function fetchFromWorker(url, body, onChunk, onPhase) {
     });
   } catch (e) {
     clearTimeout(timer);
-    if (e.name === 'AbortError')
-      throw new Error('Tiempo de espera agotado. Intenta con un documento más corto.');
+    if (e.name === 'AbortError') {
+      const err = new Error('Tiempo de espera agotado. Intenta con un documento más corto.');
+      if (retryCount < maxRetries) {
+        return fetchFromWorker(url, { ...body, _retryCount: retryCount + 1 }, onChunk, onPhase);
+      }
+      throw err;
+    }
+    if (retryCount < maxRetries && isRetryableWorkerError(e.message || e)) {
+      return fetchFromWorker(url, { ...body, _retryCount: retryCount + 1 }, onChunk, onPhase);
+    }
     throw e;
   }
   clearTimeout(timer);
@@ -443,6 +465,7 @@ async function fetchFromWorker(url, body, onChunk, onPhase) {
     let buf = '';
     let streamError = null;
     let seenWritingPhase = false;
+    let sawDone = false;
 
     const readWithTimeout = async () => {
       let idleTimer;
@@ -476,7 +499,10 @@ async function fetchFromWorker(url, body, onChunk, onPhase) {
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
           const data = line.slice(6).trim();
-          if (data === '[DONE]') break;
+          if (data === '[DONE]') {
+            sawDone = true;
+            continue;
+          }
           try {
             const p = JSON.parse(data);
             if (p.phase && onPhase) onPhase(p.phase);
@@ -495,9 +521,31 @@ async function fetchFromWorker(url, body, onChunk, onPhase) {
       } catch {}
     }
     // If stream broke but we have partial content, try to use it
-    if (streamError && !fullText) throw streamError;
-    if (streamError && fullText)
-      console.warn('Stream interrupted, using partial response:', streamError.message);
+    if (streamError && !fullText) {
+      if (retryCount < maxRetries && isRetryableWorkerError(streamError.message || streamError)) {
+        return fetchFromWorker(url, { ...body, _retryCount: retryCount + 1 }, onChunk, onPhase);
+      }
+      throw streamError;
+    }
+    if (streamError && fullText) {
+      console.warn('Stream interrupted, discarding partial response:', streamError.message);
+      const err = new Error(
+        'La respuesta del modelo llego incompleta. Intenta generar el contraste nuevamente.'
+      );
+      if (retryCount < maxRetries) {
+        return fetchFromWorker(url, { ...body, _retryCount: retryCount + 1 }, onChunk, onPhase);
+      }
+      throw err;
+    }
+    if (!sawDone) {
+      const err = new Error(
+        'La respuesta del modelo llego incompleta. Intenta generar el contraste nuevamente.'
+      );
+      if (retryCount < maxRetries) {
+        return fetchFromWorker(url, { ...body, _retryCount: retryCount + 1 }, onChunk, onPhase);
+      }
+      throw err;
+    }
   } else {
     const raw = await res.text();
     if (raw.trim().startsWith('<')) throw new Error('Worker devolvió HTML. Status: ' + res.status);

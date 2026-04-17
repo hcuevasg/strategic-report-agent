@@ -228,7 +228,17 @@ function parseModelJSON(kind, rawText) {
   const clean = String(rawText || '')
     .replace(/```json|```/g, '')
     .trim();
-  const parsed = JSON.parse(clean);
+  let parsed;
+  try {
+    parsed = JSON.parse(clean);
+  } catch (err) {
+    if (err instanceof SyntaxError && err.message.includes('Unexpected end of JSON input')) {
+      throw new Error(
+        'La respuesta del modelo llego incompleta. Intenta generar el informe nuevamente.'
+      );
+    }
+    throw err;
+  }
   const issues = validateByKind(kind, parsed);
   if (issues.length) throw new Error(issues[0]);
   return parsed;
