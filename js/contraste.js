@@ -60,6 +60,14 @@ function isMeaningfulCmText(value, minLength = 20) {
   return words.length >= 4;
 }
 
+function isMeaningfulCmPoint(value) {
+  const raw = String(value || '').trim();
+  if (raw.length < 3) return false;
+  if (hasCmPlaceholder(raw)) return false;
+  const alnumCount = (raw.match(/[A-Za-z0-9ÁÉÍÓÚáéíóúÑñ]/g) || []).length;
+  return alnumCount >= 3;
+}
+
 function getCmTextIssue(value, minLength = 20) {
   const raw = String(value || '').trim();
   if (!raw) return 'esta vacio';
@@ -82,8 +90,8 @@ function getContrasteInputIssue() {
   if (!puntos.length) {
     return 'Agrega al menos un punto a contrastar.';
   }
-  if (puntos.some(p => !isMeaningfulCmText(p, 8))) {
-    return 'Cada punto a contrastar debe describir un tema real; evita placeholders o textos demasiado breves.';
+  if (puntos.some(p => !isMeaningfulCmPoint(p))) {
+    return 'Cada punto a contrastar debe describir un tema real; evita placeholders o textos vacios.';
   }
   if (fuentes.length < 2) {
     return 'Agrega al menos dos fuentes para realizar un contraste multifuente.';
