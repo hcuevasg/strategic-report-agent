@@ -34,7 +34,6 @@ const CM_PLACEHOLDER_TOKENS = [
   'por llenar',
   'dummy',
   'sample',
-  'ejemplo',
 ];
 
 function normalizeCmText(value) {
@@ -49,7 +48,8 @@ function normalizeCmText(value) {
 function hasCmPlaceholder(value) {
   const text = normalizeCmText(value);
   if (!text) return false;
-  return CM_PLACEHOLDER_TOKENS.some(token => text === token || text.includes(token));
+  if (/^x{3,}$/i.test(text.replace(/\s+/g, ''))) return true;
+  return CM_PLACEHOLDER_TOKENS.some(token => text === token);
 }
 
 function isMeaningfulCmText(value, minLength = 20) {
@@ -60,6 +60,16 @@ function isMeaningfulCmText(value, minLength = 20) {
   return words.length >= 4;
 }
 
+function getCmTextIssue(value, minLength = 20) {
+  const raw = String(value || '').trim();
+  if (!raw) return 'esta vacio';
+  if (raw.length < minLength) return `es demasiado breve (${raw.length}/${minLength})`;
+  if (hasCmPlaceholder(raw)) return 'parece un placeholder';
+  const words = raw.split(/\s+/).filter(Boolean);
+  if (words.length < 4) return 'necesita mas detalle';
+  return '';
+}
+
 function getContrasteInputIssue() {
   const objetivo = (document.getElementById('cmObjetivo')?.value || '').trim();
   const puntos = _cmPuntos.map(p => p.trim()).filter(Boolean);
@@ -67,7 +77,7 @@ function getContrasteInputIssue() {
   const fuentesConNotas = fuentes.filter(f => isMeaningfulCmText(f.notas, 40));
 
   if (!isMeaningfulCmText(objetivo, 24)) {
-    return 'Completa un objetivo claro y sustantivo antes de generar el contraste.';
+    return `Completa un objetivo claro y sustantivo antes de generar el contraste. El objetivo ${getCmTextIssue(objetivo, 24)}.`;
   }
   if (!puntos.length) {
     return 'Agrega al menos un punto a contrastar.';
