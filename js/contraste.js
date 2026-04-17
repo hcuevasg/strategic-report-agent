@@ -9,16 +9,15 @@
 // ============================================================
 
 let _cmPuntos = ['', '', ''];
-let _cmFuentes = [
-  { nombre: '', rol: '', unidad: '', tipo: 'área', notas: '' },
-  { nombre: '', rol: '', unidad: '', tipo: 'área', notas: '' },
-];
+let _cmFuentes = [createEmptyCmFuente(), createEmptyCmFuente()];
 let _cmTipoContraste = 'operativo_legal';
 let _cmSensibilidad = 'uso_interno';
 let _cmTono = 'ejecutivo_prudente';
 let _cmProfundidad = 'estandar';
 let _contrasteResult = null;
 let _contrasteInited = false;
+
+const CM_COUNTRY_OPTIONS = ['Colombia', 'Chile', 'USA', 'España', 'Mexico'];
 
 const CM_PLACEHOLDER_TOKENS = [
   'test',
@@ -35,6 +34,33 @@ const CM_PLACEHOLDER_TOKENS = [
   'dummy',
   'sample',
 ];
+
+function createEmptyCmFuente() {
+  return { nombre: '', rol: '', pais: '', unidad: '', tipo: 'área', notas: '' };
+}
+
+function formatCmDateDisplay(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const date = new Date(raw + 'T00:00:00');
+  if (Number.isNaN(date.getTime())) return raw;
+  return date.toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+function renderCmCountryOptions(selectedValue = '') {
+  return [`<option value="">Seleccionar</option>`]
+    .concat(
+      CM_COUNTRY_OPTIONS.map(
+        option =>
+          `<option value="${esc(option)}"${option === selectedValue ? ' selected' : ''}>${esc(option)}</option>`
+      )
+    )
+    .join('');
+}
+
+function buildSourceScope(source) {
+  return [source.pais, source.unidad].filter(Boolean).join(' · ');
+}
 
 function normalizeCmText(value) {
   return String(value || '')
@@ -139,10 +165,7 @@ function resetContrasteForm() {
     if (el) el.value = '';
   });
   _cmPuntos = ['', '', ''];
-  _cmFuentes = [
-    { nombre: '', rol: '', unidad: '', tipo: 'área', notas: '' },
-    { nombre: '', rol: '', unidad: '', tipo: 'área', notas: '' },
-  ];
+  _cmFuentes = [createEmptyCmFuente(), createEmptyCmFuente()];
   _cmTipoContraste = 'operativo_legal';
   _cmSensibilidad = 'uso_interno';
   _cmTono = 'ejecutivo_prudente';
@@ -164,12 +187,14 @@ function resetContrasteForm() {
 function getContrasteFormMetadata() {
   return {
     sponsor: (document.getElementById('cmSponsor')?.value || '').trim(),
-    report_date: (document.getElementById('cmFecha')?.value || '').trim(),
+    report_date: formatCmDateDisplay(document.getElementById('cmFecha')?.value || ''),
     fieldwork_lead: (document.getElementById('cmAnalista')?.value || '').trim(),
     country: (document.getElementById('cmPais')?.value || '').trim(),
     objective: (document.getElementById('cmObjetivo')?.value || '').trim(),
     main_input_notes: (document.getElementById('cmNotasInsumo')?.value || '').trim(),
-    fieldwork_date: (document.getElementById('cmFechaLevantamiento')?.value || '').trim(),
+    fieldwork_date: formatCmDateDisplay(
+      document.getElementById('cmFechaLevantamiento')?.value || ''
+    ),
     business_unit: (document.getElementById('cmUnidad')?.value || '').trim(),
     analyst_notes: (document.getElementById('cmObservaciones')?.value || '').trim(),
     contrast_type: _cmTipoContraste,
@@ -185,7 +210,8 @@ function getContrasteSourcesFromForm() {
     .map(f => ({
       name: (f.nombre || '').trim(),
       role: (f.rol || '').trim(),
-      unit: (f.unidad || '').trim(),
+      country: (f.pais || '').trim(),
+      unit: buildSourceScope(f),
       type: (f.tipo || '').trim(),
       notes: (f.notas || '').trim(),
     }));
@@ -332,6 +358,72 @@ function showNuevoContrasteForm() {
   if (form) form.style.display = 'block';
 }
 
+function loadContrasteSample() {
+  showNuevoContrasteForm();
+  resetContrasteForm();
+  document.getElementById('cmSponsor').value = 'Dirección Regional Cono Sur';
+  document.getElementById('cmFecha').value = '2026-04-17';
+  document.getElementById('cmAnalista').value = 'Gerencia de Análisis Estratégico';
+  document.getElementById('cmPais').value = 'Chile';
+  document.getElementById('cmObjetivo').value =
+    'Contrastar percepciones operativas, legales y de discovery sobre los principales focos de pérdida y calidad de ejecución para priorizar acciones ejecutivas en Chile.';
+  document.getElementById('cmNotasInsumo').value =
+    'El sponsor solicita un contraste ejecutivo para ordenar hallazgos de operación, legal, call center y discovery, distinguiendo coincidencias, vacíos y prioridades de gestión.';
+  document.getElementById('cmFechaLevantamiento').value = '2026-04-12';
+  document.getElementById('cmUnidad').value = 'Operaciones y Legal Chile';
+  document.getElementById('cmObservaciones').value =
+    'Existe presión por responder rápido a dirección. El informe debe ser prudente y accionable, evitando conclusiones forenses o afirmaciones no verificadas.';
+  _cmPuntos = [
+    'Clústeres y estrategia asociada',
+    'Poder sancionatorio y causas de disminución',
+    'ROI',
+    'Calidad del dato',
+    'Reportes Discovery',
+  ];
+  _cmFuentes = [
+    {
+      nombre: 'María José Matus',
+      rol: 'Country Manager',
+      pais: 'Chile',
+      unidad: 'Operaciones',
+      tipo: 'persona',
+      notas:
+        'Sostiene que los clústeres actuales no están priorizando correctamente tiendas con mayor presión de bandas GDO y que el ROI operativo se diluye por ejecución desigual entre zonas.',
+    },
+    {
+      nombre: 'Equipo Legal Chile',
+      rol: 'Legal / Compliance',
+      pais: 'Chile',
+      unidad: 'Legal',
+      tipo: 'área',
+      notas:
+        'Reporta caída en efectividad del poder sancionatorio por tiempos de tramitación, menor calidad de respaldo documental y dificultad para sostener ciertos casos por falta de evidencia consistente.',
+    },
+    {
+      nombre: 'Discovery Regional',
+      rol: 'Analytics Lead',
+      pais: 'Chile',
+      unidad: 'Discovery',
+      tipo: 'fuente_técnica',
+      notas:
+        'Identifica brechas de calidad del dato en Alliance, subreporte de acuerdos reparatorios y discrepancias entre reportes operativos y consolidado discovery, especialmente en reincidentes vs recurrentes.',
+    },
+  ];
+  _cmTipoContraste = 'estrategico';
+  _cmSensibilidad = 'confidencial';
+  _cmTono = 'alta_direccion';
+  _cmProfundidad = 'estandar';
+  renderCmPuntos();
+  renderCmFuentes();
+  setContrasteChipSelection('cmTipoChips', 'tipo', _cmTipoContraste);
+  setContrasteChipSelection('cmSensibilidadChips', 'sens', _cmSensibilidad);
+  setContrasteChipSelection('cmTonoChips', 'tono', _cmTono);
+  setContrasteChipSelection('cmProfundidadChips', 'prof', _cmProfundidad);
+  const errorEl = document.getElementById('contrasteError');
+  if (errorEl) errorEl.style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function nuevoContraste() {
   resetContrasteForm();
   showNuevoContrasteForm();
@@ -452,8 +544,14 @@ function renderCmFuentes() {
           <input type="text" value="${esc(f.rol)}" oninput="updateCmFuente(${i},'rol',this.value)" placeholder="Ej: Jefa de Operaciones" style="${inputStyle}">
         </div>
         <div>
-          <label style="${labelStyle}">País / Unidad</label>
-          <input type="text" value="${esc(f.unidad)}" oninput="updateCmFuente(${i},'unidad',this.value)" placeholder="Ej: Colombia" style="${inputStyle}">
+          <label style="${labelStyle}">País</label>
+          <select oninput="updateCmFuente(${i},'pais',this.value)" style="${inputStyle};appearance:auto">
+            ${renderCmCountryOptions(f.pais)}
+          </select>
+        </div>
+        <div>
+          <label style="${labelStyle}">Unidad / Área</label>
+          <input type="text" value="${esc(f.unidad)}" oninput="updateCmFuente(${i},'unidad',this.value)" placeholder="Ej: Gerencia de Operaciones" style="${inputStyle}">
         </div>
         <div>
           <label style="${labelStyle}">Tipo de Fuente</label>
@@ -479,7 +577,7 @@ function updateCmFuente(i, field, val) {
   _cmFuentes[i][field] = val;
 }
 function addCmFuente() {
-  _cmFuentes.push({ nombre: '', rol: '', unidad: '', tipo: 'área', notas: '' });
+  _cmFuentes.push(createEmptyCmFuente());
   renderCmFuentes();
 }
 function removeCmFuente(i) {
@@ -490,16 +588,19 @@ function removeCmFuente(i) {
 // ── Build structured text input ───────────────────────────────
 function buildContrasteInput() {
   const sponsor = (document.getElementById('cmSponsor')?.value || '').trim();
-  const fecha = (document.getElementById('cmFecha')?.value || '').trim();
+  const fecha = formatCmDateDisplay(document.getElementById('cmFecha')?.value || '');
   const analista = (document.getElementById('cmAnalista')?.value || '').trim();
   const pais = (document.getElementById('cmPais')?.value || '').trim();
   const objetivo = (document.getElementById('cmObjetivo')?.value || '').trim();
   const notasInsumo = (document.getElementById('cmNotasInsumo')?.value || '').trim();
-  const fechaLevantamiento = (document.getElementById('cmFechaLevantamiento')?.value || '').trim();
+  const fechaLevantamiento = formatCmDateDisplay(
+    document.getElementById('cmFechaLevantamiento')?.value || ''
+  );
   const unidad = (document.getElementById('cmUnidad')?.value || '').trim();
   const observaciones = (document.getElementById('cmObservaciones')?.value || '').trim();
   const puntos = _cmPuntos.filter(p => p.trim());
   const fuentes = _cmFuentes.filter(f => f.nombre.trim() || f.notas.trim());
+  const compactMode = puntos.length >= 8;
 
   let text = 'INFORME DE CONTRASTE MULTIFUENTE\n' + '─'.repeat(48) + '\n\n';
   text += 'METADATOS\n';
@@ -525,13 +626,18 @@ function buildContrasteInput() {
     });
     text += '\n';
   }
+  if (compactMode) {
+    text +=
+      'MODO DE SINTESIS\nHay muchos puntos a contrastar. Prioriza brevedad ejecutiva, evita redundancias y limita cada desarrollo a lo estrictamente necesario para decidir.\n\n';
+  }
   if (fuentes.length) {
     text += 'FUENTES CONTRASTADAS\n';
     fuentes.forEach((f, i) => {
       text += `\nFuente ${i + 1}:\n`;
       if (f.nombre) text += `  Nombre: ${f.nombre}\n`;
       if (f.rol) text += `  Rol / Cargo: ${f.rol}\n`;
-      if (f.unidad) text += `  País / Unidad: ${f.unidad}\n`;
+      if (f.pais) text += `  País: ${f.pais}\n`;
+      if (f.unidad) text += `  Unidad / Área: ${f.unidad}\n`;
       if (f.tipo) text += `  Tipo: ${f.tipo}\n`;
       if (f.notas) text += `  Notas por fuente:\n  ${f.notas.replace(/\n/g, '  \n')}\n`;
     });
@@ -568,12 +674,14 @@ async function submitContraste() {
 
   try {
     let chunks = 0;
+    const pointCount = _cmPuntos.map(p => p.trim()).filter(Boolean).length;
     const input = buildContrasteInput();
     const txt = await fetchFromWorker(
       WORKER_URL,
       {
         userContent: input,
         reportType: 'multisource_contrast',
+        contrastPointCount: pointCount,
         outputLanguage,
       },
       (full, chunk) => {

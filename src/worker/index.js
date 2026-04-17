@@ -336,6 +336,8 @@ export default {
 
         const isMinuta = body.reportType === 'minuta';
         const isMultisource = body.reportType === 'multisource_contrast';
+        const contrastPointCount = Number(body.contrastPointCount || 0);
+        const isHighVolumeContrast = isMultisource && contrastPointCount >= 8;
         const activeSystemPrompt = isMinuta
           ? MINUTA_SYSTEM_PROMPT
           : isMultisource
@@ -352,6 +354,9 @@ export default {
             'Genera la minuta de reunión a partir del siguiente contenido. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n'
           : isMultisource
             ? langPref +
+              (isHighVolumeContrast
+                ? `Hay ${contrastPointCount} puntos a contrastar. Mantén cada campo muy breve, evita repeticiones y prioriza síntesis ejecutiva.\n`
+                : '') +
               'Elabora el Informe Ejecutivo de Contraste Multifuente a partir del siguiente input estructurado. Responde SOLO con JSON válido, sin backticks ni markdown:\n\n'
             : langPref +
               typePref +
@@ -385,8 +390,11 @@ export default {
           },
           body: JSON.stringify({
             model,
-            max_tokens: isMultisource ? 12000 : 16000,
-            thinking: { type: 'enabled', budget_tokens: isMultisource ? 2500 : 4000 },
+            max_tokens: isMultisource ? (isHighVolumeContrast ? 9000 : 12000) : 16000,
+            thinking: {
+              type: 'enabled',
+              budget_tokens: isMultisource ? (isHighVolumeContrast ? 1200 : 2500) : 4000,
+            },
             stream: true,
             system: activeSystemPrompt,
             messages: [{ role: 'user', content: userBlocks }],

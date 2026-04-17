@@ -224,6 +224,70 @@ function validateByKind(kind, payload) {
   return [];
 }
 
+function repairLikelyJson(rawText) {
+  const input = String(rawText || '');
+  let out = '';
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    if (inString) {
+      if (escaped) {
+        out += ch;
+        escaped = false;
+        continue;
+      }
+      if (ch === '\\') {
+        out += ch;
+        escaped = true;
+        continue;
+      }
+      if (ch === '\n') {
+        out += '\\n';
+        continue;
+      }
+      if (ch === '\r') continue;
+      if (ch === '\t') {
+        out += '\\t';
+        continue;
+      }
+      if (ch === '"') {
+        const nextNonWhitespace = input.slice(i + 1).match(/\S/);
+        const nextChar = nextNonWhitespace ? nextNonWhitespace[0] : '';
+        if (!nextChar || ',}]'.includes(nextChar) || nextChar === ':') {
+          inString = false;
+          out += ch;
+        } else {
+          out += '\\"';
+        }
+        continue;
+      }
+      out += ch;
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = true;
+      out += ch;
+      continue;
+    }
+    out += ch;
+  }
+
+  if (inString) out += '"';
+  out = out.replace(/,\s*([}\]])/g, '$1');
+
+  const openArrays = (out.match(/\[/g) || []).length;
+  const closeArrays = (out.match(/\]/g) || []).length;
+  const openObjects = (out.match(/\{/g) || []).length;
+  const closeObjects = (out.match(/\}/g) || []).length;
+  if (closeArrays < openArrays) out += ']'.repeat(openArrays - closeArrays);
+  if (closeObjects < openObjects) out += '}'.repeat(openObjects - closeObjects);
+
+  return out;
+}
+
 function parseModelJSON(kind, rawText) {
   const clean = String(rawText || '')
     .replace(/```json|```/g, '')
@@ -232,12 +296,20 @@ function parseModelJSON(kind, rawText) {
   try {
     parsed = JSON.parse(clean);
   } catch (err) {
-    if (err instanceof SyntaxError && err.message.includes('Unexpected end of JSON input')) {
-      throw new Error(
-        'La respuesta del modelo llego incompleta. Intenta generar el informe nuevamente.'
-      );
+    try {
+      parsed = JSON.parse(repairLikelyJson(clean));
+    } catch (_repairErr) {
+      if (
+        err instanceof SyntaxError &&
+        (err.message.includes('Unexpected end of JSON input') ||
+          err.message.includes('Unterminated string in JSON'))
+      ) {
+        throw new Error(
+          'La respuesta del modelo llego incompleta o mal cerrada. Intenta generar el informe nuevamente.'
+        );
+      }
+      throw err;
     }
-    throw err;
   }
   const issues = validateByKind(kind, parsed);
   if (issues.length) throw new Error(issues[0]);

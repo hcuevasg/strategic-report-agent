@@ -268,22 +268,22 @@ Responde SOLO con JSON válido (sin markdown, sin backticks):
   "sources_map": [
     {"name": "Nombre de la fuente", "role": "Rol o cargo", "unit": "País o unidad", "type": "área|país|persona|rol_funcional|fuente_técnica|otra"}
   ],
-  "executive_summary": "Resumen ejecutivo conclusivo: qué se pidió revisar, cómo se abordó, qué se confirmó, qué quedó abierto, cuál es la implicancia principal. 3-5 oraciones.",
-  "central_message": "Tesis breve y ejecutiva sobre el significado del contraste — el So What del informe. 1-2 oraciones.",
-  "methodology": "Descripción del objetivo, lógica de contraste, fuentes consideradas, alcance y limitaciones del informe.",
+  "executive_summary": "Resumen ejecutivo conclusivo y conciso. 2-4 oraciones.",
+  "central_message": "Tesis breve y ejecutiva sobre el significado del contraste. 1 oración idealmente.",
+  "methodology": "Descripción breve del objetivo, lógica de contraste, fuentes consideradas, alcance y limitaciones del informe. 2-3 oraciones.",
   "key_messages": ["Mensaje ejecutivo 1", "Mensaje ejecutivo 2", "Mensaje ejecutivo 3"],
   "analysis_by_point": [
     {
       "point": "Nombre del punto consultado",
-      "consolidated_reading": "Lectura consolidada inicial del punto antes del contraste",
-      "contrast": "Descripción desarrollada del contraste entre fuentes respecto de este punto",
+      "consolidated_reading": "Lectura consolidada inicial del punto antes del contraste. 1 oración.",
+      "contrast": "Descripción breve del contraste entre fuentes respecto de este punto. 1-3 oraciones.",
       "convergences": ["Convergencia identificada entre fuentes"],
       "divergences": ["Divergencia identificada entre fuentes"],
       "gaps": ["Vacío de información o aspecto no validado"],
-      "executive_finding": "Hallazgo ejecutivo derivado del contraste, redactado con prudencia analítica",
-      "implication": "Implicancia de gestión o estratégica para el solicitante",
-      "risk_opportunity": "Riesgo u oportunidad identificado para este punto",
-      "next_step": "Próximo paso concreto sugerido"
+      "executive_finding": "Hallazgo ejecutivo derivado del contraste, redactado con prudencia analítica. 1 oración.",
+      "implication": "Implicancia de gestión o estratégica para el solicitante. 1 oración.",
+      "risk_opportunity": "Riesgo u oportunidad identificado para este punto. 1 oración.",
+      "next_step": "Próximo paso concreto sugerido. 1 oración."
     }
   ],
   "comparison_matrix": [
