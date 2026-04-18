@@ -62,7 +62,12 @@ function hasPlaceholderContent(value) {
   const text = normalizeContentText(value);
   if (!text) return false;
   if (/^x{3,}$/i.test(text.replace(/\s+/g, ''))) return true;
-  return CONTENT_PLACEHOLDER_TOKENS.some(token => text === token || text.includes(token));
+  // Word-boundary match: avoids false positives like "na" matching inside "sancionatorio".
+  return CONTENT_PLACEHOLDER_TOKENS.some(token => {
+    if (text === token) return true;
+    const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(?:^|[^a-z0-9])${escaped}(?:[^a-z0-9]|$)`).test(text);
+  });
 }
 
 function isMeaningfulContent(value, minLength = 20) {
