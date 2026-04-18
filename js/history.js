@@ -25,7 +25,7 @@ function saveToHistory(r) {
       data: JSON.stringify(r),
     };
     history.unshift(entry);
-    const trimmed = history.slice(0, 5);
+    const trimmed = history.slice(0, MAX_HISTORY_ENTRIES);
     writeStorageJSON(HISTORY_KEY, trimmed);
     currentHistoryId = entry.id;
     renderHistory();
@@ -105,7 +105,9 @@ function renderInformesDashboard() {
       let r = null;
       try {
         r = parseModelJSON('report', h.data);
-      } catch (e) {}
+      } catch (e) {
+        console.warn('History entry parse error:', e.message);
+      }
       const type = r?.type || 'general';
       const colors = INFORME_TYPE_COLORS[type] || INFORME_TYPE_COLORS.general;
       const label = getInformeTypeLabel(type);
@@ -270,8 +272,10 @@ function autoSaveEdit() {
         writeStorageJSON(HISTORY_KEY, h);
         renderHistory();
       }
-    } catch (e) {}
-  }, 800);
+    } catch (e) {
+      console.warn('Auto-save error:', e.message);
+    }
+  }, AUTOSAVE_DEBOUNCE_MS);
 }
 
 // ============================================================

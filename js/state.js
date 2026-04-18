@@ -4,6 +4,20 @@
 // ============================================================
 
 // ============================================================
+// Constants
+// ============================================================
+const MAX_HISTORY_ENTRIES = 5;
+const CHAR_LIMIT_WARN = 30000;
+const CHAR_LIMIT_ERROR = 60000;
+const PROGRESS_INTERVAL_MS = 2200;
+const AUTOSAVE_DEBOUNCE_MS = 800;
+const STREAM_IDLE_TIMEOUT_MS = 30000;
+const STREAM_IDLE_TIMEOUT_CONTRAST_MS = 45000;
+const FETCH_TIMEOUT_MS = 120000;
+const FETCH_TIMEOUT_CONTRAST_MS = 150000;
+const FETCH_TIMEOUT_PPTX_MS = 180000;
+
+// ============================================================
 // Worker URL — hardcoded, no user input needed
 // ============================================================
 const WORKER_URL = 'https://strategic-report-proxy.hcuevas.workers.dev';
@@ -74,7 +88,17 @@ let currentContrastHistoryId = null;
 let _autoSaveTimer = null;
 let chatHistory = [];
 let _minutasFilter = '';
-window._sessionToken = null;
+let _sessionToken = null;
+let _pendingImages = null;
 
-// window._pendingImages — set inside processFile(), consumed by exports
-// window._sessionToken  — set above, refreshed via refreshSessionToken()
+// Expose on window for cross-module access (until ES modules migration)
+Object.defineProperties(window, {
+  _sessionToken: {
+    get() { return _sessionToken; },
+    set(v) { _sessionToken = v; },
+  },
+  _pendingImages: {
+    get() { return _pendingImages; },
+    set(v) { _pendingImages = v; },
+  },
+});

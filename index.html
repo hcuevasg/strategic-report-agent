@@ -86,69 +86,15 @@
       >
         <!-- Nav tabs -->
         <nav style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 10px 0">
-          <button
-            id="navMinutas"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              width: 100%;
-              padding: 10px 18px;
-              font-family: Inter, sans-serif;
-              font-size: 13px;
-              font-weight: 500;
-              color: #fff;
-              background: rgba(187, 0, 20, 0.12);
-              border: none;
-              border-left: 3px solid #e74243;
-              cursor: pointer;
-              text-align: left;
-            "
-          >
+          <button id="navMinutas" class="nav-btn active">
             <span class="material-symbols-outlined" style="font-size: 18px">event_note</span>
             <span data-i18n="uiNavMinutas">Minutas</span>
           </button>
-          <button
-            id="navInformes"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              width: 100%;
-              padding: 10px 18px;
-              font-family: Inter, sans-serif;
-              font-size: 13px;
-              font-weight: 500;
-              color: rgba(255, 255, 255, 0.55);
-              background: transparent;
-              border: none;
-              border-left: 3px solid transparent;
-              cursor: pointer;
-              text-align: left;
-            "
-          >
+          <button id="navInformes" class="nav-btn">
             <span class="material-symbols-outlined" style="font-size: 18px">bar_chart</span>
             <span data-i18n="uiNavInformes">Informes</span>
           </button>
-          <button
-            id="navContraste"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              width: 100%;
-              padding: 10px 18px;
-              font-family: Inter, sans-serif;
-              font-size: 13px;
-              font-weight: 500;
-              color: rgba(255, 255, 255, 0.55);
-              background: transparent;
-              border: none;
-              border-left: 3px solid transparent;
-              cursor: pointer;
-              text-align: left;
-            "
-          >
+          <button id="navContraste" class="nav-btn">
             <span class="material-symbols-outlined" style="font-size: 18px">compare_arrows</span>
             <span data-i18n="uiNavContraste">Contraste Multifuente</span>
           </button>
@@ -2122,7 +2068,12 @@
     <script src="js/schemas.js"></script>
     <script src="js/ui-helpers.js"></script>
     <script src="js/history.js"></script>
+    <script src="js/file-upload.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/preview.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/pdf-export.js"></script>
+    <script src="js/chat.js"></script>
     <script src="js/pptx-gen.js"></script>
     <script src="js/exports.js"></script>
     <script src="js/dashboard.js"></script>
@@ -2394,76 +2345,16 @@
           flex-shrink: 0;
         "
       >
-        <button
-          class="ai-chip"
-          data-i18n="uiChipDeepen"
-          data-i18n-q="uiChipDeepenQ"
-          style="
-            font-family: Inter, sans-serif;
-            font-size: 10px;
-            color: #44474c;
-            background: #f2f4f6;
-            border: none;
-            border-radius: 20px;
-            padding: 4px 10px;
-            cursor: pointer;
-            transition: all 0.15s;
-          "
-        >
+        <button class="ai-chip" data-i18n="uiChipDeepen" data-i18n-q="uiChipDeepenQ">
           Profundiza hallazgo
         </button>
-        <button
-          class="ai-chip"
-          data-i18n="uiChipCFO"
-          data-i18n-q="uiChipCFOQ"
-          style="
-            font-family: Inter, sans-serif;
-            font-size: 10px;
-            color: #44474c;
-            background: #f2f4f6;
-            border: none;
-            border-radius: 20px;
-            padding: 4px 10px;
-            cursor: pointer;
-            transition: all 0.15s;
-          "
-        >
+        <button class="ai-chip" data-i18n="uiChipCFO" data-i18n-q="uiChipCFOQ">
           Tono para CFO
         </button>
-        <button
-          class="ai-chip"
-          data-i18n="uiChipRisks"
-          data-i18n-q="uiChipRisksQ"
-          style="
-            font-family: Inter, sans-serif;
-            font-size: 10px;
-            color: #44474c;
-            background: #f2f4f6;
-            border: none;
-            border-radius: 20px;
-            padding: 4px 10px;
-            cursor: pointer;
-            transition: all 0.15s;
-          "
-        >
+        <button class="ai-chip" data-i18n="uiChipRisks" data-i18n-q="uiChipRisksQ">
           Ampliar riesgos
         </button>
-        <button
-          class="ai-chip"
-          data-i18n="uiChipSummary"
-          data-i18n-q="uiChipSummaryQ"
-          style="
-            font-family: Inter, sans-serif;
-            font-size: 10px;
-            color: #44474c;
-            background: #f2f4f6;
-            border: none;
-            border-radius: 20px;
-            padding: 4px 10px;
-            cursor: pointer;
-            transition: all 0.15s;
-          "
-        >
+        <button class="ai-chip" data-i18n="uiChipSummary" data-i18n-q="uiChipSummaryQ">
           Resumen ejecutivo
         </button>
       </div>

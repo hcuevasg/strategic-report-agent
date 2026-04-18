@@ -1,11 +1,8 @@
 // ============================================================
 // CONTRASTE MULTIFUENTE MODULE
-// Depends on: state.js, ui-helpers.js (esc, t, flash),
-//             fetchFromWorker (app.js until api.js extracted)
-// ============================================================
-
-// ============================================================
-// CONTRASTE MULTIFUENTE MODULE
+// Depends on: state.js, schemas.js (normalizeContentText, hasPlaceholderContent),
+//             ui-helpers.js (esc, t, flash),
+//             fetchFromWorker (app.js)
 // ============================================================
 
 let _cmPuntos = ['', '', ''];
@@ -19,21 +16,7 @@ let _contrasteInited = false;
 
 const CM_COUNTRY_OPTIONS = ['Colombia', 'Chile', 'USA', 'España', 'Mexico'];
 
-const CM_PLACEHOLDER_TOKENS = [
-  'test',
-  'tbd',
-  'lorem',
-  'ipsum',
-  'xxx',
-  'n/a',
-  'na',
-  'pendiente',
-  'por definir',
-  'por completar',
-  'por llenar',
-  'dummy',
-  'sample',
-];
+// Placeholder tokens: uses CONTENT_PLACEHOLDER_TOKENS from schemas.js
 
 function createEmptyCmFuente() {
   return { nombre: '', rol: '', pais: '', unidad: '', tipo: 'área', notas: '' };
@@ -62,21 +45,9 @@ function buildSourceScope(source) {
   return [source.pais, source.unidad].filter(Boolean).join(' · ');
 }
 
-function normalizeCmText(value) {
-  return String(value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function hasCmPlaceholder(value) {
-  const text = normalizeCmText(value);
-  if (!text) return false;
-  if (/^x{3,}$/i.test(text.replace(/\s+/g, ''))) return true;
-  return CM_PLACEHOLDER_TOKENS.some(token => text === token);
-}
+// Aliases — unified implementations live in schemas.js
+const normalizeCmText = normalizeContentText;
+const hasCmPlaceholder = hasPlaceholderContent;
 
 function isMeaningfulCmText(value, minLength = 20) {
   const raw = String(value || '').trim();

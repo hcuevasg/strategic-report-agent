@@ -120,6 +120,18 @@
   .panel-content{padding:24px 20px 96px}
   @media(min-width:768px){.panel-content{padding:40px 48px 96px}}
 
+  /* ── Sidebar nav buttons ─────────────────────────────────── */
+  .nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;background:transparent;border:none;border-left:3px solid transparent;cursor:pointer;text-align:left;color:rgba(255,255,255,0.55);transition:all .15s}
+  .nav-btn:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85)}
+  .nav-btn.active{color:#fff;background:rgba(187,0,20,0.12);border-left-color:#E74243}
+
+  /* ── AI chat chip buttons ───────────────────────────────── */
+  .ai-chip{font-family:'Inter',sans-serif;font-size:10px;color:#44474C;background:#F2F4F6;border:none;border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .15s}
+  .ai-chip:hover{background:#E0E3E5;color:#1A3350}
+
+  /* ── Section label (red uppercase) ──────────────────────── */
+  .section-label{font-family:'Inter',sans-serif;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:#E74243}
+
   /* ── Mobile minutas action bar ───────────────────────────── */
   @media(max-width:639px){
     #minutasActionBar{flex-direction:column;align-items:stretch;gap:10px}

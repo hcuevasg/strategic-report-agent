@@ -61,6 +61,7 @@ function normalizeContentText(value) {
 function hasPlaceholderContent(value) {
   const text = normalizeContentText(value);
   if (!text) return false;
+  if (/^x{3,}$/i.test(text.replace(/\s+/g, ''))) return true;
   return CONTENT_PLACEHOLDER_TOKENS.some(token => text === token || text.includes(token));
 }
 

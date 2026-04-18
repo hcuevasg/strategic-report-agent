@@ -40,7 +40,9 @@ async function generateMinuta() {
       const td = await tokenRes.json();
       token = td.token;
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Token fetch failed:', e.message);
+  }
 
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['X-Session-Token'] = token;
@@ -81,7 +83,9 @@ async function generateMinuta() {
         try {
           const ev = JSON.parse(data);
           if (ev.text) accumulated += ev.text;
-        } catch (e) {}
+        } catch (e) {
+          console.warn('Minuta SSE parse error:', e.message);
+        }
       }
     }
 
@@ -136,7 +140,9 @@ function saveMinuta(r) {
     if (list.length > 20) list.splice(20);
     writeStorageJSON(MINUTAS_KEY, list);
     buildCalendar(); // refresh dots
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Minuta save error:', e.message);
+  }
 }
 
 function loadMinutasHistory() {
@@ -181,7 +187,9 @@ function renderMinutasList() {
       let r = null;
       try {
         r = parseModelJSON('minuta', m.data);
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Minuta parse error:', e.message);
+      }
       const commitCount = r?.commitments?.length || 0;
       const pending = r?.open_issues?.length || 0;
       const savedDate = m.date || new Date(m.saved_at).toLocaleDateString('es-CL');

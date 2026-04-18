@@ -54,14 +54,19 @@ export default {
       }
 
       const days = parseInt(url.searchParams.get('days') || '7', 10);
-      const stats = [];
-      for (let i = 0; i < days; i++) {
+      const dateKeys = Array.from({ length: days }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        const key = `stats:${d.toISOString().slice(0, 10)}`;
-        const data = await env.WA_KV.get(key, { type: 'json' });
-        if (data) stats.push(data);
-      }
+        return d.toISOString().slice(0, 10);
+      });
+
+      // Parallel KV reads — stats + abuse in one batch
+      const [statsResults, abuseResults] = await Promise.all([
+        Promise.all(dateKeys.map(dk => env.WA_KV.get(`stats:${dk}`, { type: 'json' }))),
+        Promise.all(dateKeys.map(dk => env.WA_KV.get(`abuse:${dk}`, { type: 'json' }))),
+      ]);
+
+      const stats = statsResults.filter(Boolean);
 
       const totals = { requests: {}, whatsapp: {}, exports: {}, errors: 0 };
       for (const day of stats) {
@@ -77,14 +82,9 @@ export default {
         }
       }
 
-      const abuseLogs = [];
-      for (let i = 0; i < days; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const abuseKey = `abuse:${d.toISOString().slice(0, 10)}`;
-        const abuseData = await env.WA_KV.get(abuseKey, { type: 'json' });
-        if (abuseData) abuseLogs.push({ date: d.toISOString().slice(0, 10), ...abuseData });
-      }
+      const abuseLogs = abuseResults
+        .map((data, i) => (data ? { date: dateKeys[i], ...data } : null))
+        .filter(Boolean);
 
       return new Response(JSON.stringify({ days: stats, totals, abuse: abuseLogs }, null, 2), {
         headers: {
@@ -209,7 +209,17 @@ export default {
     const limitPerHour = parseInt(env.RATE_LIMIT_PER_HOUR || '30', 10);
     if (env.RATE_LIMIT_KV) {
       const ipKey = `rl:ip:${ip}`;
-      const ipCurrent = parseInt((await env.RATE_LIMIT_KV.get(ipKey)) || '0', 10);
+      const tokenHash = sessionToken.slice(0, 16);
+      const tokenKey = `rl:tok:${tokenHash}`;
+
+      // Parallel KV reads for both counters
+      const [ipRaw, tokRaw] = await Promise.all([
+        env.RATE_LIMIT_KV.get(ipKey),
+        env.RATE_LIMIT_KV.get(tokenKey),
+      ]);
+      const ipCurrent = parseInt(ipRaw || '0', 10);
+      const tokCurrent = parseInt(tokRaw || '0', 10);
+
       if (ipCurrent >= limitPerHour) {
         ctx.waitUntil(logAbuse(env, 'rate_limited_ip', ip));
         return jsonResponse(
@@ -219,9 +229,6 @@ export default {
           requestOrigin
         );
       }
-      const tokenHash = sessionToken.slice(0, 16);
-      const tokenKey = `rl:tok:${tokenHash}`;
-      const tokCurrent = parseInt((await env.RATE_LIMIT_KV.get(tokenKey)) || '0', 10);
       if (tokCurrent >= limitPerHour) {
         ctx.waitUntil(logAbuse(env, 'rate_limited_token', ip));
         return jsonResponse(
@@ -231,8 +238,12 @@ export default {
           requestOrigin
         );
       }
-      await env.RATE_LIMIT_KV.put(ipKey, String(ipCurrent + 1), { expirationTtl: 3600 });
-      await env.RATE_LIMIT_KV.put(tokenKey, String(tokCurrent + 1), { expirationTtl: 3600 });
+
+      // Parallel KV writes for both counters
+      await Promise.all([
+        env.RATE_LIMIT_KV.put(ipKey, String(ipCurrent + 1), { expirationTtl: 3600 }),
+        env.RATE_LIMIT_KV.put(tokenKey, String(tokCurrent + 1), { expirationTtl: 3600 }),
+      ]);
     }
 
     // ── Body size limit ───────────────────────────────────
@@ -474,7 +485,9 @@ function streamSSE(upstreamResponse, env, requestOrigin) {
               );
               lastWrite = Date.now();
             }
-          } catch {}
+          } catch (parseErr) {
+            console.warn('SSE parse error:', parseErr.message);
+          }
         }
       }
     } finally {
