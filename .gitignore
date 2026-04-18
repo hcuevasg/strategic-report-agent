@@ -1,6 +1,7 @@
 node_modules/
 .wrangler/
-.claude/
+.claude/*
+!.claude/skills/
 .mcp.json
 css/tailwind.css
 *.log
