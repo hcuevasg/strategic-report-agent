@@ -179,6 +179,64 @@ async function fetchFromWorker(url, body, onChunk, onPhase) {
   return fullText;
 }
 
+// ============================================================
+// QA REVIEW — post-generation quality audit (co-counsel QAAgent pattern)
+// ============================================================
+async function qaReview(reportObj) {
+  if (!reportObj) throw new Error('Report is required');
+  const headers = { 'Content-Type': 'application/json' };
+  if (window._sessionToken) headers['X-Session-Token'] = window._sessionToken;
+  const res = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      userContent: '__QA_REVIEW__',
+      reportJSON: JSON.stringify(reportObj),
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error('QA review failed: ' + errText.substring(0, 200));
+  }
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || data.error);
+  const text = (data.content || [])
+    .filter(b => b.type === 'text')
+    .map(b => b.text)
+    .join('');
+  const clean = text.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
+// ============================================================
+// ADVERSARIAL — Devil's Advocate stress test (co-counsel AdversarialAgent)
+// ============================================================
+async function adversarialReview(reportObj) {
+  if (!reportObj) throw new Error('Report is required');
+  const headers = { 'Content-Type': 'application/json' };
+  if (window._sessionToken) headers['X-Session-Token'] = window._sessionToken;
+  const res = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      userContent: '__ADVERSARIAL__',
+      reportJSON: JSON.stringify(reportObj),
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error('Adversarial review failed: ' + errText.substring(0, 200));
+  }
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || data.error);
+  const text = (data.content || [])
+    .filter(b => b.type === 'text')
+    .map(b => b.text)
+    .join('');
+  const clean = text.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
 async function analyze() {
   const input = document.getElementById('inputText').value.trim();
   const wUrl = WORKER_URL;

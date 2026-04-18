@@ -69,6 +69,19 @@ function renderPreview(r) {
     h += `<p class="font-['Inter'] text-sm text-slate-500 italic mt-2 editable" contenteditable="true" data-path="subtitle" onblur="updateField(this)">${esc(r.subtitle)}</p>`;
   h += `<div class="w-16 h-0.5 bg-[#E74243] mt-5"></div></div>`;
 
+  // ── Review toolbar (QA + Adversarial) ──────────────────────
+  h += `<div class="px-10 py-4 border-b border-[#E0E3E5] flex items-center gap-3 flex-wrap bg-[#F8F9FB]">
+    <button id="qaReviewBtn" class="regen-btn" onclick="runQAReview()">
+      <span class="material-symbols-outlined" style="font-size:14px">fact_check</span>${t('qaReviewBtn')}
+    </button>
+    <button id="advReviewBtn" class="regen-btn" onclick="runAdversarial()">
+      <span class="material-symbols-outlined" style="font-size:14px">whatshot</span>${t('advReviewBtn')}
+    </button>
+    <div id="qaBadgeSlot" class="flex items-center gap-2"></div>
+  </div>
+  <div id="qaDetailSlot"></div>
+  <div id="advDetailSlot"></div>`;
+
   // ── Executive Summary — So What box ───────────────────────
   h += `<div class="px-10 py-8 border-b border-[#E0E3E5]">
     <div class="flex items-center justify-between mb-4">
@@ -275,6 +288,185 @@ function renderPreview(r) {
 
   h += `</div>`;
   card.innerHTML = h;
+}
+
+// ============================================================
+// QA REVIEW — badge + detail rendering
+// ============================================================
+async function runQAReview() {
+  const btn = document.getElementById('qaReviewBtn');
+  const slot = document.getElementById('qaBadgeSlot');
+  const detail = document.getElementById('qaDetailSlot');
+  if (!result || !btn || !slot) return;
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px">progress_activity</span>${t('qaRunning')}`;
+  try {
+    const qa = await qaReview(result);
+    window._qaResult = qa;
+    renderQABadge(qa);
+    renderQADetail(qa);
+  } catch (err) {
+    flash(t('qaError') + ': ' + (err.message || err));
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
+}
+
+function qaScoreColor(avg) {
+  if (avg >= 8.5) return '#166534';
+  if (avg >= 7) return '#4174B9';
+  if (avg >= 5.5) return '#B45309';
+  return '#E74243';
+}
+
+function renderQABadge(qa) {
+  const slot = document.getElementById('qaBadgeSlot');
+  if (!slot) return;
+  const avg = Number(qa.average || 0).toFixed(1);
+  const color = qaScoreColor(Number(qa.average || 0));
+  const verdict = esc(qa.verdict || '');
+  slot.innerHTML = `<span class="inline-flex items-center gap-2 px-3 py-1.5 font-['Inter'] text-xs font-bold text-white rounded" style="background:${color}">
+    <span class="material-symbols-outlined" style="font-size:14px">verified</span>
+    ${t('qaScore')}: ${avg}/10
+  </span>
+  <span class="font-['Inter'] text-[10px] uppercase tracking-widest" style="color:${color}">${verdict.replace(/_/g, ' ')}</span>
+  <button class="font-['Inter'] text-[10px] text-[#4174B9] underline" onclick="toggleQADetail()">${t('qaDetails')}</button>`;
+}
+
+function toggleQADetail() {
+  const d = document.getElementById('qaDetailSlot');
+  if (d) d.classList.toggle('hidden');
+}
+
+function renderQADetail(qa) {
+  const d = document.getElementById('qaDetailSlot');
+  if (!d) return;
+  const catLabels = {
+    mece: 'MECE',
+    so_what: 'So What',
+    actionability: t('qaActionability'),
+    evidence_rigor: t('qaEvidence'),
+    executive_tone: t('qaTone'),
+    balance: t('qaBalance'),
+    internal_consistency: t('qaConsistency'),
+    specificity: t('qaSpecificity'),
+  };
+  let h = `<div class="px-10 py-6 border-b border-[#E0E3E5] bg-[#F8F9FB]">
+    <h3 class="font-['Manrope'] text-[10px] uppercase tracking-widest text-[#1A3350] font-bold mb-4">${t('qaDetailTitle')}</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">`;
+  Object.entries(qa.scores || {}).forEach(([k, v]) => {
+    const label = catLabels[k] || k;
+    const c = qaScoreColor(Number(v));
+    h += `<div class="bg-white p-3 border-l-4" style="border-color:${c}">
+      <div class="font-['Inter'] text-[9px] uppercase tracking-widest text-slate-500">${esc(label)}</div>
+      <div class="font-['Manrope'] text-xl font-black" style="color:${c}">${Number(v).toFixed(1)}</div>
+    </div>`;
+  });
+  h += `</div>`;
+  if (qa.strengths?.length) {
+    h += `<div class="mb-4"><div class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#166534] font-bold mb-2">${t('qaStrengths')}</div>`;
+    qa.strengths.forEach(s => {
+      h += `<div class="flex gap-2 items-start mb-1"><span class="text-[#166534] font-black text-xs mt-0.5">✓</span><span class="font-['Inter'] text-xs text-[#191C1E]">${esc(s)}</span></div>`;
+    });
+    h += `</div>`;
+  }
+  if (qa.weaknesses?.length) {
+    h += `<div class="mb-4"><div class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold mb-2">${t('qaWeaknesses')}</div>`;
+    qa.weaknesses.forEach(s => {
+      h += `<div class="flex gap-2 items-start mb-1"><span class="text-[#E74243] font-black text-xs mt-0.5">▸</span><span class="font-['Inter'] text-xs text-[#191C1E]">${esc(s)}</span></div>`;
+    });
+    h += `</div>`;
+  }
+  if (qa.flags?.length) {
+    h += `<div><div class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#B45309] font-bold mb-2">${t('qaFlags')}</div>`;
+    qa.flags.forEach(f => {
+      const sev = f.severity === 'critical' ? '#E74243' : '#B45309';
+      h += `<div class="flex gap-2 items-start mb-1.5">
+        <span class="material-symbols-outlined" style="font-size:13px;color:${sev};margin-top:1px">${f.severity === 'critical' ? 'error' : 'warning'}</span>
+        <div class="font-['Inter'] text-xs"><strong style="color:${sev}">[${esc(f.category || '')}]</strong> ${esc(f.message || '')}</div>
+      </div>`;
+    });
+    h += `</div>`;
+  }
+  h += `</div>`;
+  d.innerHTML = h;
+  d.classList.remove('hidden');
+}
+
+// ============================================================
+// ADVERSARIAL — stress-test rendering
+// ============================================================
+async function runAdversarial() {
+  const btn = document.getElementById('advReviewBtn');
+  const slot = document.getElementById('advDetailSlot');
+  if (!result || !btn || !slot) return;
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px">progress_activity</span>${t('advRunning')}`;
+  try {
+    const adv = await adversarialReview(result);
+    window._advResult = adv;
+    renderAdversarial(adv);
+  } catch (err) {
+    flash(t('advError') + ': ' + (err.message || err));
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
+}
+
+function renderAdversarial(adv) {
+  const d = document.getElementById('advDetailSlot');
+  if (!d) return;
+  let h = `<div class="px-10 py-6 border-b border-[#E0E3E5] bg-[#FFF5F5]">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="material-symbols-outlined" style="font-size:18px;color:#E74243">whatshot</span>
+      <h3 class="font-['Manrope'] text-[11px] uppercase tracking-widest text-[#E74243] font-bold">${t('advTitle')}</h3>
+    </div>`;
+  if (adv.overall_assessment) {
+    h += `<div class="mb-5 p-4 bg-white border-l-4 border-[#E74243]">
+      <div class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold mb-1">${t('advVerdict')}</div>
+      <p class="font-['Manrope'] italic text-sm text-[#1A3350]">${esc(adv.overall_assessment)}</p>
+    </div>`;
+  }
+  if (adv.weaknesses?.length) {
+    h += `<div class="mb-5"><div class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#E74243] font-bold mb-2">${t('advWeaknesses')}</div>`;
+    adv.weaknesses.forEach(w => {
+      h += `<div class="mb-3 p-3 bg-white border-l-2 border-[#E74243]">
+        <div class="font-['Manrope'] font-bold text-sm text-[#1A3350]">${esc(w.point || '')} ${w.section ? `<span class="font-['Inter'] text-[10px] uppercase text-slate-400 ml-2">${esc(w.section)}</span>` : ''}</div>
+        <p class="font-['Inter'] text-xs text-[#44474C] mt-1">${esc(w.explanation || '')}</p>
+      </div>`;
+    });
+    h += `</div>`;
+  }
+  if (adv.counter_arguments?.length) {
+    h += `<div class="mb-5"><div class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#1A3350] font-bold mb-2">${t('advCounters')}</div>`;
+    adv.counter_arguments.forEach(c => {
+      h += `<div class="mb-2 p-3 bg-white border-l-2 border-[#4174B9]">
+        <p class="font-['Inter'] text-xs text-[#191C1E]">${esc(c.argument || '')}</p>
+        ${c.targets ? `<p class="font-['Inter'] text-[10px] italic text-slate-500 mt-1">→ ${esc(c.targets)}</p>` : ''}
+      </div>`;
+    });
+    h += `</div>`;
+  }
+  if (adv.stress_questions?.length) {
+    h += `<div class="mb-5"><div class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#1A3350] font-bold mb-2">${t('advQuestions')}</div>`;
+    adv.stress_questions.forEach(q => {
+      h += `<div class="flex gap-2 items-start mb-2"><span class="text-[#E74243] font-black mt-0.5">?</span><span class="font-['Inter'] text-sm italic text-[#1A3350]">${esc(q)}</span></div>`;
+    });
+    h += `</div>`;
+  }
+  if (adv.fragile_assumptions?.length) {
+    h += `<div><div class="font-['Inter'] text-[10px] uppercase tracking-widest text-[#B45309] font-bold mb-2">${t('advAssumptions')}</div>`;
+    adv.fragile_assumptions.forEach(a => {
+      h += `<div class="flex gap-2 items-start mb-1"><span class="material-symbols-outlined" style="font-size:13px;color:#B45309;margin-top:1px">warning</span><span class="font-['Inter'] text-xs text-[#191C1E]">${esc(a)}</span></div>`;
+    });
+    h += `</div>`;
+  }
+  h += `</div>`;
+  d.innerHTML = h;
 }
 
 // ── Chart Utilities ──

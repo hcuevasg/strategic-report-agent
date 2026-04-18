@@ -8,6 +8,8 @@ import {
   MINUTA_SYSTEM_PROMPT,
   MULTISOURCE_SYSTEM_PROMPT,
   PPTX_SYSTEM_PROMPT,
+  QA_REVIEW_SYSTEM_PROMPT,
+  ADVERSARIAL_SYSTEM_PROMPT,
   REPORT_TEMPLATES,
 } from './prompts.js';
 import {
@@ -43,6 +45,31 @@ export default {
         status: 204,
         headers: { ...securityHeaders(), ...corsHeaders(env, requestOrigin) },
       });
+    }
+
+    // ── GET /health — liveness probe ──────────────────────
+    if (request.method === 'GET' && url.pathname === '/health') {
+      return new Response(JSON.stringify({ status: 'ok', ts: new Date().toISOString() }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...securityHeaders() },
+      });
+    }
+
+    // ── GET /health/ready — readiness probe ───────────────
+    if (request.method === 'GET' && url.pathname === '/health/ready') {
+      const checks = {
+        anthropic_key: Boolean(env.ANTHROPIC_API_KEY),
+        wa_kv: Boolean(env.WA_KV),
+        rate_limit_kv: Boolean(env.RATE_LIMIT_KV),
+      };
+      const ready = Object.values(checks).every(Boolean);
+      return new Response(
+        JSON.stringify({ status: ready ? 'ready' : 'degraded', checks, ts: new Date().toISOString() }),
+        {
+          status: ready ? 200 : 503,
+          headers: { 'Content-Type': 'application/json', ...securityHeaders() },
+        }
+      );
     }
 
     // ── GET /stats — monitoring dashboard ────────────────
@@ -293,6 +320,60 @@ export default {
         });
         const data = await resp.json();
         return jsonResponse(resp.status, data, env, requestOrigin);
+
+        // ── QA Review mode — non-streaming, structured JSON ─
+      } else if (body.userContent === '__QA_REVIEW__' && body.reportJSON) {
+        ctx.waitUntil(trackEvent(env, 'qa_review'));
+        const qaResp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+          },
+          body: JSON.stringify({
+            model,
+            max_tokens: 3000,
+            system: QA_REVIEW_SYSTEM_PROMPT,
+            messages: [
+              {
+                role: 'user',
+                content:
+                  'Audita este informe ejecutivo con la rúbrica. Responde SOLO con JSON válido.\n\nINFORME:\n' +
+                  body.reportJSON,
+              },
+            ],
+          }),
+        });
+        const qaData = await qaResp.json();
+        return jsonResponse(qaResp.status, qaData, env, requestOrigin);
+
+        // ── Adversarial mode — non-streaming, structured JSON ─
+      } else if (body.userContent === '__ADVERSARIAL__' && body.reportJSON) {
+        ctx.waitUntil(trackEvent(env, 'adversarial'));
+        const advResp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+          },
+          body: JSON.stringify({
+            model,
+            max_tokens: 4000,
+            system: ADVERSARIAL_SYSTEM_PROMPT,
+            messages: [
+              {
+                role: 'user',
+                content:
+                  'Destroza la tesis de este informe. Responde SOLO con JSON válido.\n\nINFORME:\n' +
+                  body.reportJSON,
+              },
+            ],
+          }),
+        });
+        const advData = await advResp.json();
+        return jsonResponse(advResp.status, advData, env, requestOrigin);
 
         // ── PPTX mode — streaming SSE with extended thinking ─
       } else if (body.userContent === '__PPTX_MODE__' && body.reportJSON) {

@@ -43,6 +43,13 @@ export function validateRequestBody(body) {
     return null;
   }
 
+  if (body.userContent === '__QA_REVIEW__' || body.userContent === '__ADVERSARIAL__') {
+    if (!isNonEmptyString(body.reportJSON)) {
+      return 'reportJSON is required for review mode';
+    }
+    return null;
+  }
+
   if (!isNonEmptyString(body.userContent)) {
     return 'userContent is required';
   }

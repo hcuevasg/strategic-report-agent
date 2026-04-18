@@ -10,7 +10,7 @@ export async function trackEvent(env, event) {
     const key = `stats:${today}`;
     const raw = (await env.WA_KV.get(key, { type: 'json' })) || {
       date: today,
-      requests: { analysis: 0, chat: 0, pptx: 0, whatsapp: 0, report_fetch: 0 },
+      requests: { analysis: 0, chat: 0, pptx: 0, whatsapp: 0, report_fetch: 0, qa_review: 0, adversarial: 0 },
       whatsapp: { text: 0, audio: 0, document: 0 },
       exports: { brief: 0, pdf: 0, docx: 0, pptx: 0 },
       errors: 0,
